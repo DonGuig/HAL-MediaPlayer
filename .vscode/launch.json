@@ -1,0 +1,123 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "compounds": [
+        {
+            "name": "Build server + client (prod)",
+            "configurations": ["Build client (prod)", "Build server (prod)"],
+            "stopAll": true
+        },
+        {
+            "name": "Run server + client (prod)",
+            "configurations": ["Run server (prod)", "Chrome (prod)"],
+            "stopAll": true
+        },
+        {
+            "name": "Run server + client (dev)",
+            "configurations": ["Run client (dev)", "Run server (dev)", "Chrome (dev client)"],
+            "stopAll": true
+        }
+    ],
+    "configurations": [
+
+        {
+            "name": "Run client (dev)",
+            "console": "integratedTerminal",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "start"
+            ],
+            "runtimeExecutable": "npm",
+            "cwd": "${workspaceFolder}/packages/client",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Run server (dev)",
+            "console": "integratedTerminal",
+            "request": "launch",
+            "restart": true,
+            "runtimeArgs": [
+                "run-script",
+                "watch"
+            ],
+            "runtimeExecutable": "npm",
+            "cwd": "${workspaceFolder}/packages/server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Chrome (dev client)",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "Build client (prod)",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "build"
+            ],
+            "runtimeExecutable": "npm",
+            "cwd": "${workspaceFolder}/packages/client",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Build server (prod)",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "build"
+            ],
+            "runtimeExecutable": "npm",
+            "cwd": "${workspaceFolder}/packages/server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Build shared (prod)",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "build"
+            ],
+            "runtimeExecutable": "npm",
+            "cwd": "${workspaceFolder}/packages/shared",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Run server (prod)",
+            "program": "${workspaceFolder}/packages/server/dist/app.js",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/packages/server",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Chrome (prod)",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:3002",
+            "webRoot": "${workspaceFolder}"
+        },
+    ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@halmediaplayer/halmediaplayer",
+  "private": true,
+  "workspaces": [
+    "./packages/shared"
+  ],
+  "version": "0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.2.4",
+    "@types/node": "^18.11.17",
+    "jest": "^29.3.1",
+    "ts-jest": "^29.0.3"
+  }
+}
