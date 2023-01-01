@@ -10,7 +10,7 @@ import vlcClient from "../VLC.js";
 // Will contain trailing slash
 const _dirname = new URL(".", import.meta.url).pathname;
 const videoPath: string = path.join(path.dirname(path.dirname(_dirname)), "/resources/video");
-const blackVideoPath : string = path.join(path.dirname(path.dirname(_dirname)), "/resources/utility_video/black_1920.jpg");
+const blackVideoPath: string = path.join(path.dirname(path.dirname(_dirname)), "/resources/utility_video/black_1920.jpg");
 
 const apiRouter = express.Router();
 
@@ -98,19 +98,21 @@ apiRouter.get("/getFileName", (req, res) => {
 
 apiRouter.post("/uploadVideoFile", (req, res) => {
   try {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(500).send('No files were uploaded.');
+    }
+
     let uploadedFile = req.files?.file;
     if (uploadedFile !== undefined) {
       const targetFile = Array.isArray(uploadedFile) ? uploadedFile[0] : uploadedFile;
       deleteAllVideoFiles();
       const videoFilePath: string = path.join(videoPath, targetFile.name);
-      fs.writeFile(videoFilePath, targetFile.data, (err) => {
+      targetFile.mv(videoFilePath, function (err) {
         if (err) {
-          logger.error("could not write file to disk")
-          throw new Error("could not write file to disk");
-        } else {
-          res.status(200).send();
+          return res.status(500).send(err);
         }
-      })
+        res.status(200).send();
+      });
     } else {
       logger.error("No uploaded file")
       throw new Error("No uploaded file")
