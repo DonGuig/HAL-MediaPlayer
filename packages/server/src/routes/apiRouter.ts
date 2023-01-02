@@ -3,9 +3,10 @@ import fileUpload from "express-fileupload";
 import fs from "fs";
 import path from "path";
 import { URL } from "url"; // in Browser, the URL in native accessible on window
+import { deviceManager } from "../app.js";
 import logger from "../HALLogger.js";
 
-import vlcClient from "../VLC.js";
+import vlcManager from "../VLC.js";
 
 // Will contain trailing slash
 const _dirname = new URL(".", import.meta.url).pathname;
@@ -18,30 +19,51 @@ export default apiRouter;
 
 apiRouter.post("/play", (req, res) => {
   logger.info("received play");
-  vlcClient.play().then(() => res.status(200).send()).catch((e) => {
-    if (e instanceof Error) {
-      res.status(500).send(e.message);
-    } else {
-      res.sendStatus(500);
-    }
-  });;
+  if (!vlcManager.isStopped) {
+    vlcManager.play()
+      .then(() => res.status(200).send())
+      .catch((e) => {
+        if (e instanceof Error) {
+          res.status(500).send(e.message);
+        } else {
+          res.sendStatus(500);
+        }
+      });
+  } else {
+    vlcManager.restart()
+      .then(() => res.status(200).send())
+      .catch((e) => {
+        if (e instanceof Error) {
+          res.status(500).send(e.message);
+        } else {
+          res.sendStatus(500);
+        }
+      });
+  }
+  vlcManager.isStopped = false;
 });
 
 apiRouter.post("/pause", (req, res) => {
   logger.info("received pause");
-  vlcClient.pause().then(() => res.status(200).send()).catch((e) => {
-    if (e instanceof Error) {
-      res.status(500).send(e.message);
-    } else {
-      res.sendStatus(500);
-    }
-  });;
+  if (!vlcManager.isStopped) {
+    vlcManager.pause()
+      .then(() => res.status(200).send())
+      .catch((e) => {
+        if (e instanceof Error) {
+          res.status(500).send(e.message);
+        } else {
+          res.sendStatus(500);
+        }
+      });;
+  } else {
+    res.status(200).send();
+  }
 });
 
 apiRouter.post("/restart", (req, res) => {
   logger.info("received restart");
-  vlcClient.setTime(0)
-    .then(() => vlcClient.play())
+  vlcManager.isStopped = false;
+  vlcManager.restart()
     .then(() => res.status(200).send())
     .catch((e) => {
       if (e instanceof Error) {
@@ -53,10 +75,9 @@ apiRouter.post("/restart", (req, res) => {
 });
 
 apiRouter.post("/stop", (req, res) => {
-  logger.info("received restart");
-  vlcClient.playFile(blackVideoPath)
-    .then(() => vlcClient.setFullscreen(true))
-    .then(() => vlcClient.setRepeating(true))
+  logger.info("received stop");
+  vlcManager.isStopped = true;
+  vlcManager.stop()
     .then(() => res.status(200).send())
     .catch((e) => {
       if (e instanceof Error) {
@@ -67,25 +88,42 @@ apiRouter.post("/stop", (req, res) => {
     })
 });
 
+apiRouter.get("/getVolume", (req, res) => {
+  const vol: number = 0;
+  deviceManager.getVolume().then((result) => {
+    res.status(200).send({ volume: result });
+  }).catch((e) => {
+    if (e instanceof Error) {
+      res.status(500).send(e.message);
+    } else {
+      res.sendStatus(500);
+    }
+
+  })
+});
+
+apiRouter.post("/setVolume", (req, res) => {
+  logger.info("received setVolume");
+  const { volume } = req.body;
+  deviceManager.setVolume(volume).then((result) => {
+    res.status(200).send();
+  }).catch((err) => {
+    if (err instanceof Error) {
+      res.status(500).send(err.message);
+    } else {
+      res.sendStatus(500);
+    }
+  })
+});
+
 apiRouter.get("/getFileName", (req, res) => {
   try {
     logger.info("received getFileName");
-    if (!fs.existsSync(videoPath)) {
-      fs.mkdirSync(videoPath, { recursive: true });
-    }
-    let videoFilesList: Array<string> = [];
-    fs.readdirSync(videoPath).forEach((file) => {
-      if (path.extname(file) == ".mov" || path.extname(file) == ".mp4") {
-        videoFilesList.push(file);
-      }
-    })
-    if (videoFilesList.length == 0) {
+    const videoFileName = vlcManager.getVideoFile()
+    if (videoFileName == undefined) {
       res.status(200).send({ fileName: "No video file" });
-    } else if (videoFilesList.length > 1) {
-      deleteAllVideoFiles();
-      throw new Error("Multiple video files found - removing them all");
     } else {
-      res.status(200).send({ fileName: videoFilesList[0] });
+      res.status(200).send({ fileName: videoFileName });
     }
   } catch (e) {
     if (e instanceof Error) {
@@ -105,7 +143,7 @@ apiRouter.post("/uploadVideoFile", (req, res) => {
     let uploadedFile = req.files?.file;
     if (uploadedFile !== undefined) {
       const targetFile = Array.isArray(uploadedFile) ? uploadedFile[0] : uploadedFile;
-      deleteAllVideoFiles();
+      vlcManager.deleteAllVideoFiles();
       const videoFilePath: string = path.join(videoPath, targetFile.name);
       targetFile.mv(videoFilePath, function (err) {
         if (err) {
@@ -126,14 +164,15 @@ apiRouter.post("/uploadVideoFile", (req, res) => {
   }
 });
 
-const deleteAllVideoFiles = () => {
-  let videoFilesList: Array<string> = [];
-  fs.readdirSync(videoPath).forEach((file) => {
-    if (path.extname(file) == ".mov" || path.extname(file) == ".mp4") {
-      videoFilesList.push(file);
+apiRouter.get("/getDeviceName", (req, res) => {
+  try {
+    logger.info("received getDeviceName");
+    res.status(200).send({ deviceName: deviceManager.proxy.deviceName });
+  } catch (e) {
+    if (e instanceof Error) {
+      res.status(500).send(e.message);
+    } else {
+      res.sendStatus(500);
     }
-  })
-  videoFilesList.forEach((file) => {
-    fs.rmSync(path.join(videoPath, file));
-  })
-}
+  }
+});

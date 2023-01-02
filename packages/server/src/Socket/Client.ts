@@ -4,7 +4,7 @@ import { Server, Socket } from "socket.io";
 import logger from "../HALLogger.js";
 
 const registerClientHandlers = (socket: Socket) => {
-  let tickTimeout: NodeJS.Timeout;
+  // let tickTimeout: NodeJS.Timeout;
 
   // socket.onAny((eventName: string, ...args: any[]) => {
   //   console.log(eventName);
@@ -13,24 +13,24 @@ const registerClientHandlers = (socket: Socket) => {
 
   socket.on("disconnect", (reason) => {
     logger.info(`disconnect client socket ${socket.id} due to ${reason}`);
-    clearTimeout(tickTimeout);
+    // clearTimeout(tickTimeout);
   });
 
-  socket.on("datetime", () => {
-    // logger.info("emitting datetime");
-    socket.emit("datetime", new Date().toISOString());
-  });
+  // socket.on("datetime", () => {
+  //   // logger.info("emitting datetime");
+  //   socket.emit("datetime", new Date().toISOString());
+  // });
 
-  const sendClockTick = () => {
-    const now = new Date();
-    const timeToNextTick =
-      (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-    tickTimeout = setTimeout(() => {
-      socket.emit("datetime", new Date().toISOString());
-      sendClockTick();
-    }, timeToNextTick);
-  };
-  sendClockTick();
+  // const sendClockTick = () => {
+  //   const now = new Date();
+  //   const timeToNextTick =
+  //     (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  //   tickTimeout = setTimeout(() => {
+  //     socket.emit("datetime", new Date().toISOString());
+  //     sendClockTick();
+  //   }, timeToNextTick);
+  // };
+  // sendClockTick();
 };
 
 export default registerClientHandlers;

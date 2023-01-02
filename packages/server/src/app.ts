@@ -12,17 +12,18 @@ import { serverPort } from "@halmediaplayer/shared";
 import { URL } from "url"; // in Browser, the URL in native accessible on window
 import logger, { expressLogger } from "./HALLogger.js";
 import apiRouter from "./routes/apiRouter.js";
+import DeviceManager from "./DeviceManager.js";
 
 
 // Will contain trailing slash
 export const _dirname = new URL(".", import.meta.url).pathname;
 
-
+export const deviceManager = new DeviceManager();
 
 const app = express();
 app.use(expressLogger);
 app.use(cors());
-// app.use(express.json({limit:"10mb"}));
+app.use(express.json({limit:"10mb"}));
 app.use(fileUpload({
   useTempFiles : true,
   tempFileDir : path.join(path.dirname(_dirname), "resources/tmp")
