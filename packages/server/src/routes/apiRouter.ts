@@ -88,9 +88,21 @@ apiRouter.post("/stop", (req, res) => {
     })
 });
 
+apiRouter.get("/getTime", (req, res) => {
+  vlcManager.getTime()
+  .then((obj) => res.status(200).send(obj))
+  .catch((e) => {
+    if (e instanceof Error) {
+      res.status(500).send(e.message);
+    } else {
+      res.sendStatus(500);
+    }
+  })
+})
+
 apiRouter.get("/getVolume", (req, res) => {
   const vol: number = 0;
-  deviceManager.getVolume().then((result) => {
+  vlcManager.getVolume().then((result) => {
     res.status(200).send({ volume: result });
   }).catch((e) => {
     if (e instanceof Error) {
@@ -98,22 +110,26 @@ apiRouter.get("/getVolume", (req, res) => {
     } else {
       res.sendStatus(500);
     }
-
   })
 });
 
 apiRouter.post("/setVolume", (req, res) => {
   logger.info("received setVolume");
   const { volume } = req.body;
-  deviceManager.setVolume(volume).then((result) => {
-    res.status(200).send();
-  }).catch((err) => {
-    if (err instanceof Error) {
-      res.status(500).send(err.message);
-    } else {
-      res.sendStatus(500);
-    }
-  })
+  if (volume && !Number.isNaN(volume)) {
+    vlcManager.setVolume(volume).then((result) => {
+      deviceManager.setVolume(Number(volume));
+      res.status(200).send();
+    }).catch((err) => {
+      if (err instanceof Error) {
+        res.status(500).send(err.message);
+      } else {
+        res.sendStatus(500);
+      }
+    })
+  } else {
+    res.status(500).send("Bad request")
+  }
 });
 
 apiRouter.get("/getFileName", (req, res) => {

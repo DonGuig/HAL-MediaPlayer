@@ -6,7 +6,6 @@ import addFormats from "ajv-formats";
 
 import logger from "./HALLogger.js";
 import DeviceConfigSchema from "./schemas/DeviceConfigSchema.js";
-import {vlcClient} from "./VLC.js";
 
 // Will contain trailing slash
 const _dirname = new URL(".", import.meta.url).pathname;
@@ -28,7 +27,7 @@ addFormats(ajv);
 const validateProjectSchema = ajv.compile<DeviceConfig>(DeviceConfigSchema);
 
 
-class DeviceManager {
+class ConfigManager {
   filePath: string;
   protected _proxy: any;
   protected _previousProxy: any;
@@ -92,7 +91,8 @@ class DeviceManager {
     if (res) {
       return true;
     } else {
-      logger.error(validateProjectSchema.errors);
+      
+      logger.error(`Error validating project config data ${JSON.stringify(validateProjectSchema.errors)}`);
       return false;
     }
   }
@@ -128,25 +128,17 @@ class DeviceManager {
     }
   }
 
-  async setVolume(val: number){
-    if (val < 0 || val > 200){
-        logger.error("setVolume : volume out of range")
-        return
-    }
-    await vlcClient.setVolumeRaw(Math.round(val*512/200));
-    this._proxy.volume = val;
-    this.updateFile();
-  }
-
-  async getVolume() {
-    const rawVolume = await vlcClient.getVolumeRaw()
-    return Math.round(rawVolume * 200/512);
-  }
 
   setDeviceName(name: string){
     this._proxy.deviceName = name;
     this.updateFile();
   }
+
+  setVolume(vol: number){
+    this.proxy.volume = vol;
+    this.updateFile();
+  }
+
 }
 
-export default DeviceManager;
+export default ConfigManager;

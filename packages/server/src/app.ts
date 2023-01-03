@@ -12,13 +12,13 @@ import { serverPort } from "@halmediaplayer/shared";
 import { URL } from "url"; // in Browser, the URL in native accessible on window
 import logger, { expressLogger } from "./HALLogger.js";
 import apiRouter from "./routes/apiRouter.js";
-import DeviceManager from "./DeviceManager.js";
+import ConfigManager from "./ConfigManager.js";
 
 
 // Will contain trailing slash
 export const _dirname = new URL(".", import.meta.url).pathname;
 
-export const deviceManager = new DeviceManager();
+export const deviceManager = new ConfigManager();
 
 const app = express();
 app.use(expressLogger);

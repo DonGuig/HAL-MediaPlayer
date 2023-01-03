@@ -2,6 +2,7 @@ import http from "http";
 import util from "util";
 import { Server, Socket } from "socket.io";
 import logger from "../HALLogger.js";
+import vlcManager from "../VLC.js";
 
 const registerClientHandlers = (socket: Socket) => {
   // let tickTimeout: NodeJS.Timeout;
@@ -15,6 +16,12 @@ const registerClientHandlers = (socket: Socket) => {
     logger.info(`disconnect client socket ${socket.id} due to ${reason}`);
     // clearTimeout(tickTimeout);
   });
+
+  socket.on("/setTime", (val) => {
+    vlcManager.setTime(val).catch(() => {
+      logger.error("error trying to seek the movie")
+    });
+  })
 
   // socket.on("datetime", () => {
   //   // logger.info("emitting datetime");

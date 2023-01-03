@@ -71,6 +71,32 @@ class VLCManager {
           .then(() => vlcClient.setRepeating(true))      
     }
 
+    async getTime() {
+        let time: number = 0;
+        let length: number =0;
+        time = await vlcClient.getTime();
+        length = await vlcClient.getLength();
+        return ({time, length})
+    }
+
+    async setTime(val: number) {
+        await vlcClient.setTime(val);
+    }
+
+    async getVolume(){
+        let rawVol: number;
+        rawVol = await vlcClient.getVolumeRaw();
+        return Math.round(rawVol * 200/512);
+    }
+
+    async setVolume(val : number){
+        if (val < 0 || val > 200){
+            logger.error("setVolume : volume out of range")
+            return
+        }
+        await vlcClient.setVolumeRaw(Math.round(val*512/200));
+    }
+
     deleteAllVideoFiles() {
         let videoFilesList: Array<string> = [];
         fs.readdirSync(this.videoPath).forEach((file) => {
