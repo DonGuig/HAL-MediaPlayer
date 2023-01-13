@@ -3,10 +3,10 @@ import fileUpload from "express-fileupload";
 import fs from "fs";
 import path from "path";
 import { URL } from "url"; // in Browser, the URL in native accessible on window
-import { deviceManager } from "../app.js";
+import { configManager } from "../app.js";
 import logger from "../HALLogger.js";
 
-import vlcManager from "../VLC.js";
+import {vlcManager} from "../app.js";
 
 // Will contain trailing slash
 const _dirname = new URL(".", import.meta.url).pathname;
@@ -118,7 +118,7 @@ apiRouter.post("/setVolume", (req, res) => {
   const { volume } = req.body;
   if (volume && !Number.isNaN(volume)) {
     vlcManager.setVolume(volume).then((result) => {
-      deviceManager.setVolume(Number(volume));
+      configManager.setVolume(Number(volume));
       res.status(200).send();
     }).catch((err) => {
       if (err instanceof Error) {
@@ -183,7 +183,7 @@ apiRouter.post("/uploadVideoFile", (req, res) => {
 apiRouter.get("/getDeviceName", (req, res) => {
   try {
     logger.info("received getDeviceName");
-    res.status(200).send({ deviceName: deviceManager.proxy.deviceName });
+    res.status(200).send({ deviceName: configManager.proxy.deviceName });
   } catch (e) {
     if (e instanceof Error) {
       res.status(500).send(e.message);
@@ -192,3 +192,33 @@ apiRouter.get("/getDeviceName", (req, res) => {
     }
   }
 });
+
+apiRouter.post("/setDeviceName", (req, res) => {
+  try {
+    logger.info("received setDeviceName");
+    const { deviceName } = req.body;
+    configManager.setDeviceName(deviceName);
+    res.status(200).send();
+  } catch (e) {
+    if (e instanceof Error) {
+      res.status(500).send(e.message);
+    } else {
+      res.sendStatus(500);
+    }
+  }
+})
+
+apiRouter.post("/setAudioDevice", (req, res) => {
+  try {
+    logger.info("received setAudioDevice");
+    const { audioDevice } = req.body;
+    configManager.setAudioDevice(audioDevice);
+    res.status(200).send();
+  } catch (e) {
+    if (e instanceof Error) {
+      res.status(500).send(e.message);
+    } else {
+      res.sendStatus(500);
+    }
+  }
+})

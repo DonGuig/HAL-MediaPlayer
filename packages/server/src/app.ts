@@ -13,12 +13,14 @@ import { URL } from "url"; // in Browser, the URL in native accessible on window
 import logger, { expressLogger } from "./HALLogger.js";
 import apiRouter from "./routes/apiRouter.js";
 import ConfigManager from "./ConfigManager.js";
+import VLCManager from "./VLC.js";
 
 
 // Will contain trailing slash
 export const _dirname = new URL(".", import.meta.url).pathname;
 
-export const deviceManager = new ConfigManager();
+export const configManager = new ConfigManager();
+export const vlcManager = new VLCManager();
 
 const app = express();
 app.use(expressLogger);

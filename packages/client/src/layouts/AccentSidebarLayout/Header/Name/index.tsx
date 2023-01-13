@@ -5,34 +5,43 @@ import _ from "lodash";
 
 import globalSnackbar from "src/utils/snackbarUtils";
 import { serverPort } from "@halmediaplayer/shared";
+import Emitter from "src/utils/EventEmitter";
 
 type deviceNameResponse = {
-    deviceName: string
-}
+  deviceName: string;
+};
 
 const Name: React.FC = () => {
-    const [deviceName, setDeviceName] = useState<string>("None");
+  const [deviceName, setDeviceName] = useState<string>("None");
 
-    const getDeviceName = () => {
-        axios.get<deviceNameResponse>(`http://${window.location.hostname}:${serverPort}/api/getDeviceName`)
-            .then((res) => {
-                setDeviceName(res.data.deviceName);
-            })
-            .catch((err) => {
-                if (axios.isAxiosError(err)) {
-                    const toDisplay = err.response.data;
-                    if (_.isString(toDisplay)) {
-                        globalSnackbar.error(toDisplay);
-                    }
-                }
-            });
-    }
+  const getDeviceName = () => {
+    axios
+      .get<deviceNameResponse>(
+        `http://${window.location.hostname}:${serverPort}/api/getDeviceName`
+      )
+      .then((res) => {
+        setDeviceName(res.data.deviceName);
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          }
+        }
+      });
+  };
 
-    useEffect(() => {
-        getDeviceName();
-    }, [])
+  useEffect(() => {
+    getDeviceName();
+    Emitter.on("deviceNameChanged", getDeviceName);
 
-    return (<Typography variant="h4">{deviceName}</Typography>)
-}
+    return () => {
+      Emitter.off("deviceNameChanged", getDeviceName);
+    };
+  }, []);
 
-export default Name
+  return <Typography variant="h4">{deviceName}</Typography>;
+};
+
+export default Name;

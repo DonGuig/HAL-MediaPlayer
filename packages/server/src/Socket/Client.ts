@@ -2,7 +2,7 @@ import http from "http";
 import util from "util";
 import { Server, Socket } from "socket.io";
 import logger from "../HALLogger.js";
-import vlcManager from "../VLC.js";
+import {vlcManager} from "../app.js";
 
 const registerClientHandlers = (socket: Socket) => {
   // let tickTimeout: NodeJS.Timeout;

@@ -20,6 +20,9 @@ const Playback = Loader(
 const Network = Loader(
   lazy(() => import("src/content/Network"))
 );
+const Setup = Loader(
+  lazy(() => import("src/content/Setup"))
+);
 const About = Loader(
   lazy(() => import("src/content/About"))
 );
@@ -46,6 +49,10 @@ const routes: RouteObject[] = [
       {
         path: "",
         element: <Navigate to="/playback" replace />,
+      },
+      {
+        path: "setup",
+        element: <Setup />,
       },
       {
         path: "network",

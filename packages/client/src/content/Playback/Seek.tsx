@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as React from 'react';
-import _ from "lodash";
 import { Grid, Paper, Slider, Stack, Typography } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { serverPort } from '@halmediaplayer/shared';
@@ -18,7 +17,7 @@ const Seek: React.FC<SeekProps> = ({stopped}) => {
 
     const handleFaderChange = (event: Event, val: number) => {
         setPauseTimeInterval(true);
-        if (val != time) {
+        if (val !== time) {
             setTime(val);
             sendMessage("/setTime", val);
         }
@@ -66,6 +65,7 @@ const Seek: React.FC<SeekProps> = ({stopped}) => {
                         size="small"
                         valueLabelDisplay="off"
                         sx={{ marginX: "20px" }}
+                        disabled={stopped}
                     />
                     <Typography noWrap sx={{minWidth:"100px"}}>{Math.floor(time / 60)} min {time % 60} sec</Typography>
                 </Stack>

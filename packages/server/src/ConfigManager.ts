@@ -10,15 +10,17 @@ import DeviceConfigSchema from "./schemas/DeviceConfigSchema.js";
 // Will contain trailing slash
 const _dirname = new URL(".", import.meta.url).pathname;
 
-
+export type audioDeviceType = "HDMI"|"Jack"|"USB"
 interface DeviceConfig {
     deviceName: string;
     volume:number;
+    audioDevice:audioDeviceType
 }
 
 const defaultDeviceConfig: DeviceConfig = {
     deviceName: "Default",
-    volume:50
+    volume:50,
+    audioDevice:"Jack"
 }
 
 const ajv = new Ajv();
@@ -136,6 +138,11 @@ class ConfigManager {
 
   setVolume(vol: number){
     this.proxy.volume = vol;
+    this.updateFile();
+  }
+
+  setAudioDevice(dev: audioDeviceType){
+    this.proxy.audioDevice=dev;
     this.updateFile();
   }
 
