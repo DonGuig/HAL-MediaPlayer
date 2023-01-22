@@ -3,15 +3,14 @@ import {
     Button,
     Container, Typography,
 } from "@mui/material";
-import axios from 'axios';
-import { serverPort } from '@halmediaplayer/shared';
+import axiosServerAPI from 'src/utils/axios';
 
 const handleClickPlay = () => {
-    axios.post(`http://${window.location.hostname}:${serverPort}/api/play`)
+    axiosServerAPI.post(`/play`)
 }
 
 const handleClickPause = () => {
-    axios.post(`http://${window.location.hostname}:${serverPort}/api/pause`)
+    axiosServerAPI.post(`/pause`)
 }
 
 const Network: React.FC = () => {

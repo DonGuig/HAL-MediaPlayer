@@ -1,6 +1,6 @@
-import { serverPort } from "@halmediaplayer/shared";
 import { FC, createContext, useState } from "react";
 import io, { Socket } from "socket.io-client";
+import { SERVER_URL } from "src/ServerURL";
 
 type WebSocketContext = {
   socket: Socket;
@@ -22,7 +22,7 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   if (!socket) {
-    const s = io(`http://${window.location.hostname}:${serverPort}/client`);
+    const s = io(`http://${SERVER_URL}`);
 
     s.on("connect", () => {
       setSocket(s);

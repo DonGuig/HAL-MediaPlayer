@@ -22,8 +22,8 @@
     "tss-react": "^4.5.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "rm .env && cp ../../.env .env && react-scripts start",
+    "build": "rm .env && cp ../../.env .env && react-scripts build && rm -r ../server/halmp-server/static/ && cp -r ./build ../server/halmp-server/static/",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

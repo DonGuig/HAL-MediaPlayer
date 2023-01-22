@@ -3,17 +3,17 @@ import axios from 'axios';
 import * as React from 'react';
 import _ from "lodash";
 
-import { serverPort } from '@halmediaplayer/shared';
 import globalSnackbar from 'src/utils/snackbarUtils';
 import Seek from './Seek';
 import { useState } from 'react';
+import axiosServerAPI from 'src/utils/axios';
 
 
 const Transport: React.FC = () => {
     const [stopped, setStopped] = useState<boolean>(false);
 
     const handleClickPlay = () => {
-        axios.post(`http://${window.location.hostname}:${serverPort}/api/play`)
+        axiosServerAPI.post(`/play`)
             .then(() => setStopped(false))
             .catch((err) => {
                 if (axios.isAxiosError(err)) {
@@ -26,7 +26,7 @@ const Transport: React.FC = () => {
     }
 
     const handleClickPause = () => {
-        axios.post(`http://${window.location.hostname}:${serverPort}/api/pause`).catch((err) => {
+        axiosServerAPI.post(`/pause`).catch((err) => {
             if (axios.isAxiosError(err)) {
                 const toDisplay = err.response.data;
                 if (_.isString(toDisplay)) {
@@ -37,7 +37,7 @@ const Transport: React.FC = () => {
     }
 
     const handleClickRestart = () => {
-        axios.post(`http://${window.location.hostname}:${serverPort}/api/restart`)
+        axiosServerAPI.post(`/restart`)
             .then(() => setStopped(false))
             .catch((err) => {
                 if (axios.isAxiosError(err)) {
@@ -50,7 +50,7 @@ const Transport: React.FC = () => {
     }
 
     const handleClickStop = () => {
-        axios.post(`http://${window.location.hostname}:${serverPort}/api/stop`)
+        axiosServerAPI.post(`/stop`)
             .then(() => setStopped(true))
             .catch((err) => {
                 if (axios.isAxiosError(err)) {

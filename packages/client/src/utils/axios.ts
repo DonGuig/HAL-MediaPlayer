@@ -1,6 +1,6 @@
-import { serverPort } from '@halmediaplayer/shared';
 import axios from 'axios';
+import { SERVER_URL } from 'src/ServerURL';
 
-const axiosInt = axios.create({baseURL: `http://${window.location.hostname}:${serverPort}/api/`});
+const axiosServerAPI = axios.create({baseURL: `http://${SERVER_URL}/api`});
 
-export default axiosInt;
+export default axiosServerAPI;

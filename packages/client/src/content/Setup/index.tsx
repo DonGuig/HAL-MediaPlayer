@@ -3,7 +3,6 @@ import {
     Button,
     Container, Typography,
 } from "@mui/material";
-import axios from 'axios';
 
 
 import DeviceName from './DeviceName';

@@ -1,1 +1,1 @@
-export const serverPort = 3002;
+export const serverPort = 5020;

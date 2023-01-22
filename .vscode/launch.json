@@ -21,7 +21,6 @@
         }
     ],
     "configurations": [
-
         {
             "name": "Run client (dev)",
             "console": "integratedTerminal",
@@ -38,20 +37,16 @@
             "type": "node"
         },
         {
-            "name": "Run server (dev)",
-            "console": "integratedTerminal",
+            "name": "server (python dev)",
+            "type": "python",
             "request": "launch",
-            "restart": true,
-            "runtimeArgs": [
-                "run-script",
-                "watch"
+            "module": "halmp-server",
+            "env": {
+            },
+            "args": [
             ],
-            "runtimeExecutable": "npm",
-            "cwd": "${workspaceFolder}/packages/server",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/packages/server"
         },
         {
             "name": "Chrome (dev client)",

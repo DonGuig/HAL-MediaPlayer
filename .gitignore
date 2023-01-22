@@ -42,6 +42,20 @@ __pycache__
 # project files
 packages/server/resources/video
 packages/server/resources/tmp
+packages/server/halmp-server/static
 
 # Quokka playground
 Quokka
+
+*.pyc
+__pycache__/
+
+instance/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+dist/
+build/
+*.egg-info/

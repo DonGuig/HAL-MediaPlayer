@@ -3,8 +3,8 @@ import * as React from 'react';
 import _ from "lodash";
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import globalSnackbar from 'src/utils/snackbarUtils';
-import { serverPort } from '@halmediaplayer/shared';
 import { Box, Button, Grid, Typography } from '@mui/material';
+import axiosServerAPI from 'src/utils/axios';
 
 type fileNameResponse = {
     fileName: string;
@@ -17,7 +17,7 @@ const FileManagement: React.FC = () => {
 
 
     const getFileName = () => {
-        axios.get<fileNameResponse>(`http://${window.location.hostname}:${serverPort}/api/getFileName`)
+        axiosServerAPI.get<fileNameResponse>(`/getFileName`)
             .then((res) => {
                 setFileName(res.data.fileName);
             })
@@ -36,9 +36,9 @@ const FileManagement: React.FC = () => {
         if (file !== null) {
             const formData = new FormData();
             formData.append("file", file[0], file[0].name);
-            axios
+            axiosServerAPI
                 .post(
-                    `http://${window.location.hostname}:${serverPort}/api/uploadVideoFile`,
+                    `/uploadVideoFile`,
                     formData
                 )
                 .then(

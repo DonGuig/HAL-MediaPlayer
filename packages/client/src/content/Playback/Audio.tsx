@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 import globalSnackbar from 'src/utils/snackbarUtils';
 import { Grid, InputAdornment, TextField, Typography } from '@mui/material';
-import { serverPort } from '@halmediaplayer/shared';
+import axiosServerAPI from 'src/utils/axios';
 
 type volumeResponse = {
     volume: number
@@ -15,7 +15,7 @@ const AudioControls: React.FC = () => {
     const [volume, setVolume] = useState<number>(0);
 
     const getVolume = () => {
-        axios.get<volumeResponse>(`http://${window.location.hostname}:${serverPort}/api/getVolume`)
+        axiosServerAPI.get<volumeResponse>(`/getVolume`)
             .then((res) => {
                 setVolume(res.data.volume);
             })
@@ -30,9 +30,9 @@ const AudioControls: React.FC = () => {
     }
 
     const sendVolumeChange = (vol: number) => {
-        axios
+        axiosServerAPI
             .post(
-                `http://${window.location.hostname}:${serverPort}/api/setVolume`,
+                `/setVolume`,
                 { volume: vol }
             )
             .then(

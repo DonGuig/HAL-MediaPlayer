@@ -4,8 +4,8 @@ import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
-import { serverPort } from "@halmediaplayer/shared";
 import Emitter from "src/utils/EventEmitter";
+import axiosServerAPI from "src/utils/axios";
 
 type deviceNameResponse = {
   deviceName: string;
@@ -15,9 +15,9 @@ const DeviceName: React.FC = () => {
   const [displayedDeviceName, setDisplayedDeviceName] = useState<string>("...");
 
   const getDeviceName = useCallback(() => {
-    axios
+    axiosServerAPI
       .get<deviceNameResponse>(
-        `http://${window.location.hostname}:${serverPort}/api/getDeviceName`
+        `/getDeviceName`
       )
       .then((res) => {
         setDisplayedDeviceName(res.data.deviceName);
@@ -28,9 +28,9 @@ const DeviceName: React.FC = () => {
   }, [setDisplayedDeviceName]);
 
   const setDeviceName = (name: string) => {
-    axios
+    axiosServerAPI
       .post(
-        `http://${window.location.hostname}:${serverPort}/api/setDeviceName`,
+        `/setDeviceName`,
         { deviceName: name }
       )
       .then(() => {

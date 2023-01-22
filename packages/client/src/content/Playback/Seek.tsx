@@ -1,9 +1,8 @@
-import axios from 'axios';
 import * as React from 'react';
 import { Grid, Paper, Slider, Stack, Typography } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
-import { serverPort } from '@halmediaplayer/shared';
 import { WebSocketContext } from 'src/contexts/WebSocketContext';
+import axiosServerAPI from 'src/utils/axios';
 
 interface SeekProps {
     stopped: boolean;
@@ -28,7 +27,7 @@ const Seek: React.FC<SeekProps> = ({stopped}) => {
     };
 
     const requestTime = () => {
-        axios.get(`http://${window.location.hostname}:${serverPort}/api/getTime`)
+        axiosServerAPI.get(`/getTime`)
             .then((res) => {
                 setTime(res.data.time);
                 setLength(res.data.length);
@@ -60,14 +59,14 @@ const Seek: React.FC<SeekProps> = ({stopped}) => {
                         onChangeCommitted={handleFaderCommitted}
                         orientation="horizontal"
                         min={0}
-                        max={length}
+                        max={Math.floor(length)}
                         step={1}
                         size="small"
                         valueLabelDisplay="off"
                         sx={{ marginX: "20px" }}
                         disabled={stopped}
                     />
-                    <Typography noWrap sx={{minWidth:"100px"}}>{Math.floor(time / 60)} min {time % 60} sec</Typography>
+                    <Typography noWrap sx={{minWidth:"100px"}}>{Math.floor(time / 60)} min {Math.floor(time % 60)} sec</Typography>
                 </Stack>
             </Paper>
         </Grid>

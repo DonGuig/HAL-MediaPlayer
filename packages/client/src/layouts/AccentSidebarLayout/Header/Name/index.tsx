@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import _ from "lodash";
 
 import globalSnackbar from "src/utils/snackbarUtils";
-import { serverPort } from "@halmediaplayer/shared";
 import Emitter from "src/utils/EventEmitter";
+import axiosServerAPI from "src/utils/axios";
 
 type deviceNameResponse = {
   deviceName: string;
@@ -15,9 +15,9 @@ const Name: React.FC = () => {
   const [deviceName, setDeviceName] = useState<string>("None");
 
   const getDeviceName = () => {
-    axios
+    axiosServerAPI
       .get<deviceNameResponse>(
-        `http://${window.location.hostname}:${serverPort}/api/getDeviceName`
+        `/getDeviceName`
       )
       .then((res) => {
         setDeviceName(res.data.deviceName);
