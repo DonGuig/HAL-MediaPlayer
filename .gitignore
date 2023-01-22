@@ -43,6 +43,7 @@ __pycache__
 packages/server/resources/video
 packages/server/resources/tmp
 packages/server/halmp-server/static
+packages/server/halmp-server/media
 
 # Quokka playground
 Quokka
