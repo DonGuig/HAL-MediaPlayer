@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from pathlib import Path
+import vlc
 
 import __main__
 
@@ -18,10 +19,12 @@ class VLC_Handler():
 
         self.vlc_instance = vlc.Instance(args)
 
-        self.media_player = self.vlc_instance.media_player_new()
+        self.media_list_player = self.vlc_instance.media_list_player_new()
+        self.media_player = self.media_list_player.get_media_player()
         self.refresh_video_file()
         self.media_player.audio_set_volume(__main__.cfg_handler.cfg.volume)
         self.media_player.audio_set_delay(__main__.cfg_handler.cfg.audio_delay)
+        self.media_list_player.set_playback_mode(vlc.PlaybackMode.loop)
         self.play()
 
     def get_video_file(self):
@@ -33,22 +36,22 @@ class VLC_Handler():
     def refresh_video_file(self):
         video_file = self.get_video_file()
         if video_file:
-            self.media = self.vlc_instance.media_new(video_file)
-            self.media_player.set_media(self.media)
+            self.media_list = self.vlc_instance.media_list_new([video_file])
+            self.media_list_player.set_media_list(self.media_list)
 
     # play media
     def play(self):
-        self.media_player.play()
+        self.media_list_player.play()
 
     def pause(self):
-        self.media_player.pause()
+        self.media_list_player.pause()
 
     def restart(self):
         self.media_player.set_time(0)
-        self.media_player.play()
+        self.media_list_player.play()
 
     def stop(self):
-        self.media_player.stop()
+        self.media_list_player.stop()
 
 
 if __name__ == '__main__':
