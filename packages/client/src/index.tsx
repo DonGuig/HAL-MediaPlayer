@@ -1,5 +1,4 @@
 import App from "./App";
-import ReactDOM from "react-dom";
 import { createRoot } from 'react-dom/client';
 import * as serviceWorker from "./serviceWorker";
 // import { HelmetProvider } from "react-helmet-async";

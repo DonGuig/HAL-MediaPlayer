@@ -11,8 +11,14 @@ type volumeResponse = {
     volume: number
 }
 
+type delayResponse = {
+    delay: number
+}
+
 const AudioControls: React.FC = () => {
     const [volume, setVolume] = useState<number>(0);
+    const [audioDelay, setAudioDelay] = useState<number>(0);
+
 
     const getVolume = () => {
         axiosServerAPI.get<volumeResponse>(`/getVolume`)
@@ -50,6 +56,42 @@ const AudioControls: React.FC = () => {
             );
     }
 
+    const getAudioDelay = () => {
+        axiosServerAPI.get<delayResponse>(`/getAudioDelay`)
+            .then((res) => {
+                setAudioDelay(res.data.delay / 1000);
+            })
+            .catch((err) => {
+                if (axios.isAxiosError(err)) {
+                    const toDisplay = err.response.data;
+                    if (_.isString(toDisplay)) {
+                        globalSnackbar.error(toDisplay);
+                    }
+                }
+            });
+    }
+
+    const sendAudioDelayChange = (delay: number) => {
+        axiosServerAPI
+            .post(
+                `/setAudioDelay`,
+                { delay: delay * 1000 }
+            )
+            .then(
+                (res) => {
+                    getAudioDelay();
+                    return;
+                },
+                (err) => {
+                    if (axios.isAxiosError(err)) {
+                        globalSnackbar.error(
+                            err.response.data
+                        );
+                    }
+                }
+            );
+    }
+
     const handleVolumeChange = (event: React.ChangeEvent<any>) => {
         if (Math.abs(event.target.value - volume) === 1) {
             setVolume(event.target.value);
@@ -66,6 +108,25 @@ const AudioControls: React.FC = () => {
     const handleVolumeKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
         if (event.key === "Enter") {
             sendVolumeChange(volume);
+        }
+    }
+
+    const handleDelayChange = (event: React.ChangeEvent<any>) => {
+        if (Math.abs(event.target.value - audioDelay) === 1) {
+            setAudioDelay(event.target.value);
+            sendAudioDelayChange(event.target.value);
+        } else {
+            setAudioDelay(event.target.value);
+        }
+    }
+
+    const handleDelayBlur = () => {
+        sendAudioDelayChange(audioDelay);
+    }
+
+    const handleDelayKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+        if (event.key === "Enter") {
+            sendAudioDelayChange(audioDelay);
         }
     }
 
@@ -101,6 +162,31 @@ const AudioControls: React.FC = () => {
                         onBlur={handleVolumeBlur}
                         onChange={handleVolumeChange}
                         onKeyDown={handleVolumeKeyDown}
+
+                    />
+                </Grid>
+                <Grid item>
+                    <TextField
+                        id="outlined-number"
+                        label="Delay"
+                        type="number"
+                        size="small"
+                        sx={{ width: "130px" }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        InputProps={{
+                            inputProps: {
+                                step: "1",
+                            },
+                            endAdornment: (
+                                <InputAdornment position="start">msec</InputAdornment>
+                            ),
+                        }}
+                        value={audioDelay}
+                        onBlur={handleDelayBlur}
+                        onChange={handleDelayChange}
+                        onKeyDown={handleDelayKeyDown}
 
                     />
                 </Grid>

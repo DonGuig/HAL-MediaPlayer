@@ -1,14 +1,15 @@
 import os
 from flask import Flask, send_from_directory, request
 from flask_socketio import SocketIO
-from flask_uploads import configure_uploads
+from flask_uploads import configure_uploads, UploadSet
 from flask_cors import CORS
 from pathlib import Path
 from dotenv import load_dotenv
 
 # from .vlc_handler import vlc_handler
 from .vlc_handler import VLC_Handler
-from .http_api import http_api, media
+from .config_handler import ConfigHandler
+from .http_api import http_api
 
 static_index_file_path = Path.resolve(Path(__file__).parent / 'static' / 'index.html')
 dotenv_path = Path.resolve(Path(__file__).parents[3], '.env')
@@ -22,10 +23,11 @@ app.register_blueprint(http_api)
 
 
 # Configure uploads
-app.config["UPLOADED_MEDIA_DEST"] = "media"
+app.config["UPLOADED_MEDIA_DEST"] = "halmp-server/media"
 app.config["UPLOADED_MEDIA_ALLOW"] = ['mp4','mov']
 app.config["UPLOADED_MEDIA_DENY"] = ["exe", "bat", "sh", "run", "dll", "ps"]
 
+media = UploadSet('media')
 
 configure_uploads(app, (media,))
 
@@ -58,5 +60,6 @@ def set_time(input_time):
 
 
 if __name__ == '__main__':
+    cfg_handler = ConfigHandler()
     vlc_handler = VLC_Handler()
-    socketio.run(app, debug=False, port=os.environ.get("REACT_APP_SERVER_PORT"))
+    socketio.run(app, debug=False, host='0.0.0.0', port=os.environ.get("REACT_APP_SERVER_PORT"))

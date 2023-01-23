@@ -35,7 +35,7 @@ const FileManagement: React.FC = () => {
         const file = e.target.files;
         if (file !== null) {
             const formData = new FormData();
-            formData.append("file", file[0], file[0].name);
+            formData.append("media", file[0], file[0].name);
             axiosServerAPI
                 .post(
                     `/uploadVideoFile`,

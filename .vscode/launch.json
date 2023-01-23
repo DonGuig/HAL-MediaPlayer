@@ -5,18 +5,8 @@
     "version": "0.2.0",
     "compounds": [
         {
-            "name": "Build server + client (prod)",
-            "configurations": ["Build client (prod)", "Build server (prod)"],
-            "stopAll": true
-        },
-        {
-            "name": "Run server + client (prod)",
-            "configurations": ["Run server (prod)", "Chrome (prod)"],
-            "stopAll": true
-        },
-        {
             "name": "Run server + client (dev)",
-            "configurations": ["Run client (dev)", "Run server (dev)", "Chrome (dev client)"],
+            "configurations": ["Run client (dev)", "run server (python)", "Chrome (dev client)"],
             "stopAll": true
         }
     ],
@@ -37,7 +27,7 @@
             "type": "node"
         },
         {
-            "name": "server (python dev)",
+            "name": "run server (python)",
             "type": "python",
             "request": "launch",
             "module": "halmp-server",
@@ -70,48 +60,10 @@
             "type": "node"
         },
         {
-            "name": "Build server (prod)",
-            "request": "launch",
-            "runtimeArgs": [
-                "run-script",
-                "build"
-            ],
-            "runtimeExecutable": "npm",
-            "cwd": "${workspaceFolder}/packages/server",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
-        },
-        {
-            "name": "Build shared (prod)",
-            "request": "launch",
-            "runtimeArgs": [
-                "run-script",
-                "build"
-            ],
-            "runtimeExecutable": "npm",
-            "cwd": "${workspaceFolder}/packages/shared",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
-        },
-        {
-            "name": "Run server (prod)",
-            "program": "${workspaceFolder}/packages/server/dist/app.js",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/server",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
-        },
-        {
             "name": "Chrome (prod)",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost:3002",
+            "url": "http://localhost:5000",
             "webRoot": "${workspaceFolder}"
         },
     ]
