@@ -5,24 +5,12 @@ import {
 } from "@mui/material";
 import axiosServerAPI from 'src/utils/axios';
 
-const handleClickPlay = () => {
-    axiosServerAPI.post(`/play`)
-}
 
-const handleClickPause = () => {
-    axiosServerAPI.post(`/pause`)
-}
 
 const About: React.FC = () => {
     return (
         <Container>
-            <Typography>Test</Typography>
-            <Button onClick={handleClickPlay}>
-                Play
-            </Button>
-            <Button onClick={handleClickPause}>
-                Pause
-            </Button>
+            <Typography align='center'>Coming soon...</Typography>
         </Container>
     );
 };

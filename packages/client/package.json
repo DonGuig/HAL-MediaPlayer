@@ -1,5 +1,5 @@
 {
-  "name": "@halmediaplayer/client",
+  "name": "halmediaplayer-client",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -9,6 +9,8 @@
     "@mui/material": "^5.11.1",
     "@types/nprogress": "^0.2.0",
     "axios": "^1.2.1",
+    "formik": "^2.2.9",
+    "ip-regex": "^5.0.0",
     "lodash": "^4.17.21",
     "notistack": "^2.0.8",
     "nprogress": "^0.2.0",
@@ -19,7 +21,8 @@
     "react-router-dom": "^6.6.1",
     "react-scripts": "^5.0.1",
     "socket.io-client": "^4.5.4",
-    "tss-react": "^4.5.0"
+    "tss-react": "^4.5.0",
+    "yup": "^0.32.11"
   },
   "scripts": {
     "start": "rm .env && cp ../../.env .env && react-scripts start",

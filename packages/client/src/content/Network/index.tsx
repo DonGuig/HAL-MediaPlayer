@@ -1,28 +1,23 @@
 import * as React from 'react';
 import {
     Button,
-    Container, Typography,
+    Container, Divider, Typography,
 } from "@mui/material";
 import axiosServerAPI from 'src/utils/axios';
+import WiredEthernet from './WiredEthernet';
+import Hostname from './Hostname';
+import Wifi from './Wifi';
 
-const handleClickPlay = () => {
-    axiosServerAPI.post(`/play`)
-}
 
-const handleClickPause = () => {
-    axiosServerAPI.post(`/pause`)
-}
 
 const Network: React.FC = () => {
     return (
         <Container>
-            <Typography>Test</Typography>
-            <Button onClick={handleClickPlay}>
-                Play
-            </Button>
-            <Button onClick={handleClickPause}>
-                Pause
-            </Button>
+            <WiredEthernet/>
+            <Divider/>
+            <Wifi/>
+            <Divider/>
+            <Hostname/>
         </Container>
     );
 };

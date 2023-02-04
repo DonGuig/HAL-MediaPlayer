@@ -51,3 +51,14 @@ hw:2,0 : USB card
 option pour cvlc :
 --intf http --http-password vlcremote
 --input-repeat 999999 ???
+
+Run on raspberry pi on port 80 :
+
+sudo apt install authbind
+sudo touch /etc/authbind/byport/80
+sudo chmod 777 /etc/authbind/byport/80
+
+then start server with :
+authbind --deep python3 app.py
+
+https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d

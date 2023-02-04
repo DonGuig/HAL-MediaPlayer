@@ -12,9 +12,9 @@ from .config_handler import ConfigHandler
 from .http_api import http_api
 
 static_index_file_path = Path.resolve(Path(__file__).parent / 'static' / 'index.html')
-dotenv_path = Path.resolve(Path(__file__).parents[3], '.env')
+dotenv_path = Path.resolve(Path(__file__).parents[3] / '.env')
 
-load_dotenv(dotenv_path)
+load_dotenv(dotenv_path=dotenv_path, override=True)
 
 app = Flask(__name__, static_url_path='')
 CORS(app)
@@ -33,12 +33,11 @@ configure_uploads(app, (media,))
 
 socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins='*')
 
+
 # Serve React App
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    print("asked for path : %s" % path)
-    print("static folder : %s" % app.static_folder)
     if path != "" and os.path.exists(app.static_folder + '/' + path):
         return send_from_directory(app.static_folder, path)
     else:
@@ -52,7 +51,6 @@ def not_found(e):
 def connected():
     """event listener when client connects to the server"""
     print("client has connected %s" % request.sid)
-    # emit("connect",{"data":f"id: {request.sid} is connected"})
 
 @socketio.on("/setTime")
 def set_time(input_time):
@@ -60,6 +58,7 @@ def set_time(input_time):
 
 
 if __name__ == '__main__':
-    cfg_handler = ConfigHandler()
+    cfg_handler: ConfigHandler = ConfigHandler()
     vlc_handler = VLC_Handler()
+    print("Starting server on port %s" % os.environ.get("REACT_APP_SERVER_PORT"))
     socketio.run(app, debug=False, host='0.0.0.0', port=os.environ.get("REACT_APP_SERVER_PORT"))

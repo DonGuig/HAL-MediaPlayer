@@ -44,7 +44,7 @@ packages/server/resources/video
 packages/server/resources/tmp
 packages/server/halmp-server/static
 packages/server/halmp-server/media
-packages/server/halmp-server/resources
+packages/server/halmp-server/resources/config.json
 
 # Quokka playground
 Quokka

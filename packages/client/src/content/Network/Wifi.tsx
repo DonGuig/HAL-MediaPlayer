@@ -12,47 +12,32 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
 import ipRegex from "ip-regex";
 
-type DHCPorFixed = "DHCP" | "Fixed IP";
-
-type WiredNetworkConfig = {
-  DHCPorFixed: DHCPorFixed;
-  ipAddress: String;
-  netmask: String;
+type WifiConfig = {
+  SSID: string;
+  pass: String;
+  active: "true" | "false";
 };
 
-const WiredEthernet: React.FC = () => {
-  const formik = useFormik<WiredNetworkConfig>({
+const Wifi: React.FC = () => {
+  const [ isActiveWifi, setIsActiveWifi] = useState<"true" | "false">("true");
+
+  const formik = useFormik<WifiConfig>({
     initialValues: {
-      DHCPorFixed: "DHCP",
-      ipAddress: "0.0.0.0",
-      netmask: "255.255.255.0",
+      SSID: "",
+      pass: "",
+      active:"true"
     },
     validationSchema: Yup.object().shape({
-      ipAddress: Yup.string().when("DHCPorFixed", {
-        is: "Fixed IP",
-        then: Yup.string()
-          .required("IP Address is required")
-          .matches(ipRegex.v4({ exact: true, includeBoundaries: true }), {
-            message: "Incorrect address format",
-            excludeEmptyString: true,
-          }),
-      }),
-      netmask: Yup.string().when("DHCPorFixed", {
-        is: "Fixed IP",
-        then: Yup.string()
-          .required("Netmask is required")
-          .matches(ipRegex.v4({ exact: true, includeBoundaries: true }), {
-            message: "Incorrect address format",
-            excludeEmptyString: true,
-          }),
-      }),
+      SSID: Yup.string(),
+      pass: Yup.string(),
+      active: Yup.string()
     }),
     onSubmit: async (
       values,
@@ -60,11 +45,11 @@ const WiredEthernet: React.FC = () => {
     ) => {
       try {
         let toSend = {
-          DHCPorFixed: formik.values.DHCPorFixed,
-          ipAddress: formik.values.ipAddress,
-          netmask: formik.values.netmask,
+          SSID: formik.values.SSID,
+          pass: formik.values.pass,
+          active: formik.values.active
         };
-        await setWiredNetworkSetting(toSend);
+        await setWifiConfig(toSend);
         setStatus({ success: true });
         setSubmitting(false);
       } catch (err) {
@@ -80,13 +65,13 @@ const WiredEthernet: React.FC = () => {
     },
   });
 
-  const getWiredNetworkConfig = useCallback(() => {
+  const getWifiConfig = useCallback(() => {
     axiosServerAPI
-      .get<WiredNetworkConfig>("/getWiredNetwokConfig")
+      .get<WifiConfig>("/getWifiConfig")
       .then((res) => {
-        formik.setFieldValue("DHCPorFixed", res.data.DHCPorFixed);
-        formik.setFieldValue("ipAddress", res.data.ipAddress);
-        formik.setFieldValue("netmask", res.data.netmask);
+        formik.setFieldValue("SSID", res.data.SSID);
+        formik.setFieldValue("pass", res.data.pass);
+        formik.setFieldValue("active", res.data.active);
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -98,11 +83,11 @@ const WiredEthernet: React.FC = () => {
       });
   }, [formik]);
 
-  async function setWiredNetworkSetting(conf: WiredNetworkConfig) {
+  async function setWifiConfig(conf: WifiConfig) {
     axiosServerAPI
-      .post<WiredNetworkConfig>("/setWiredNetwokConfig", conf)
+      .post<WifiConfig>("/setWifiConfig", conf)
       .then((res) => {
-        getWiredNetworkConfig();
+        getWifiConfig();
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -114,23 +99,23 @@ const WiredEthernet: React.FC = () => {
       });
   }
 
-  const handleDHCPorFixedChange = (
+  const handleActiveWifiChange = (
     event: React.MouseEvent<HTMLElement>,
-    type: DHCPorFixed
+    act: string
   ) => {
-    if (type !== null) {
-      formik.setFieldValue("DHCPorFixed", type);
+    if (act !== null) {
+      formik.setFieldValue("active", act);
     }
   };
 
   useEffect(() => {
-    getWiredNetworkConfig();
+    getWifiConfig();
   }, []);
 
   return (
     <Stack marginY={4} direction="column" width="100%">
       <Typography variant="h4" align="center">
-        Wired Ethernet
+        Wifi
       </Typography>
       <Grid
         container
@@ -147,44 +132,41 @@ const WiredEthernet: React.FC = () => {
         >
           <Grid item margin={1}>
             <ToggleButtonGroup
-              value={formik.values.DHCPorFixed}
+              value={formik.values.active}
               exclusive
-              onChange={handleDHCPorFixedChange}
-              disabled={true}
+              onChange={handleActiveWifiChange}
             >
-              <ToggleButton value="DHCP">DHCP</ToggleButton>
-              <ToggleButton value="Fixed IP">Fixed IP</ToggleButton>
+              <ToggleButton value="true">Active</ToggleButton>
+              <ToggleButton value="false">Off</ToggleButton>
             </ToggleButtonGroup>{" "}
           </Grid>
           <Grid item margin={1}>
             <TextField
               error={Boolean(
-                formik.touched.ipAddress && formik.errors.ipAddress
+                formik.touched.SSID && formik.errors.SSID
               )}
               sx={{ width: "180px" }}
               // helperText={touched.ipAddress && errors.ipAddress}
-              label="IP address"
-              name="ipAddress"
+              label="SSID"
+              name="SSID"
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
-              value={formik.values.ipAddress}
-              // disabled={formik.values.DHCPorFixed === "DHCP"}
-              disabled={true}
+              value={formik.values.SSID}
+              disabled={formik.values.active === "false"}
               variant="outlined"
             />
           </Grid>
           <Grid item margin={1}>
             <TextField
-              error={Boolean(formik.touched.netmask && formik.errors.netmask)}
+              error={Boolean(formik.touched.pass && formik.errors.pass)}
               fullWidth
               // helperText={touched.ipAddress && errors.ipAddress}
-              label="Netmask"
-              name="netmask"
+              label="Password"
+              name="pass"
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
-              value={formik.values.netmask}
-              // disabled={formik.values.DHCPorFixed === "DHCP"}
-              disabled={true}
+              value={formik.values.pass}
+              disabled={formik.values.active === "false"}
               variant="outlined"
             />
           </Grid>
@@ -207,4 +189,4 @@ const WiredEthernet: React.FC = () => {
   );
 };
 
-export default WiredEthernet;
+export default Wifi;

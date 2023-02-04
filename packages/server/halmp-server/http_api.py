@@ -1,25 +1,39 @@
 from flask import request, Response, redirect, Blueprint
 from flask_uploads import UploadSet, configure_uploads
 import os
+import subprocess
+import shutil
+from pathlib import Path
 
 import __main__
 
 http_api = Blueprint("http_api", __name__)
 
+resourcesPath = Path(__file__).parent / "resources"
+
+
 @http_api.post('/api/uploadVideoFile')
 def upload_file():
-    if 'media' in request.files:
-        print("Handle here.")
-        __main__.vlc_handler.stop()
-        existing_video_file = __main__.vlc_handler.get_video_file()
-        if existing_video_file:
-            os.remove(existing_video_file)
-        filename = __main__.media.save(request.files['media'])
-        __main__.vlc_handler.refresh_video_file()
-        __main__.vlc_handler.play()
-        # flash("Photo saved.")
+    try:
+        if 'media' in request.files:
+            print("Handle here.")
+            __main__.vlc_handler.stop()
+            __main__.vlc_handler.remove_all_video_files()
+            filename = __main__.media.save(request.files['media'])
+            __main__.vlc_handler.refresh_video_file()
+            __main__.vlc_handler.play()
+            # flash("Photo saved.")
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
 
-    return Response(status=200)
+
+@http_api.get('/api/getFileName')
+def get_filename():
+    try:
+        return {"fileName": __main__.vlc_handler.get_current_media_filename()}
+    except Exception as e:
+        return Response(str(e), status=500)
 
 
 @http_api.post('/api/play')
@@ -68,6 +82,7 @@ def get_time():
     except Exception as e:
         return Response(str(e), status=500)
 
+
 @http_api.get('/api/getVolume')
 def get_volume():
     try:
@@ -86,12 +101,14 @@ def set_volume():
     except Exception as e:
         return Response(str(e), status=500)
 
+
 @http_api.get('/api/getAudioDelay')
 def get_audio_delay():
     try:
         return {"delay": __main__.vlc_handler.media_player.audio_get_delay()}
     except Exception as e:
         return Response(str(e), status=500)
+
 
 @http_api.post('/api/setAudioDelay')
 def set_audio_delay():
@@ -103,17 +120,163 @@ def set_audio_delay():
     except Exception as e:
         return Response(str(e), status=500)
 
+
 @http_api.get('/api/getDeviceName')
 def get_device_name():
     try:
-        return {"deviceName" : __main__.cfg_handler.cfg.device_name}
+        return {"deviceName": __main__.cfg_handler.cfg.device_name}
     except Exception as e:
-        return Response(str(e), status=500)       
+        return Response(str(e), status=500)
+
 
 @http_api.post('/api/setDeviceName')
 def set_device_name():
     try:
-        __main__.cfg_handler.change_config("device_name", request.json["deviceName"])
+        __main__.cfg_handler.change_config("device_name",
+                                           request.json["deviceName"])
         return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getWiredNetwokConfig')
+def get_wired_network_config():
+    try:
+        dhcp_process = subprocess.run('ip -4 addr show eth0 | grep "dynamic"',
+                                      shell=True,
+                                      text=True,
+                                      capture_output=True)
+        if dhcp_process.stdout.strip() == '':
+            dhcp_or_fixed = "Fixed IP"
+        else:
+            dhcp_or_fixed = "DHCP"
+        ip_process = subprocess.run(
+            'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        ip_address = ip_process.stdout.strip()
+        netmask_process = subprocess.run(
+            'ifconfig eth0 | grep "netmask\\b" | awk \'{print $4}\'',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        netmask = netmask_process.stdout.strip()
+        return {
+            "DHCPorFixed": dhcp_or_fixed,
+            "ipAddress": ip_address,
+            "netmask": netmask
+        }
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/setWiredNetwokConfig')
+def set_wired_network_config():
+    try:
+
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getAudioOutput')
+def get_audio_output():
+    try:
+        return {"audioOutput": __main__.vlc_handler.get_current_audio_output()}
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/setAudioOutput')
+def set_audio_output():
+    try:
+        __main__.vlc_handler.set_current_audio_output(
+            request.json["audioOutput"])
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getHostname')
+def get_hostname():
+    try:
+        out = subprocess.run('tr -d " \t\n\r" < /etc/hostname',
+                             shell=True,
+                             text=True,
+                             check=True,
+                             capture_output=True)
+        return {"hostname": out.stdout.strip()}
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/setHostname')
+def set_hostname():
+    try:
+        out = subprocess.run('sudo raspi-config nonint do_hostname ' +
+                             request.json["hostname"],
+                             shell=True,
+                             text=True,
+                             check=True,
+                             capture_output=True)
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/reboot')
+def reboot():
+    try:
+        subprocess.run('sudo reboot',
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/shutdown')
+def shutdown():
+    try:
+        subprocess.run('sudo shutdown now',
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/setVideoOutput')
+def set_video_output():
+    try:
+        if request.json["videoOutput"] == "HDMI":
+            p = resourcesPath / "boot_configs" / "hdmi_config.txt"
+        elif request.json["videoOutput"] == "Composite":
+            p = resourcesPath / "boot_configs" / "composite_config.txt"
+        else:
+            raise Exception("Incorrect request")
+
+        subprocess.run(f'sudo cp {p} /boot/config.txt',
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+
+@http_api.get('/api/getWifiConfig')
+def get_wifi_config():
+    try:
+        out = subprocess.run('iwgetid | awk \'{print $3}\'',
+                             shell=True,
+                             text=True,
+                             check=True,
+                             capture_output=True)
+        return {"hostname": out.stdout.strip()}
     except Exception as e:
         return Response(str(e), status=500)

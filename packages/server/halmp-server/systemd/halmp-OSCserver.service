@@ -1,0 +1,12 @@
+[Unit]
+Description=HAL Media Player OSC server service
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/HAL-MediaPlayer/packages/OSCserver
+Restart=on-failure
+User=pi
+ExecStart=python -m halmp-OSCserver
+
+[Install]
+WantedBy=multi-user.target

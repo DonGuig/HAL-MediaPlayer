@@ -10,6 +10,7 @@ default_config = {
     "device_name" : "default",
     "volume" : 100,
     "audio_delay": 0,
+    "audio_output":"jack"
 }
 
 class ConfigHandler():
@@ -27,12 +28,15 @@ class ConfigHandler():
             try:
                 with open(config_file_path) as file:
                     self.cfg = config.config_from_json(file.read())
-                print("successfully loaded config file")
+                print("successfully loaded config file :")
+                print(self.cfg)
                 return
             except Exception as e:
                 print(str(e))
 
         self.cfg = config.config_from_dict(default_config)
+        print("Using default config :")
+        print(self.cfg)
         self.write_config_to_file()
 
     def change_config(self, key : str, val: any):
@@ -41,6 +45,9 @@ class ConfigHandler():
             self.write_config_to_file()
         except Exception as e:
             print("error writing config to file : %s" % str(e))
+
+    def get_config(self, key):
+        return self.cfg[key]
 
     def write_config_to_file(self):
         with open(config_file_path, 'w') as f:

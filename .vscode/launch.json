@@ -11,6 +11,7 @@
         }
     ],
     "configurations": [
+
         {
             "name": "Run client (dev)",
             "console": "integratedTerminal",
@@ -37,6 +38,18 @@
             ],
             "justMyCode": true,
             "cwd": "${workspaceFolder}/packages/server"
+        },
+        {
+            "name": "run OSC server (python)",
+            "type": "python",
+            "request": "launch",
+            "module": "halmp-OSCserver",
+            "env": {
+            },
+            "args": [
+            ],
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/packages/OSCserver"
         },
         {
             "name": "Chrome (dev client)",
