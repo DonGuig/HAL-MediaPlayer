@@ -269,14 +269,69 @@ def set_video_output():
     except Exception as e:
         return Response(str(e), status=500)
 
+
 @http_api.get('/api/getWifiConfig')
 def get_wifi_config():
     try:
-        out = subprocess.run('iwgetid | awk \'{print $3}\'',
-                             shell=True,
-                             text=True,
-                             check=True,
-                             capture_output=True)
-        return {"hostname": out.stdout.strip()}
+        ssid_out = subprocess.run(
+            'iwgetid | awk \'{print $2}\' | cut -c 8- | rev | cut -c 2- | rev',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        ssid = ssid_out.stdout.strip()
+
+        wifi_enabled_out = subprocess.run('rfkill list',
+                                          shell=True,
+                                          text=True,
+                                          check=True,
+                                          capture_output=True)
+        windex = wifi_enabled_out.stdout.find("Wireless LAN")
+        blockindex = wifi_enabled_out.stdout.find("Soft blocked: ")
+        res = wifi_enabled_out.stdout[blockindex + 14:blockindex + 17]
+        if res.find("yes") != -1:
+            active = False
+        elif res.find("no") != -1:
+            active = True
+        else:
+            raise Exception("unable to check wifi state")
+
+        return {"SSID": ssid, "active": active, "pass": "****"}
+
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/setWifiConfig')
+def set_wifi_config():
+    try:
+        active = request.json["active"]
+        ssid = request.json["SSID"]
+        password = request.json["pass"]
+        print(active)
+
+        if active == "true":
+            subprocess.run(f'rfkill unblock wifi',
+                           shell=True,
+                           text=True,
+                           check=True,
+                           capture_output=True)
+        elif active == "false":
+            subprocess.run(f'rfkill block wifi',
+                           shell=True,
+                           text=True,
+                           check=True,
+                           capture_output=True)
+
+        if active == "true":
+            subprocess.run(
+                f'sudo raspi-config nonint do_wifi_ssid_passphrase {ssid} {password}',
+                shell=True,
+                text=True,
+                check=True,
+                capture_output=True)
+
+        return Response(status=200)
+
     except Exception as e:
         return Response(str(e), status=500)

@@ -26,18 +26,24 @@ type WifiConfig = {
 };
 
 const Wifi: React.FC = () => {
-  const [ isActiveWifi, setIsActiveWifi] = useState<"true" | "false">("true");
+  const [isActiveWifi, setIsActiveWifi] = useState<"true" | "false">("true");
 
   const formik = useFormik<WifiConfig>({
     initialValues: {
       SSID: "",
       pass: "",
-      active:"true"
+      active: "true",
     },
     validationSchema: Yup.object().shape({
-      SSID: Yup.string(),
-      pass: Yup.string(),
-      active: Yup.string()
+      SSID: Yup.string().when("active", {
+        is:"true",
+        then: Yup.string().required().max(32)
+      }),
+      pass: Yup.string().when("active", {
+        is:"true",
+        then: Yup.string().required().min(8).max(64)
+      }),
+      active: Yup.string(),
     }),
     onSubmit: async (
       values,
@@ -47,7 +53,7 @@ const Wifi: React.FC = () => {
         let toSend = {
           SSID: formik.values.SSID,
           pass: formik.values.pass,
-          active: formik.values.active
+          active: formik.values.active,
         };
         await setWifiConfig(toSend);
         setStatus({ success: true });
@@ -71,7 +77,7 @@ const Wifi: React.FC = () => {
       .then((res) => {
         formik.setFieldValue("SSID", res.data.SSID);
         formik.setFieldValue("pass", res.data.pass);
-        formik.setFieldValue("active", res.data.active);
+        formik.setFieldValue("active", res.data.active ? "true" : "false");
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -142,9 +148,7 @@ const Wifi: React.FC = () => {
           </Grid>
           <Grid item margin={1}>
             <TextField
-              error={Boolean(
-                formik.touched.SSID && formik.errors.SSID
-              )}
+              error={formik.values.active === "false" ? Boolean(formik.touched.SSID && formik.errors.SSID) : Boolean(formik.errors.SSID)}
               sx={{ width: "180px" }}
               // helperText={touched.ipAddress && errors.ipAddress}
               label="SSID"
@@ -158,7 +162,7 @@ const Wifi: React.FC = () => {
           </Grid>
           <Grid item margin={1}>
             <TextField
-              error={Boolean(formik.touched.pass && formik.errors.pass)}
+              error={formik.values.active === "false" ? Boolean(formik.touched.pass && formik.errors.pass) : Boolean(formik.errors.pass)}
               fullWidth
               // helperText={touched.ipAddress && errors.ipAddress}
               label="Password"
@@ -176,8 +180,7 @@ const Wifi: React.FC = () => {
               startIcon={
                 formik.isSubmitting ? <CircularProgress size="1rem" /> : null
               }
-              // disabled={formik.isSubmitting || !formik.isValid}
-              disabled={true}
+              disabled={formik.isSubmitting || !formik.isValid}
               variant="contained"
             >
               Apply
