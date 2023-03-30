@@ -12,6 +12,7 @@ media_folder_path = Path(__file__).parent / "media"
 black_video_path = Path(__file__).parent / "static_media/black_1920.jpg"
 
 
+
 class VLC_Handler():
 
     def __init__(self):
@@ -34,25 +35,33 @@ class VLC_Handler():
         self.media_list_player.set_playback_mode(vlc.PlaybackMode.loop)
         self.play()
 
-    def get_video_file(self):
+    def get_media_file(self):
         for file in os.listdir(media_folder_path):
-            if file.endswith(".mp4") or file.endswith(".mov"):
+            correct_media_file: bool = False
+            for extension in __main__.accepted_media_extensions:
+                if file.endswith(extension):
+                    correct_media_file = True
+            if correct_media_file:
                 return Path.resolve(media_folder_path / file)
         return None
 
-    def remove_all_video_files(self):
+    def remove_all_media_files(self):
         for file in os.listdir(media_folder_path):
-            if file.endswith(".mp4") or file.endswith(".mov"):
+            correct_media_file: bool = False
+            for extension in __main__.accepted_media_extensions:
+                if file.endswith(extension):
+                    correct_media_file = True
+            if correct_media_file:
                 path =  Path.resolve(media_folder_path / file)
                 os.remove(path)
         return None
 
 
     def refresh_video_file(self):
-        video_file = self.get_video_file()
-        if video_file:
+        media_file = self.get_media_file()
+        if media_file:
             if self.media_list: self.media_list.release()
-            self.media_list = self.vlc_instance.media_list_new([video_file])
+            self.media_list = self.vlc_instance.media_list_new([media_file])
             self.media_list_player.set_media_list(self.media_list)
 
     # play media

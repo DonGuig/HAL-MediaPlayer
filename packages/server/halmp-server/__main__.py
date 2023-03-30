@@ -11,6 +11,8 @@ from .vlc_handler import VLC_Handler
 from .config_handler import ConfigHandler
 from .http_api import http_api
 
+accepted_media_extensions = ['mp4','mov','mp3','wav','flac','aac']
+
 static_index_file_path = Path.resolve(Path(__file__).parent / 'static' / 'index.html')
 dotenv_path = Path.resolve(Path(__file__).parents[3] / '.env')
 
@@ -24,7 +26,7 @@ app.register_blueprint(http_api)
 
 # Configure uploads
 app.config["UPLOADED_MEDIA_DEST"] = "halmp-server/media"
-app.config["UPLOADED_MEDIA_ALLOW"] = ['mp4','mov']
+app.config["UPLOADED_MEDIA_ALLOW"] = accepted_media_extensions
 app.config["UPLOADED_MEDIA_DENY"] = ["exe", "bat", "sh", "run", "dll", "ps"]
 
 media = UploadSet('media')

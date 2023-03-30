@@ -94,7 +94,7 @@ const FileManagement: React.FC = () => {
               type="file"
               ref={fileUploadButtonRef}
               hidden
-              accept="mov mp4"
+              accept="mov mp4 mp3 wav flac aac"
               onChange={handleUpload}
               onClick={() => {
                 fileUploadButtonRef.current.value = "";

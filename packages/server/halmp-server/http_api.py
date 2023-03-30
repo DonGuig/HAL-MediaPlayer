@@ -18,7 +18,7 @@ def upload_file():
         if 'media' in request.files:
             print("Handle here.")
             __main__.vlc_handler.stop()
-            __main__.vlc_handler.remove_all_video_files()
+            __main__.vlc_handler.remove_all_media_files()
             filename = __main__.media.save(request.files['media'])
             __main__.vlc_handler.refresh_video_file()
             __main__.vlc_handler.play()
