@@ -11,7 +11,7 @@ from .vlc_handler import VLC_Handler
 from .config_handler import ConfigHandler
 from .http_api import http_api
 
-accepted_media_extensions = ['mp4','mov','mp3','wav','flac','aac']
+accepted_media_extensions = ['mp4','mov','mp3','wav','flac','aac', 'aiff']
 
 static_index_file_path = Path.resolve(Path(__file__).parent / 'static' / 'index.html')
 dotenv_path = Path.resolve(Path(__file__).parents[3] / '.env')

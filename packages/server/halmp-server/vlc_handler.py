@@ -29,7 +29,7 @@ class VLC_Handler():
         self.black_image_media_list = self.vlc_instance.media_list_new([black_video_path])
         self.media_list = None
         self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
-        self.refresh_video_file()
+        self.refresh_media_file()
         self.media_player.audio_set_volume(__main__.cfg_handler.cfg.volume)
         self.media_player.audio_set_delay(__main__.cfg_handler.cfg.audio_delay)
         self.media_list_player.set_playback_mode(vlc.PlaybackMode.loop)
@@ -57,7 +57,7 @@ class VLC_Handler():
         return None
 
 
-    def refresh_video_file(self):
+    def refresh_media_file(self):
         media_file = self.get_media_file()
         if media_file:
             if self.media_list: self.media_list.release()

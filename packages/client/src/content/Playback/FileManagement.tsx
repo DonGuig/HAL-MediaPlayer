@@ -49,7 +49,7 @@ const FileManagement: React.FC = () => {
       const formData = new FormData();
       formData.append("media", file[0], file[0].name);
       axiosServerAPI
-        .post(`/uploadVideoFile`, formData, {
+        .post(`/uploadMediaFile`, formData, {
           onUploadProgress: (event) => {
             const progress = (event.loaded / event.total) * 100;
             setUploadProgress(progress);
@@ -59,7 +59,7 @@ const FileManagement: React.FC = () => {
           (res) => {
             setOpenProgressDialog(false);
             getFileName();
-            globalSnackbar.success("Video file changed");
+            globalSnackbar.success("Media file changed");
           },
           (err) => {
             setOpenProgressDialog(false);
@@ -94,7 +94,7 @@ const FileManagement: React.FC = () => {
               type="file"
               ref={fileUploadButtonRef}
               hidden
-              accept="mov mp4 mp3 wav flac aac"
+              accept="mov mp4 mp3 wav flac aac aiff"
               onChange={handleUpload}
               onClick={() => {
                 fileUploadButtonRef.current.value = "";
