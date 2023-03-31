@@ -301,9 +301,15 @@ def set_wifi_config():
     try:
         ssid = request.json["SSID"]
         password = request.json["pass"]
+        hidden = request.json["hidden"]
+
+        if hidden:
+            hidden_cmd = "true"
+        else:
+            hidden_cmd = "false"
 
         subprocess.run(
-            f'sudo nmcli device wifi connect "{ssid}" password "{password}"',
+            f'sudo nmcli device wifi connect "{ssid}" password "{password}" hidden {hidden_cmd}',
             shell=True,
             text=True,
             check=True,

@@ -2,7 +2,10 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import {
   Button,
+  Checkbox,
   CircularProgress,
+  FormControlLabel,
+  FormGroup,
   Grid,
   Stack,
   TextField,
@@ -46,14 +49,8 @@ const Wifi: React.FC = () => {
       hidden: false,
     },
     validationSchema: Yup.object().shape({
-      SSID: Yup.string().when("active", {
-        is: "true",
-        then: Yup.string().required().max(32),
-      }),
-      pass: Yup.string().when("active", {
-        is: "true",
-        then: Yup.string().required().min(8).max(64),
-      }),
+      SSID: Yup.string().required().max(32),
+      pass: Yup.string().required().min(8).max(64),
     }),
     onSubmit: async (
       values,
@@ -115,7 +112,10 @@ const Wifi: React.FC = () => {
 
   async function setIsActiveWifi(active: boolean) {
     axiosServerAPI
-      .post<WifiActive>("/setIsWifiActive", active ? {active: "true"} : {active: "false"})
+      .post<WifiActive>(
+        "/setIsWifiActive",
+        active ? { active: "true" } : { active: "false" }
+      )
       .then((res) => {
         setTimeout(getIsActiveWifi, 3000);
         setTimeout(getCurrentWifi, 3000);
@@ -202,6 +202,8 @@ const Wifi: React.FC = () => {
         alignItems="center"
         width="100%"
       >
+        {" "}
+        <Typography>Connect to wifi :</Typography>
         <form
           onSubmit={formik.handleSubmit}
           style={{ display: "flex", alignItems: "center" }}
@@ -241,6 +243,20 @@ const Wifi: React.FC = () => {
               disabled={wifiActivated === "false"}
               variant="outlined"
             />
+          </Grid>
+          <Grid item margin={1}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="hidden"
+                    checked={formik.values.hidden}
+                    onChange={formik.handleChange}
+                  />
+                }
+                label="Hidden"
+              />
+            </FormGroup>
           </Grid>
           <Grid item margin={1}>
             <Button
