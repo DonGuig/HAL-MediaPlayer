@@ -51,7 +51,7 @@ Delete the default connection in Network Manager :
 `nmcli con del name`where you substitue name for the name of the connection
 
 Add the two connection profiles for ethernet :
-`nmcli con add type ethernet ifname eth0 con-name eth0-dhcp connection.autoconnect-priority 100 connection.autoconnect-retries 1 ipv4.dhcp-timeout 3 ipv4.method auto`
+`nmcli con add type ethernet ifname eth0 con-name eth0 connection.autoconnect-priority 100 connection.autoconnect-retries 1 ipv4.dhcp-timeout 3 ipv4.method auto`
 and
 `nmcli con add type ethernet ifname eth0 con-name eth0-ll connection.autoconnect-priority 50 ipv4.method link-local`
 
