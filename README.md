@@ -40,6 +40,23 @@ sudo apt install nodejs
 Si RPi 3B+ :
 sudo raspi-config nonint do_memory_split 256
 
+Networking :
+in raspi-config, switch network config to Network Manager
+
+`sudo raspi-config`
+Then `Advanced options` then `Network Config`, select `Network Manager`
+
+Delete the default connection in Network Manager :
+`nmcli con show`then note down the name of the connection
+`nmcli con del name`where you substitue name for the name of the connection
+
+Add the two connection profiles for ethernet :
+`nmcli con add type ethernet ifname eth0 con-name eth0-dhcp connection.autoconnect-priority 100 connection.autoconnect-retries 1 ipv4.dhcp-timeout 3 ipv4.method auto`
+and
+`nmcli con add type ethernet ifname eth0 con-name eth0-ll connection.autoconnect-priority 50 ipv4.method link-local`
+
+
+
 reboot
 
 options pour clvc audio :

@@ -12,7 +12,7 @@ http_api = Blueprint("http_api", __name__)
 resourcesPath = Path(__file__).parent / "resources"
 
 
-@http_api.post('/api/uploadVideoFile')
+@http_api.post('/api/uploadMediaFile')
 def upload_file():
     try:
         if 'media' in request.files:
@@ -20,7 +20,7 @@ def upload_file():
             __main__.vlc_handler.stop()
             __main__.vlc_handler.remove_all_media_files()
             filename = __main__.media.save(request.files['media'])
-            __main__.vlc_handler.refresh_video_file()
+            __main__.vlc_handler.refresh_media_file()
             __main__.vlc_handler.play()
             # flash("Photo saved.")
         return Response(status=200)
@@ -270,8 +270,68 @@ def set_video_output():
         return Response(str(e), status=500)
 
 
-@http_api.get('/api/getWifiConfig')
-def get_wifi_config():
+@http_api.post('/api/setWifiConfig')
+def set_wifi_config():
+    try:
+        ssid = request.json["SSID"]
+        password = request.json["pass"]
+
+        subprocess.run(
+            f'sudo nmcli device wifi connect "{ssid}" password "{password}"',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getIsWifiActive')
+def get_is_wifi_active():
+    try:
+        active = False
+        wifi_enabled_out = subprocess.run('nmcli radio wifi',
+                                          shell=True,
+                                          text=True,
+                                          check=True,
+                                          capture_output=True)
+        if wifi_enabled_out.stdout.find("enabled") != -1:
+            active = True
+        return {"active": active}
+
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.post('/api/setIsWifiActive')
+def set_is_wifi_active():
+    try:
+        active = request.json["active"]
+
+        if active == "true":
+            subprocess.run(f'sudo nmcli radio wifi on',
+                           shell=True,
+                           text=True,
+                           check=True,
+                           capture_output=True)
+        elif active == "false":
+            subprocess.run(f'sudo nmcli radio wifi off',
+                           shell=True,
+                           text=True,
+                           check=True,
+                           capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getCurrentWifi')
+def get_current_wifi():
     try:
         ssid_out = subprocess.run(
             'iwgetid | awk \'{print $2}\' | cut -c 8- | rev | cut -c 2- | rev',
@@ -281,57 +341,7 @@ def get_wifi_config():
             capture_output=True)
         ssid = ssid_out.stdout.strip()
 
-        wifi_enabled_out = subprocess.run('rfkill list',
-                                          shell=True,
-                                          text=True,
-                                          check=True,
-                                          capture_output=True)
-        windex = wifi_enabled_out.stdout.find("Wireless LAN")
-        blockindex = wifi_enabled_out.stdout.find("Soft blocked: ")
-        res = wifi_enabled_out.stdout[blockindex + 14:blockindex + 17]
-        if res.find("yes") != -1:
-            active = False
-        elif res.find("no") != -1:
-            active = True
-        else:
-            raise Exception("unable to check wifi state")
-
-        return {"SSID": ssid, "active": active, "pass": "****"}
-
-    except Exception as e:
-        return Response(str(e), status=500)
-
-
-@http_api.post('/api/setWifiConfig')
-def set_wifi_config():
-    try:
-        active = request.json["active"]
-        ssid = request.json["SSID"]
-        password = request.json["pass"]
-        print(active)
-
-        if active == "true":
-            subprocess.run(f'rfkill unblock wifi',
-                           shell=True,
-                           text=True,
-                           check=True,
-                           capture_output=True)
-        elif active == "false":
-            subprocess.run(f'rfkill block wifi',
-                           shell=True,
-                           text=True,
-                           check=True,
-                           capture_output=True)
-
-        if active == "true":
-            subprocess.run(
-                f'sudo raspi-config nonint do_wifi_ssid_passphrase {ssid} {password}',
-                shell=True,
-                text=True,
-                check=True,
-                capture_output=True)
-
-        return Response(status=200)
+        return {"SSID": ssid}
 
     except Exception as e:
         return Response(str(e), status=500)

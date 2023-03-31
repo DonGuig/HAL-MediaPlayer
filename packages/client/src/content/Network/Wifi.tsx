@@ -10,6 +10,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import CircleIcon from "@mui/icons-material/Circle";
+import { green, grey } from "@mui/material/colors";
 import axios from "axios";
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -22,28 +24,36 @@ import ipRegex from "ip-regex";
 type WifiConfig = {
   SSID: string;
   pass: String;
+  hidden: boolean;
+};
+
+type CurrentWifi = {
+  SSID: string;
+};
+
+type WifiActive = {
   active: "true" | "false";
 };
 
 const Wifi: React.FC = () => {
-  const [isActiveWifi, setIsActiveWifi] = useState<"true" | "false">("true");
+  const [wifiActivated, setWifiActivated] = useState<"true" | "false">("true");
+  const [currentWifi, setCurrentWifi] = useState<String>("None");
 
   const formik = useFormik<WifiConfig>({
     initialValues: {
       SSID: "",
       pass: "",
-      active: "true",
+      hidden: false,
     },
     validationSchema: Yup.object().shape({
       SSID: Yup.string().when("active", {
-        is:"true",
-        then: Yup.string().required().max(32)
+        is: "true",
+        then: Yup.string().required().max(32),
       }),
       pass: Yup.string().when("active", {
-        is:"true",
-        then: Yup.string().required().min(8).max(64)
+        is: "true",
+        then: Yup.string().required().min(8).max(64),
       }),
-      active: Yup.string(),
     }),
     onSubmit: async (
       values,
@@ -53,7 +63,7 @@ const Wifi: React.FC = () => {
         let toSend = {
           SSID: formik.values.SSID,
           pass: formik.values.pass,
-          active: formik.values.active,
+          hidden: formik.values.hidden,
         };
         await setWifiConfig(toSend);
         setStatus({ success: true });
@@ -71,29 +81,11 @@ const Wifi: React.FC = () => {
     },
   });
 
-  const getWifiConfig = useCallback(() => {
-    axiosServerAPI
-      .get<WifiConfig>("/getWifiConfig")
-      .then((res) => {
-        formik.setFieldValue("SSID", res.data.SSID);
-        formik.setFieldValue("pass", res.data.pass);
-        formik.setFieldValue("active", res.data.active ? "true" : "false");
-      })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
-        }
-      });
-  }, [formik]);
-
   async function setWifiConfig(conf: WifiConfig) {
     axiosServerAPI
       .post<WifiConfig>("/setWifiConfig", conf)
       .then((res) => {
-        getWifiConfig();
+        getCurrentWifi();
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -105,24 +97,102 @@ const Wifi: React.FC = () => {
       });
   }
 
+  const getIsActiveWifi = useCallback(() => {
+    axiosServerAPI
+      .get<WifiActive>("/getIsWifiActive")
+      .then((res) => {
+        setWifiActivated(res.data.active ? "true" : "false");
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          }
+        }
+      });
+  }, []);
+
+  async function setIsActiveWifi(active: boolean) {
+    axiosServerAPI
+      .post<WifiActive>("/setIsWifiActive", active ? {active: "true"} : {active: "false"})
+      .then((res) => {
+        setTimeout(getIsActiveWifi, 3000);
+        setTimeout(getCurrentWifi, 3000);
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          }
+        }
+      });
+  }
+
+  const getCurrentWifi = useCallback(() => {
+    axiosServerAPI
+      .get<CurrentWifi>("/getCurrentWifi")
+      .then((res) => {
+        if (res.data.SSID) {
+          setCurrentWifi(res.data.SSID);
+        } else {
+          setCurrentWifi("None");
+        }
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          }
+        }
+      });
+  }, []);
+
   const handleActiveWifiChange = (
     event: React.MouseEvent<HTMLElement>,
     act: string
   ) => {
     if (act !== null) {
-      formik.setFieldValue("active", act);
+      if (act === "true") {
+        setIsActiveWifi(true);
+      } else {
+        setIsActiveWifi(false);
+      }
     }
   };
 
   useEffect(() => {
-    getWifiConfig();
+    getIsActiveWifi();
+    getCurrentWifi();
   }, []);
 
   return (
-    <Stack marginY={4} direction="column" width="100%">
+    <Stack marginY={4} spacing={2} direction="column" width="100%">
       <Typography variant="h4" align="center">
         Wifi
       </Typography>
+      <Grid item margin={1} alignSelf="center">
+        <ToggleButtonGroup
+          value={wifiActivated}
+          exclusive
+          onChange={handleActiveWifiChange}
+        >
+          <ToggleButton value="true">Active</ToggleButton>
+          <ToggleButton value="false">Off</ToggleButton>
+        </ToggleButtonGroup>{" "}
+      </Grid>
+      <Stack direction="row" alignSelf="center" alignItems="center" spacing={2}>
+        Connected Wifi :{" "}
+        <CircleIcon
+          sx={{ color: currentWifi === "None" ? grey[500] : green[500] }}
+        />{" "}
+        {currentWifi}{" "}
+        <Button variant="contained" onClick={() => getCurrentWifi()}>
+          Refresh
+        </Button>
+      </Stack>
       <Grid
         container
         margin={2}
@@ -137,18 +207,12 @@ const Wifi: React.FC = () => {
           style={{ display: "flex", alignItems: "center" }}
         >
           <Grid item margin={1}>
-            <ToggleButtonGroup
-              value={formik.values.active}
-              exclusive
-              onChange={handleActiveWifiChange}
-            >
-              <ToggleButton value="true">Active</ToggleButton>
-              <ToggleButton value="false">Off</ToggleButton>
-            </ToggleButtonGroup>{" "}
-          </Grid>
-          <Grid item margin={1}>
             <TextField
-              error={formik.values.active === "false" ? Boolean(formik.touched.SSID && formik.errors.SSID) : Boolean(formik.errors.SSID)}
+              error={
+                wifiActivated === "false"
+                  ? Boolean(formik.touched.SSID && formik.errors.SSID)
+                  : Boolean(formik.errors.SSID)
+              }
               sx={{ width: "180px" }}
               // helperText={touched.ipAddress && errors.ipAddress}
               label="SSID"
@@ -156,13 +220,17 @@ const Wifi: React.FC = () => {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.SSID}
-              disabled={formik.values.active === "false"}
+              disabled={wifiActivated === "false"}
               variant="outlined"
             />
           </Grid>
           <Grid item margin={1}>
             <TextField
-              error={formik.values.active === "false" ? Boolean(formik.touched.pass && formik.errors.pass) : Boolean(formik.errors.pass)}
+              error={
+                wifiActivated === "false"
+                  ? Boolean(formik.touched.pass && formik.errors.pass)
+                  : Boolean(formik.errors.pass)
+              }
               fullWidth
               // helperText={touched.ipAddress && errors.ipAddress}
               label="Password"
@@ -170,7 +238,7 @@ const Wifi: React.FC = () => {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.pass}
-              disabled={formik.values.active === "false"}
+              disabled={wifiActivated === "false"}
               variant="outlined"
             />
           </Grid>
