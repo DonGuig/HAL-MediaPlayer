@@ -102,7 +102,7 @@ const WiredEthernet: React.FC = () => {
     axiosServerAPI
       .post<WiredNetworkConfig>("/setWiredNetwokConfig", conf)
       .then((res) => {
-        getWiredNetworkConfig();
+        setTimeout(getWiredNetworkConfig, 1000);
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -150,7 +150,6 @@ const WiredEthernet: React.FC = () => {
               value={formik.values.DHCPorFixed}
               exclusive
               onChange={handleDHCPorFixedChange}
-              disabled={true}
             >
               <ToggleButton value="DHCP">DHCP</ToggleButton>
               <ToggleButton value="Fixed IP">Fixed IP</ToggleButton>
@@ -169,7 +168,6 @@ const WiredEthernet: React.FC = () => {
               onChange={formik.handleChange}
               value={formik.values.ipAddress}
               // disabled={formik.values.DHCPorFixed === "DHCP"}
-              disabled={true}
               variant="outlined"
             />
           </Grid>
@@ -184,7 +182,6 @@ const WiredEthernet: React.FC = () => {
               onChange={formik.handleChange}
               value={formik.values.netmask}
               // disabled={formik.values.DHCPorFixed === "DHCP"}
-              disabled={true}
               variant="outlined"
             />
           </Grid>
@@ -195,7 +192,6 @@ const WiredEthernet: React.FC = () => {
                 formik.isSubmitting ? <CircularProgress size="1rem" /> : null
               }
               // disabled={formik.isSubmitting || !formik.isValid}
-              disabled={true}
               variant="contained"
             >
               Apply

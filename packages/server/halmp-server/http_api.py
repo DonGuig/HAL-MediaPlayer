@@ -4,6 +4,7 @@ import os
 import subprocess
 import shutil
 from pathlib import Path
+from ipaddress import IPv4Network
 
 import __main__
 
@@ -142,14 +143,14 @@ def set_device_name():
 @http_api.get('/api/getWiredNetwokConfig')
 def get_wired_network_config():
     try:
-        dhcp_process = subprocess.run('ip -4 addr show eth0 | grep "dynamic"',
+        dhcp_process = subprocess.run('ip -4 addr show eth0',
                                       shell=True,
                                       text=True,
                                       capture_output=True)
-        if dhcp_process.stdout.strip() == '':
-            dhcp_or_fixed = "Fixed IP"
-        else:
+        if dhcp_process.stdout.find("dynamic") != -1 or dhcp_process.stdout.find("link") != -1:
             dhcp_or_fixed = "DHCP"
+        else:
+            dhcp_or_fixed = "Fixed IP"
         ip_process = subprocess.run(
             'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1',
             shell=True,
@@ -176,6 +177,31 @@ def get_wired_network_config():
 @http_api.post('/api/setWiredNetwokConfig')
 def set_wired_network_config():
     try:
+        DHCPorFixed = request.json["DHCPorFixed"]
+        ipAddress = request.json["ipAddress"]
+        netmask = request.json["netmask"]
+
+        #the following line will return an Exception if not a valid netmask
+        netmask_bit_count = IPv4Network(f'0.0.0.0/{netmask}').prefixlen
+
+        if DHCPorFixed == "DHCP":
+            command = f'sudo nmcli con mod eth0 ipv4.method auto'
+        else :
+            command = f'sudo nmcli con mod eth0 ipv4.method manual ipv4.addresses {ipAddress}/{netmask_bit_count}'
+
+        network_process = subprocess.run(
+            command,
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        
+        network_process = subprocess.run(
+            f'sudo nmcli con up eth0',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
 
         return Response(status=200)
     except Exception as e:
