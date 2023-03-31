@@ -7,41 +7,39 @@ import globalSnackbar from "src/utils/snackbarUtils";
 import Emitter from "src/utils/EventEmitter";
 import axiosServerAPI from "src/utils/axios";
 
-type deviceNameResponse = {
-  deviceName: string;
+type HostnameConfig = {
+  hostname: string;
 };
 
 const Name: React.FC = () => {
-  const [deviceName, setDeviceName] = useState<string>("None");
+  const [hostname, setHostname] = useState<string>("None");
 
-  const getDeviceName = () => {
+  const getHostname = () => {
     axiosServerAPI
-      .get<deviceNameResponse>(
-        `/getDeviceName`
-      )
-      .then((res) => {
-        setDeviceName(res.data.deviceName);
-      })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
+    .get<HostnameConfig>("/getHostname")
+    .then((res) => {
+      setHostname(res.data.hostname);
+    })
+    .catch((err) => {
+      if (axios.isAxiosError(err)) {
+        const toDisplay = err.response.data;
+        if (_.isString(toDisplay)) {
+          globalSnackbar.error(toDisplay);
         }
-      });
+      }
+    });
   };
 
   useEffect(() => {
-    getDeviceName();
-    Emitter.on("deviceNameChanged", getDeviceName);
+    getHostname();
+    Emitter.on("hostnameChanged", getHostname);
 
     return () => {
-      Emitter.off("deviceNameChanged", getDeviceName);
+      Emitter.off("deviceNameChanged", getHostname);
     };
   }, []);
 
-  return <Typography variant="h4">{deviceName}</Typography>;
+  return <Typography variant="h4">{hostname}</Typography>;
 };
 
 export default Name;

@@ -7,7 +7,6 @@ config_folder_path = Path(__file__).parent / "resources"
 config_file_path = config_folder_path / "config.json"
 
 default_config = {
-    "device_name" : "default",
     "volume" : 100,
     "audio_delay": 0,
     "audio_output":"jack"

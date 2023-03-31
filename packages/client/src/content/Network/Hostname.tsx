@@ -18,10 +18,13 @@ import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
+import Emitter from "src/utils/EventEmitter";
+
 
 type HostnameConfig = {
   hostname: string;
 };
+
 
 const Hostname: React.FC = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -87,6 +90,7 @@ const Hostname: React.FC = () => {
       .post<HostnameConfig>("/setHostname", hn)
       .then((res) => {
         getHostname();
+        Emitter.emit("hostnameChanged", []);
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
