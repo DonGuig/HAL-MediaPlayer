@@ -45,6 +45,7 @@ const FileManagement: React.FC = () => {
   const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files;
     if (file !== null) {
+      axiosServerAPI.post(`/stop`);
       setOpenProgressDialog(true);
       const formData = new FormData();
       formData.append("media", file[0], file[0].name);

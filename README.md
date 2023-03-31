@@ -84,4 +84,4 @@ https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d
 
 TODO :
     - modifier la façon dont l'upload est géré (temp file ?)
-    - option reseaux ssid caché
+    - mode composite NTSC
