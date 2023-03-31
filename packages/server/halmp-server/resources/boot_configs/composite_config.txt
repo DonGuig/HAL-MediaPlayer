@@ -73,8 +73,10 @@ max_framebuffers=2
 # no display
 #config_hdmi_boost=4
 
-# uncomment for composite PAL
-sdtv_mode=2
+
 
 [all]
 dtoverlay=vc4-fkms-v3d
+
+# uncomment for composite PAL
+sdtv_mode=2

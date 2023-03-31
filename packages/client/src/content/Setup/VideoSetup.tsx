@@ -62,7 +62,7 @@ const VideoSetup: React.FC = () => {
         >
           <Button variant="outlined" onClick={() => handleVideoOutputChange("HDMI")}>HDMI</Button>
           <Button variant="outlined" onClick={() => handleVideoOutputChange("Composite")}>
-            Composite
+            Composite PAL
           </Button>
         </Stack>
       </Grid>
