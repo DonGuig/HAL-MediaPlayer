@@ -41,6 +41,10 @@ const Seek: React.FC<SeekProps> = ({stopped}) => {
         const updateTimeInterval = setInterval(() => {
             if (!pauseTimeInterval && !stopped) {
                 requestTime();
+            };
+            if (stopped){
+                setTime(0.1);
+                setLength(1);    
             }
         }, 900)
         return function () {

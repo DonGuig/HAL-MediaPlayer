@@ -5,12 +5,16 @@ import subprocess
 import shutil
 from pathlib import Path
 from ipaddress import IPv4Network
+import magic
+
 
 import __main__
 
 http_api = Blueprint("http_api", __name__)
 
 resourcesPath = Path(__file__).parent / "resources"
+media_folder_path = Path(__file__).parent / "media"
+
 
 
 @http_api.post('/api/uploadMediaFile')
@@ -23,16 +27,77 @@ def upload_file():
             filename = __main__.media.save(request.files['media'])
             __main__.vlc_handler.refresh_media_file()
             __main__.vlc_handler.play()
-            # flash("Photo saved.")
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.post('/api/getFileFromUSBDrive')
+def get_file_from_usb_drive():
+    try:
+        # with usbmount package installed
+        # the usb drives always mount in /media/usb
+
+        media_file_path = ""
+
+        volumes_list = os.listdir("/media")
+        if volumes_list.__len__ == 0:
+            raise Exception("No USB drive found")
+
+        temp_raw_files_list = os.listdir("/media/usb")
+        temp_raw_files_list.sort()
+        # we remove hidden files starting with .
+        for file in temp_raw_files_list:
+            if file[0] != '.':
+                file_path = os.path.join("/media/usb", file)
+                # we keep only files, exclude directories
+                if os.path.isfile(file_path):
+                    file_type = magic.from_file(file_path, mime=True).split("/")[0]
+                    if file_type == "audio" or file_type == "video":
+                        media_file_path = file_path
+                        break
+        
+        if media_file_path != "":
+            __main__.vlc_handler.stop()
+            __main__.vlc_handler.remove_all_media_files()
+            shutil.copy(media_file_path, media_folder_path)
+            __main__.vlc_handler.refresh_media_file()
+            __main__.vlc_handler.play()
+        else:
+            raise Exception("No media file found on drive")
+            
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+
+@http_api.post('/api/removeMediaFile')
+def remove_media_file():
+    try:
+        __main__.vlc_handler.stop()
+        __main__.vlc_handler.remove_all_media_files()
+        #__main__.vlc_handler.refresh_media_file()
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)
 
 
-@http_api.get('/api/getFileName')
-def get_filename():
+
+@http_api.get('/api/getFileNameAndSize')
+def get_filename_and_size():
     try:
-        return {"fileName": __main__.vlc_handler.get_current_media_filename()}
+        fileName = __main__.vlc_handler.get_current_media_filename()
+        fileSize = __main__.vlc_handler.get_current_media_file_size()
+        return {"fileName": fileName, "fileSize": fileSize}
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getAvailableSpace')
+def get_available_space():
+    try:
+        total, used, free = shutil.disk_usage(
+            __main__.vlc_handler.get_current_media_path())
+        return {"space": free}
     except Exception as e:
         return Response(str(e), status=500)
 
@@ -147,7 +212,8 @@ def get_wired_network_config():
                                       shell=True,
                                       text=True,
                                       capture_output=True)
-        if dhcp_process.stdout.find("dynamic") != -1 or dhcp_process.stdout.find("link") != -1:
+        if dhcp_process.stdout.find(
+                "dynamic") != -1 or dhcp_process.stdout.find("link") != -1:
             dhcp_or_fixed = "DHCP"
         else:
             dhcp_or_fixed = "Fixed IP"
@@ -186,22 +252,20 @@ def set_wired_network_config():
 
         if DHCPorFixed == "DHCP":
             command = f'sudo nmcli con mod eth0 ipv4.method auto'
-        else :
+        else:
             command = f'sudo nmcli con mod eth0 ipv4.method manual ipv4.addresses {ipAddress}/{netmask_bit_count}'
 
-        network_process = subprocess.run(
-            command,
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        
-        network_process = subprocess.run(
-            f'sudo nmcli con up eth0',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
+        network_process = subprocess.run(command,
+                                         shell=True,
+                                         text=True,
+                                         check=True,
+                                         capture_output=True)
+
+        network_process = subprocess.run(f'sudo nmcli con up eth0',
+                                         shell=True,
+                                         text=True,
+                                         check=True,
+                                         capture_output=True)
 
         return Response(status=200)
     except Exception as e:
@@ -374,6 +438,14 @@ def get_current_wifi():
         ssid = ssid_out.stdout.strip()
 
         return {"SSID": ssid}
+
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.get('/api/getTransportStatus')
+def get_transport_status():
+    try:
+        return {"stopped": __main__.vlc_handler.is_stopped}
 
     except Exception as e:
         return Response(str(e), status=500)

@@ -5,6 +5,8 @@ import sys
 import time
 from pathlib import Path
 import vlc
+from urllib.request import url2pathname
+from urllib.parse import urlparse
 
 import __main__
 
@@ -63,18 +65,24 @@ class VLC_Handler():
             if self.media_list: self.media_list.release()
             self.media_list = self.vlc_instance.media_list_new([media_file])
             self.media_list_player.set_media_list(self.media_list)
+        else:
+            self.media_list_player.set_media_list(self.black_image_media_list)
+            self.is_stopped = True
 
     # play media
     def play(self):
         if self.is_stopped :
             self.media_list_player.stop()
-            self.media_list_player.set_media_list(self.media_list)
-            self.media_list_player.play()
-            time.sleep(0.5)
-            self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), force_pause=True)
+            if self.media_list != None :
+                self.media_list_player.set_media_list(self.media_list)
+                self.media_list_player.play()
+                time.sleep(0.5)
+                self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), force_pause=True)
+                self.is_stopped=False
         else:
             self.media_list_player.play()
-        self.is_stopped=False
+            self.is_stopped=False
+
 
 
     def pause(self):
@@ -85,14 +93,15 @@ class VLC_Handler():
         self.media_list_player.play()
 
     def stop(self):
-        self.media_list_player.stop()
-        # self.media_list.release()
-        # self.media_list.set_media(self.black_image_media_list)
-        # self.media_list_player.play()
-        self.media_list_player.set_media_list(self.black_image_media_list)
-        self.play()
-        self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
-        self.is_stopped = True
+        if not self.is_stopped :
+            self.media_list_player.stop()
+            # self.media_list.release()
+            # self.media_list.set_media(self.black_image_media_list)
+            # self.media_list_player.play()
+            self.media_list_player.set_media_list(self.black_image_media_list)
+            self.play()
+            self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
+            self.is_stopped = True
 
 
     def get_audio_outputs_list(self, vlc_inst):
@@ -145,6 +154,14 @@ class VLC_Handler():
         mrl: str = self.media_player.get_media().get_mrl()
         filename = mrl.split("/")[-1]
         return filename
+    
+    def get_current_media_path(self):
+        mrl = self.media_player.get_media().get_mrl()
+        return url2pathname(urlparse(mrl).path)
+
+    def get_current_media_file_size(self):
+        path = self.get_current_media_path()
+        return os.path.getsize(path)
         
 
 

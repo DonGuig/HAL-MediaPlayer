@@ -14,23 +14,53 @@ import {
   Typography,
 } from "@mui/material";
 import axiosServerAPI from "src/utils/axios";
+import { convertBytes } from "src/utils/util";
 
 type fileNameResponse = {
   fileName: string;
+  fileSize: number;
+};
+
+type AvailableSpaceResponse = {
+  space: number;
 };
 
 const FileManagement: React.FC = () => {
   const [fileName, setFileName] = useState<string>("...");
   const [openProgressDialog, setOpenProgressDialog] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [availableSpace, setAvailableSpace] = useState<number>(0);
+  const [fileSize, setFileSize] = useState<number>(0);
 
   const fileUploadButtonRef = useRef<HTMLInputElement>();
 
-  const getFileName = () => {
+  const getFileNameAndSize = () => {
     axiosServerAPI
-      .get<fileNameResponse>(`/getFileName`)
+      .get<fileNameResponse>(`/getFileNameAndSize`)
       .then((res) => {
-        setFileName(res.data.fileName);
+        if (res.data.fileName !== "black_1920.jpg"){
+          setFileName(res.data.fileName);
+          setFileSize(res.data.fileSize);
+        } else {
+          setFileName("None");
+          setFileSize(0);
+        }
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          }
+        }
+      });
+  };
+
+  const getAvalaibleSpace = () => {
+    axiosServerAPI
+      .get<AvailableSpaceResponse>(`/getAvailableSpace`)
+      .then((res) => {
+        setAvailableSpace(res.data.space);
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -59,7 +89,8 @@ const FileManagement: React.FC = () => {
         .then(
           (res) => {
             setOpenProgressDialog(false);
-            getFileName();
+            getFileNameAndSize();
+            getAvalaibleSpace();
             globalSnackbar.success("Media file changed");
           },
           (err) => {
@@ -74,8 +105,42 @@ const FileManagement: React.FC = () => {
     }
   };
 
+  const handleGetFromUSBDrive = () => {
+    axiosServerAPI.post(`/getFileFromUSBDrive`).then(
+      (res) => {
+        getFileNameAndSize();
+        getAvalaibleSpace();
+        globalSnackbar.success("Media file changed");
+      },
+      (err) => {
+        setOpenProgressDialog(false);
+        if (axios.isAxiosError(err)) {
+          globalSnackbar.error(err.response.data);
+        }
+      }
+    );
+  };
+
+  const handleRemoveMediaFile = () => {
+    axiosServerAPI.post(`/stop`);
+    axiosServerAPI.post(`/removeMediaFile`).then(
+      (res) => {
+        getFileNameAndSize();
+        getAvalaibleSpace();
+        globalSnackbar.success("Media file deleted");
+      },
+      (err) => {
+        setOpenProgressDialog(false);
+        if (axios.isAxiosError(err)) {
+          globalSnackbar.error(err.response.data);
+        }
+      }
+    );
+  };
+
   useEffect(() => {
-    getFileName();
+    getFileNameAndSize();
+    getAvalaibleSpace();
   }, []);
 
   return (
@@ -115,9 +180,41 @@ const FileManagement: React.FC = () => {
             </label>
           </Grid>
           <Grid item>
+            <Button variant="outlined" onClick={handleGetFromUSBDrive}>
+              Get from USB Drive
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={handleRemoveMediaFile}
+            >
+              Remove current media file
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid
+          container
+          margin={1}
+          spacing={2}
+          direction="column"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Grid item>
             <Box height="100%" alignItems="center">
-              <Typography variant="h6">{fileName}</Typography>
+              <Typography variant="h6">
+                <b>Current file : </b>
+                {fileName} ({convertBytes(fileSize)})
+              </Typography>
             </Box>
+          </Grid>
+          <Grid item>
+            <Typography variant="h6">
+              <b>Available space : </b>
+              {convertBytes(availableSpace)}
+            </Typography>
           </Grid>
         </Grid>
       </Grid>
