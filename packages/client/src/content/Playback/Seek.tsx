@@ -3,16 +3,17 @@ import { Grid, Paper, Slider, Stack, Typography } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { WebSocketContext } from 'src/contexts/WebSocketContext';
 import axiosServerAPI from 'src/utils/axios';
+import { PlaybackContext } from './PlaybackContext';
 
-interface SeekProps {
-    stopped: boolean;
-  }
 
-const Seek: React.FC<SeekProps> = ({stopped}) => {
+
+const Seek: React.FC = () => {
     const [time, setTime] = useState<number>(0);
     const [length, setLength] = useState<number>(0);
     const [pauseTimeInterval, setPauseTimeInterval] = useState<boolean>(false);
     const { sendMessage } = useContext(WebSocketContext);
+    const { stopped } = useContext(PlaybackContext);
+
 
     const handleFaderChange = (event: Event, val: number) => {
         setPauseTimeInterval(true);

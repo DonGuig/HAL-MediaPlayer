@@ -5,87 +5,29 @@ import _ from "lodash";
 
 import globalSnackbar from "src/utils/snackbarUtils";
 import Seek from "./Seek";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axiosServerAPI from "src/utils/axios";
-
-type TransportStatusResponse = { stopped: boolean };
+import { PlaybackContext } from "./PlaybackContext";
 
 const Transport: React.FC = () => {
-  const [stopped, setStopped] = useState<boolean>(false);
-
-  const getTransportStatus = () => {
-    axiosServerAPI
-      .get<TransportStatusResponse>(`/getTransportStatus`)
-      .then((res) => setStopped(res.data.stopped))
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
-        }
-      });
-  };
+  const { transportCommandAndUpdateStatus, updateStatus } =
+    useContext(PlaybackContext);
 
   const handleClickPlay = () => {
-    axiosServerAPI
-      .post(`/play`)
-      .then(() => getTransportStatus())
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
-        }
-      });
+    transportCommandAndUpdateStatus("/play");
   };
 
   const handleClickPause = () => {
-    axiosServerAPI
-      .post(`/pause`)
-      .then(() => getTransportStatus())
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
-        }
-      });
+    transportCommandAndUpdateStatus("/pause");
   };
 
   const handleClickRestart = () => {
-    axiosServerAPI
-      .post(`/restart`)
-      .then(() => getTransportStatus())
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
-        }
-      });
+    transportCommandAndUpdateStatus("/restart");
   };
 
   const handleClickStop = () => {
-    axiosServerAPI
-      .post(`/stop`)
-      .then(() => getTransportStatus())
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          }
-        }
-      });
+    transportCommandAndUpdateStatus("/stop");
   };
-
-  useEffect(() => {
-    getTransportStatus();
-  }, []);
 
   return (
     <Grid container marginY={2} justifyContent="center">
@@ -122,7 +64,7 @@ const Transport: React.FC = () => {
           </Button>
         </Grid>
       </Grid>
-      <Seek stopped={stopped} />
+      <Seek />
     </Grid>
   );
 };

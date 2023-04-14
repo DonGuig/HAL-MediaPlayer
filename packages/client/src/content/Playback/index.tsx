@@ -1,27 +1,23 @@
-import * as React from 'react';
-import {
-    Container, Divider
-} from "@mui/material";
+import * as React from "react";
+import { Container, Divider } from "@mui/material";
 import _ from "lodash";
-import Transport from './Transport';
-import AudioControls from './Audio';
-import FileManagement from './FileManagement';
-
-
+import Transport from "./Transport";
+import AudioControls from "./Audio";
+import FileManagement from "./FileManagement";
+import { PlaybackContextProvider } from "./PlaybackContext";
 
 const Playback: React.FC = () => {
-
-
-    return (
-        <Container>
-            <Transport/>
-            <Divider/>
-            <AudioControls/>
-            <Divider />
-            <FileManagement/>
-        </Container>
-    );
+  return (
+    <Container>
+      <PlaybackContextProvider>
+        <Transport />
+        <Divider />
+        <AudioControls />
+        <Divider />
+        <FileManagement />
+      </PlaybackContextProvider>
+    </Container>
+  );
 };
-
 
 export default Playback;

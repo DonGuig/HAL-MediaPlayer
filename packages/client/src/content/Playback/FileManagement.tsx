@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as React from "react";
 import _ from "lodash";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import {
   Box,
@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import axiosServerAPI from "src/utils/axios";
 import { convertBytes } from "src/utils/util";
+import { PlaybackContext } from "./PlaybackContext";
 
 type fileNameResponse = {
   fileName: string;
@@ -31,6 +32,7 @@ const FileManagement: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [availableSpace, setAvailableSpace] = useState<number>(0);
   const [fileSize, setFileSize] = useState<number>(0);
+  const { transportCommandAndUpdateStatus } = useContext(PlaybackContext);
 
   const fileUploadButtonRef = useRef<HTMLInputElement>();
 
@@ -38,7 +40,7 @@ const FileManagement: React.FC = () => {
     axiosServerAPI
       .get<fileNameResponse>(`/getFileNameAndSize`)
       .then((res) => {
-        if (res.data.fileName !== "black_1920.jpg"){
+        if (res.data.fileName !== "black_1920.jpg") {
           setFileName(res.data.fileName);
           setFileSize(res.data.fileSize);
         } else {
@@ -75,7 +77,8 @@ const FileManagement: React.FC = () => {
   const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files;
     if (file !== null) {
-      axiosServerAPI.post(`/stop`);
+      axiosServerAPI
+        .post("/stop");
       setOpenProgressDialog(true);
       const formData = new FormData();
       formData.append("media", file[0], file[0].name);
@@ -122,7 +125,7 @@ const FileManagement: React.FC = () => {
   };
 
   const handleRemoveMediaFile = () => {
-    axiosServerAPI.post(`/stop`);
+    transportCommandAndUpdateStatus("/stop");
     axiosServerAPI.post(`/removeMediaFile`).then(
       (res) => {
         getFileNameAndSize();
