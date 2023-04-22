@@ -9,6 +9,8 @@ from urllib.request import url2pathname
 from urllib.parse import urlparse
 
 import __main__
+from .utils.blank_console import blank_console
+
 
 media_folder_path = Path(__file__).parent / "media"
 black_video_path = Path(__file__).parent / "static_media/black_1920.jpg"
@@ -93,6 +95,7 @@ class VLC_Handler():
         self.media_list_player.play()
 
     def stop(self):
+        blank_console()
         if not self.is_stopped :
             self.media_list_player.stop()
             # self.media_list.release()

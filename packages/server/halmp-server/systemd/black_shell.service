@@ -1,0 +1,11 @@
+[Unit]
+Description=HAL Media Player startup service
+After=halmp.service
+
+[Service]
+Type=idle
+User=pi
+ExecStart=setterm -cursor off && sudo sh -c "TERM=linux setterm -foreground black -clear all >/dev/tty0"
+
+[Install]
+WantedBy=multi-user.target

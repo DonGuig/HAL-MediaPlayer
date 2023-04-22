@@ -32,7 +32,7 @@ const FileManagement: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [availableSpace, setAvailableSpace] = useState<number>(0);
   const [fileSize, setFileSize] = useState<number>(0);
-  const { transportCommandAndUpdateStatus } = useContext(PlaybackContext);
+  const { transportCommandAndUpdateStatus, updateStatus } = useContext(PlaybackContext);
 
   const fileUploadButtonRef = useRef<HTMLInputElement>();
 
@@ -94,6 +94,7 @@ const FileManagement: React.FC = () => {
             setOpenProgressDialog(false);
             getFileNameAndSize();
             getAvalaibleSpace();
+            updateStatus();
             globalSnackbar.success("Media file changed");
           },
           (err) => {
@@ -113,6 +114,7 @@ const FileManagement: React.FC = () => {
       (res) => {
         getFileNameAndSize();
         getAvalaibleSpace();
+        updateStatus();
         globalSnackbar.success("Media file changed");
       },
       (err) => {

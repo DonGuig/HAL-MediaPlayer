@@ -7,6 +7,7 @@ from pathlib import Path
 from ipaddress import IPv4Network
 import magic
 
+from .utils.copy_progress import copy_progress
 
 import __main__
 
@@ -31,6 +32,10 @@ def upload_file():
     except Exception as e:
         return Response(str(e), status=500)
     
+def progress_cb(percent: int):
+    print("progress %i" % percent)
+    __main__.socketio.emit("copy_progress", percent)
+
 @http_api.post('/api/getFileFromUSBDrive')
 def get_file_from_usb_drive():
     try:
@@ -59,11 +64,12 @@ def get_file_from_usb_drive():
         if media_file_path != "":
             __main__.vlc_handler.stop()
             __main__.vlc_handler.remove_all_media_files()
-            shutil.copy(media_file_path, media_folder_path)
-            __main__.vlc_handler.refresh_media_file()
-            __main__.vlc_handler.play()
+            __main__.socketio.emit("about to copy !!!!")
+            copy_progress(media_file_path, media_folder_path, __main__.socketio, progress_cb)
+            #__main__.vlc_handler.refresh_media_file()
+            #__main__.vlc_handler.play()
         else:
-            raise Exception("No media file found on drive")
+            raise Exception("No media file found on drive (or no drive ?)")
             
         return Response(status=200)
     except Exception as e:
@@ -86,6 +92,7 @@ def remove_media_file():
 def get_filename_and_size():
     try:
         fileName = __main__.vlc_handler.get_current_media_filename()
+        print(fileName)
         fileSize = __main__.vlc_handler.get_current_media_file_size()
         return {"fileName": fileName, "fileSize": fileSize}
     except Exception as e:
