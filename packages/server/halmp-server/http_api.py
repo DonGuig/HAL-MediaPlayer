@@ -17,7 +17,6 @@ resourcesPath = Path(__file__).parent / "resources"
 media_folder_path = Path(__file__).parent / "media"
 
 
-
 @http_api.post('/api/uploadMediaFile')
 def upload_file():
     try:
@@ -31,10 +30,12 @@ def upload_file():
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)
-    
+
+
 def progress_cb(percent: int):
     print("progress %i" % percent)
     __main__.socketio.emit("copy_progress", percent)
+
 
 @http_api.post('/api/getFileFromUSBDrive')
 def get_file_from_usb_drive():
@@ -56,25 +57,47 @@ def get_file_from_usb_drive():
                 file_path = os.path.join("/media/usb", file)
                 # we keep only files, exclude directories
                 if os.path.isfile(file_path):
-                    file_type = magic.from_file(file_path, mime=True).split("/")[0]
+                    file_type = magic.from_file(file_path,
+                                                mime=True).split("/")[0]
                     if file_type == "audio" or file_type == "video":
                         media_file_path = file_path
                         break
-        
+
         if media_file_path != "":
             __main__.vlc_handler.stop()
             __main__.vlc_handler.remove_all_media_files()
             __main__.socketio.emit("about to copy !!!!")
-            copy_progress(media_file_path, media_folder_path, __main__.socketio, progress_cb)
-            #__main__.vlc_handler.refresh_media_file()
-            #__main__.vlc_handler.play()
+            filename = os.path.basename(media_file_path)
+            filesize = os.path.getsize(media_file_path)
+            with subprocess.Popen(
+                ['rsync', '--progress', media_file_path, media_folder_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    bufsize=1,
+                    universal_newlines=True) as cmd:
+                for line in cmd.stdout:
+                    print(line, end='')
+                    for word in line.split(" "):
+                        if word.endswith("%"):
+                            num = word.rstrip("%")
+                            percentage = int(num)
+                            __main__.socketio.start_background_task(
+                                __main__.socketio.emit, "copy_progress",
+                                percentage)
+                #print("poll %i" % cmd.poll())
+                if cmd.poll() != None: 
+                    if cmd.poll() != 0:
+                        raise Exception("Error copying %s" % cmd.stderr.read())
+
+            __main__.vlc_handler.refresh_media_file()
+            __main__.vlc_handler.play()
         else:
             raise Exception("No media file found on drive (or no drive ?)")
-            
+
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)
-    
+
 
 @http_api.post('/api/removeMediaFile')
 def remove_media_file():
@@ -85,7 +108,6 @@ def remove_media_file():
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)
-
 
 
 @http_api.get('/api/getFileNameAndSize')
@@ -448,7 +470,8 @@ def get_current_wifi():
 
     except Exception as e:
         return Response(str(e), status=500)
-    
+
+
 @http_api.get('/api/getTransportStatus')
 def get_transport_status():
     try:
