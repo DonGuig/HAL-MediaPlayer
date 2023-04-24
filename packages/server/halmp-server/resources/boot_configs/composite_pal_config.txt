@@ -1,11 +1,16 @@
 # HAL Media Player config for Composite output - February 2023
 # credits to mp4museum for inspiration
 
+[all]
 disable_splash=1
 avoid_warnings=1
 gpu_mem=256
 dtparam=audio=on
 disable_overscan=1
+dtoverlay=vc4-fkms-v3d
+
+# composite PAL
+sdtv_mode=2
 
 # Ignore HDMI auto config, force 1080p at 60 hz
 # this can fix problems with silly projectors or displays
@@ -14,6 +19,18 @@ disable_overscan=1
 #hdmi_ignore_cec=1
 #hdmi_group=1
 #hdmi_mode=16
+
+############
+
+# before chaning anything below, please read
+# http://rpf.io/configtxt
+
+############
+
+
+[pi4]
+# Enable DRM VC4 V3D driver on top of the dispmanx display stack
+max_framebuffers=2
 
 # enable 4k with more than 30hz on raspi 4
 # remove the # from the next line
@@ -24,20 +41,6 @@ hdmi_enable_4kp60=1
 #hdmi_ignore_cec=1
 #hdmi_group=1
 #hdmi_mode=97
-
-############
-
-# before chaning anything below, please read
-# http://rpf.io/configtxt
-
-############
-
-# Enable audio (loads snd_bcm2835)
-#dtparam=audio=on
-
-[pi4]
-# Enable DRM VC4 V3D driver on top of the dispmanx display stack
-max_framebuffers=2
 
 # uncomment if you get no picture on HDMI for a default "safe" mode
 #hdmi_safe=1
@@ -75,8 +78,3 @@ max_framebuffers=2
 
 
 
-[all]
-dtoverlay=vc4-fkms-v3d
-
-# uncomment for composite PAL
-sdtv_mode=2

@@ -1,4 +1,4 @@
-# HAL Media Player config for HDMI output - February 2023
+# HAL Media Player config for Composite output - February 2023
 # credits to mp4museum for inspiration
 
 [all]
@@ -10,6 +10,9 @@ dtparam=audio=on
 disable_overscan=1
 dtoverlay=vc4-fkms-v3d
 
+# composite NTSC
+sdtv_mode=0
+
 # Ignore HDMI auto config, force 1080p at 60 hz
 # this can fix problems with silly projectors or displays
 # remove the # on all three lines below
@@ -17,6 +20,8 @@ dtoverlay=vc4-fkms-v3d
 #hdmi_ignore_cec=1
 #hdmi_group=1
 #hdmi_mode=16
+
+
 
 ############
 
@@ -72,4 +77,6 @@ hdmi_enable_4kp60=1
 # uncomment to increase signal to HDMI, if you have interference, blanking, or
 # no display
 #config_hdmi_boost=4
+
+
 

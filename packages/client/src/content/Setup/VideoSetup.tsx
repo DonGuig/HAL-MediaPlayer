@@ -2,8 +2,6 @@ import {
   Grid,
   Typography,
   Stack,
-  ToggleButtonGroup,
-  ToggleButton,
   Button,
   Dialog,
   DialogContent,
@@ -11,12 +9,12 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
 import axiosServerAPI from "src/utils/axios";
 
-type VideoOutputType = "Composite" | "HDMI";
+type VideoOutputType = "CompositePAL" | "CompositeNTSC" | "HDMI";
 
 const VideoSetup: React.FC = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -60,9 +58,23 @@ const VideoSetup: React.FC = () => {
           justifyContent="center"
           spacing={2}
         >
-          <Button variant="outlined" onClick={() => handleVideoOutputChange("HDMI")}>HDMI</Button>
-          <Button variant="outlined" onClick={() => handleVideoOutputChange("Composite")}>
+          <Button
+            variant="outlined"
+            onClick={() => handleVideoOutputChange("HDMI")}
+          >
+            HDMI
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => handleVideoOutputChange("CompositePAL")}
+          >
             Composite PAL
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => handleVideoOutputChange("CompositeNTSC")}
+          >
+            Composite NTSC
           </Button>
         </Stack>
       </Grid>
