@@ -22,7 +22,6 @@ import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
-import ipRegex from "ip-regex";
 
 type WifiConfig = {
   SSID: string;

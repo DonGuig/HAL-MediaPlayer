@@ -27,17 +27,54 @@ type AvailableSpaceResponse = {
   space: number;
 };
 
+interface progressDialogProps {
+  type: "Uploading" | "Copying";
+  open: boolean;
+  progress: number;
+  fileInfo: fileNameResponse
+}
+
+const ProgressDialog: React.FC<progressDialogProps> = ({
+  type,
+  open,
+  progress,
+  fileInfo
+}) => {
+  return (
+    <>
+      <Dialog fullWidth maxWidth="sm" open={open}>
+        <DialogContent sx={{ p: 2 }}>
+          <Stack spacing={2}>
+            <Typography>{type}...</Typography>
+            <Typography>
+              <b>Source file : </b>
+              {fileInfo.fileName} ({convertBytes(fileInfo.fileSize)})
+            </Typography>
+            <LinearProgress variant="determinate" value={progress} />
+          </Stack>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 const FileManagement: React.FC = () => {
   const [fileName, setFileName] = useState<string>("...");
-  const [openUploadProgressDialog, setOpenUploadProgressDialog] = useState<boolean>(false);
-  const [openUSBProgressDialog, setOpenUSBProgressDialog] = useState<boolean>(false);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [USBcopyProgress, setUSBCopyProgress] = useState<number>(0);
+  const [openProgressDialog, setOpenProgressDialog] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [progressType, setProgressType] = useState<"Uploading" | "Copying">(
+    "Uploading"
+  );
+  const [fileInfo, setFileInfo] = useState<fileNameResponse>({
+    fileName: "waiting...",
+    fileSize: 0,
+  });
+
   const [availableSpace, setAvailableSpace] = useState<number>(0);
   const [fileSize, setFileSize] = useState<number>(0);
-  const { transportCommandAndUpdateStatus, updateStatus } = useContext(PlaybackContext);
+  const { transportCommandAndUpdateStatus, updateStatus } =
+    useContext(PlaybackContext);
   const { socket } = useContext(WebSocketContext);
-
 
   const fileUploadButtonRef = useRef<HTMLInputElement>();
 
@@ -82,30 +119,33 @@ const FileManagement: React.FC = () => {
   const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files;
     if (file !== null) {
-      axiosServerAPI
-        .post("/stop");
-      setOpenUploadProgressDialog(true);
+      setFileInfo({fileName:file[0].name, fileSize:file[0].size})
+      axiosServerAPI.post("/stop");
+      setProgressType("Uploading");
+      setOpenProgressDialog(true);
       const formData = new FormData();
       formData.append("media", file[0], file[0].name);
       axiosServerAPI
         .post(`/uploadMediaFile`, formData, {
           onUploadProgress: (event) => {
             const progress = (event.loaded / event.total) * 100;
-            setUploadProgress(progress);
+            setProgress(progress);
           },
         })
         .then(
           (res) => {
-            setOpenUploadProgressDialog(false);
-            setUploadProgress(0);
+            setOpenProgressDialog(false);
+            setFileInfo({fileName:"waiting...", fileSize:0})
+            setProgress(0);
             getFileNameAndSize();
             getAvalaibleSpace();
             updateStatus();
             globalSnackbar.success("Media file changed");
           },
           (err) => {
-            setOpenUploadProgressDialog(false);
-            setUploadProgress(0);
+            setOpenProgressDialog(false);
+            setFileInfo({fileName:"waiting...", fileSize:0})
+            setProgress(0);
             if (axios.isAxiosError(err)) {
               globalSnackbar.error(
                 `Problème dans l'envoi du fichier : ${err.response.data}`
@@ -117,24 +157,25 @@ const FileManagement: React.FC = () => {
   };
 
   const handleGetFromUSBDrive = () => {
-    setOpenUSBProgressDialog(true)
+    setProgressType("Copying");
+    setOpenProgressDialog(true);
     socket.on("copy_progress", (percent) => {
-      setUSBCopyProgress(percent);
-    })
+      setProgress(percent);
+    });
     axiosServerAPI.post(`/getFileFromUSBDrive`).then(
       (res) => {
-        setOpenUSBProgressDialog(false);
-        setUSBCopyProgress(0);
-        socket.off("copy_progress")
+        setOpenProgressDialog(false);
+        setProgress(0);
+        socket.off("copy_progress");
         getFileNameAndSize();
         getAvalaibleSpace();
         updateStatus();
         globalSnackbar.success("Media file changed");
       },
       (err) => {
-        setOpenUSBProgressDialog(false);
-        setUSBCopyProgress(0);
-        socket.off("copy_progress")
+        setOpenProgressDialog(false);
+        setProgress(0);
+        socket.off("copy_progress");
         if (axios.isAxiosError(err)) {
           globalSnackbar.error(err.response.data);
         }
@@ -151,13 +192,24 @@ const FileManagement: React.FC = () => {
         globalSnackbar.success("Media file deleted");
       },
       (err) => {
-        setOpenUploadProgressDialog(false);
+        setOpenProgressDialog(false);
         if (axios.isAxiosError(err)) {
           globalSnackbar.error(err.response.data);
         }
       }
     );
   };
+
+  useEffect(() => {
+    if (openProgressDialog) {
+      socket.on("file_info", (info: fileNameResponse) => {
+        setFileInfo(info);
+      });
+    } else {
+      socket.off("file_info");
+      setFileInfo({fileName:"waiting...", fileSize:0})
+    }
+  }, [openProgressDialog, socket]);
 
   useEffect(() => {
     getFileNameAndSize();
@@ -239,22 +291,12 @@ const FileManagement: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
-      <Dialog fullWidth maxWidth="sm" open={openUploadProgressDialog}>
-        <DialogContent sx={{ p: 2 }}>
-          <Stack spacing={2}>
-            <Typography>Uploading...</Typography>
-            <LinearProgress variant="determinate" value={uploadProgress} />
-          </Stack>
-        </DialogContent>
-      </Dialog>
-      <Dialog fullWidth maxWidth="sm" open={openUSBProgressDialog}>
-        <DialogContent sx={{ p: 2 }}>
-          <Stack spacing={2}>
-            <Typography>Copying...</Typography>
-            <LinearProgress variant="determinate" value={USBcopyProgress} />
-          </Stack>
-        </DialogContent>
-      </Dialog>
+      <ProgressDialog
+        open={openProgressDialog}
+        progress={progress}
+        type={progressType}
+        fileInfo={fileInfo}
+      ></ProgressDialog>
     </>
   );
 };

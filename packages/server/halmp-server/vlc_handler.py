@@ -88,11 +88,13 @@ class VLC_Handler():
 
 
     def pause(self):
-        self.media_list_player.pause()
+        if not self.is_stopped:
+            self.media_list_player.pause()
 
     def restart(self):
-        self.media_player.set_time(0)
-        self.media_list_player.play()
+        if self.media_list != None:
+            self.media_player.set_time(0)
+            self.media_list_player.play()
 
     def stop(self):
         blank_console()
@@ -154,20 +156,27 @@ class VLC_Handler():
         return res
 
     def get_current_media_filename(self):
-        mrl: str = self.media_player.get_media().get_mrl()
-        filename = mrl.split("/")[-1]
-        return filename
+        if self.media_list != None:
+            mrl: str = self.media_player.get_media().get_mrl()
+            filename = mrl.split("/")[-1]
+            return filename
+        else:
+            return "None"
     
     def get_current_media_path(self):
-        mrl = self.media_player.get_media().get_mrl()
-        return url2pathname(urlparse(mrl).path)
+        if self.media_list != None:
+            mrl = self.media_player.get_media().get_mrl()
+            return url2pathname(urlparse(mrl).path)
+        else :
+            return ""
 
     def get_current_media_file_size(self):
-        path = self.get_current_media_path()
-        return os.path.getsize(path)
+        if self.media_list != None: 
+            path = self.get_current_media_path()
+            return os.path.getsize(path)
+        else :
+            return 0
         
-
-
 if __name__ == '__main__':
     #vlc = VLC_Handler()
     vlc_instance = vlc.Instance()

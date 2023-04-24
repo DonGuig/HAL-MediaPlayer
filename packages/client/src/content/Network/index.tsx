@@ -1,9 +1,7 @@
 import * as React from 'react';
 import {
-    Button,
-    Container, Divider, Typography,
+    Container, Divider,
 } from "@mui/material";
-import axiosServerAPI from 'src/utils/axios';
 import WiredEthernet from './WiredEthernet';
 import Hostname from './Hostname';
 import Wifi from './Wifi';

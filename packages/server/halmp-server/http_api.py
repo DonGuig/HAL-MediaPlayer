@@ -7,8 +7,6 @@ from pathlib import Path
 from ipaddress import IPv4Network
 import magic
 
-from .utils.copy_progress import copy_progress
-
 import __main__
 
 http_api = Blueprint("http_api", __name__)
@@ -69,6 +67,10 @@ def get_file_from_usb_drive():
             __main__.socketio.emit("about to copy !!!!")
             filename = os.path.basename(media_file_path)
             filesize = os.path.getsize(media_file_path)
+            __main__.socketio.emit("file_info", {
+                "fileName": filename,
+                "fileSize": filesize
+            })
             with subprocess.Popen(
                 ['rsync', '--progress', media_file_path, media_folder_path],
                     stdout=subprocess.PIPE,
@@ -84,15 +86,14 @@ def get_file_from_usb_drive():
                             __main__.socketio.start_background_task(
                                 __main__.socketio.emit, "copy_progress",
                                 percentage)
-                #print("poll %i" % cmd.poll())
-                if cmd.poll() != None: 
+                if cmd.poll() != None:
                     if cmd.poll() != 0:
-                        raise Exception("Error copying %s" % cmd.stderr.read())
+                        raise Exception("Error copying : %s" % cmd.stderr.read())
 
             __main__.vlc_handler.refresh_media_file()
             __main__.vlc_handler.play()
         else:
-            raise Exception("No media file found on drive (or no drive ?)")
+            raise Exception("No media file found on drive (or no drive)")
 
         return Response(status=200)
     except Exception as e:
@@ -125,7 +126,7 @@ def get_filename_and_size():
 def get_available_space():
     try:
         total, used, free = shutil.disk_usage(
-            __main__.vlc_handler.get_current_media_path())
+            "/home/pi")
         return {"space": free}
     except Exception as e:
         return Response(str(e), status=500)
@@ -375,8 +376,10 @@ def set_video_output():
     try:
         if request.json["videoOutput"] == "HDMI":
             p = resourcesPath / "boot_configs" / "hdmi_config.txt"
-        elif request.json["videoOutput"] == "Composite":
-            p = resourcesPath / "boot_configs" / "composite_config.txt"
+        elif request.json["videoOutput"] == "CompositePAL":
+            p = resourcesPath / "boot_configs" / "composite_pal_config.txt"
+        elif request.json["videoOutput"] == "CompositeNTSC":
+            p = resourcesPath / "boot_configs" / "composite_ntsc_config.txt"
         else:
             raise Exception("Incorrect request")
 

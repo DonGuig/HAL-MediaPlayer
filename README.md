@@ -17,7 +17,6 @@ Pour le développement du client et du server, utiliser les launch configuration
 
 Pour utiliser en local sur le client + server en configuration prod (par exemple pour travailler sur le light_engine en python tout en ayant accès à l'interface web et au server Node), utiliser les launch configuration `Build server + client (prod)` et `Run server + client (prod)`.
 
-
 ### Install RPi
 
 sudo apt update

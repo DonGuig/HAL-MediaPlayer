@@ -1,16 +1,12 @@
 import { Button, Grid, Typography } from "@mui/material";
-import axios from "axios";
 import * as React from "react";
-import _ from "lodash";
 
-import globalSnackbar from "src/utils/snackbarUtils";
 import Seek from "./Seek";
-import { useContext, useEffect, useState } from "react";
-import axiosServerAPI from "src/utils/axios";
+import { useContext } from "react";
 import { PlaybackContext } from "./PlaybackContext";
 
 const Transport: React.FC = () => {
-  const { transportCommandAndUpdateStatus, updateStatus } =
+  const { transportCommandAndUpdateStatus } =
     useContext(PlaybackContext);
 
   const handleClickPlay = () => {
