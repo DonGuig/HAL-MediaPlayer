@@ -206,7 +206,7 @@ const FileManagement: React.FC = () => {
         setFileInfo(info);
       });
     } else {
-      if (socket !== null){
+      if (typeof socket != "undefined"){
         socket.off("file_info");
       }
       setFileInfo({fileName:"waiting...", fileSize:0})
