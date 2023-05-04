@@ -1,5 +1,6 @@
-import { Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import HALL from "./logo.svg";
 
 const LogoTextWrapper = styled(Box)(
   ({ theme }) => `
@@ -22,9 +23,14 @@ const LogoText = styled(Box)(
 
 function Logo() {
   return (
-    <LogoTextWrapper>
-      <LogoText>HAL Media Player</LogoText>
-    </LogoTextWrapper>
+    <>
+      <Container sx={{width:"130px"}}>
+        <img src={HALL} alt="HAL"></img>
+      </Container>
+      <LogoTextWrapper>
+        <LogoText>HAL Media Player</LogoText>
+      </LogoTextWrapper>
+    </>
   );
 }
 

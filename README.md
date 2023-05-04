@@ -82,4 +82,3 @@ https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d
 
 
 TODO :
-    - mode composite NTSC
