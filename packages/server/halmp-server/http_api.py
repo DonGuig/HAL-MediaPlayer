@@ -277,12 +277,11 @@ def set_wired_network_config():
         ipAddress = request.json["ipAddress"]
         netmask = request.json["netmask"]
 
-        #the following line will return an Exception if not a valid netmask
-        netmask_bit_count = IPv4Network(f'0.0.0.0/{netmask}').prefixlen
-
         if DHCPorFixed == "DHCP":
             command = f'sudo nmcli con mod eth0 ipv4.method auto'
         else:
+            #the following line will return an Exception if not a valid netmask
+            netmask_bit_count = IPv4Network(f'0.0.0.0/{netmask}').prefixlen
             command = f'sudo nmcli con mod eth0 ipv4.method manual ipv4.addresses {ipAddress}/{netmask_bit_count}'
 
         network_process = subprocess.run(command,
