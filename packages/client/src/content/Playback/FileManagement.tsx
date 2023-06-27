@@ -11,6 +11,7 @@ import {
   Grid,
   LinearProgress,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import axiosServerAPI from "src/utils/axios";
@@ -255,9 +256,11 @@ const FileManagement: React.FC = () => {
             </label>
           </Grid>
           <Grid item>
+            <Tooltip title={"Format a USB drive as ExFAT or FAT32 (MBR partiton map), put ONLY the media file you want to copy on the root, plug it in the RPi and press this button. When done, you can unplug the USB drive."}>
             <Button variant="outlined" onClick={handleGetFromUSBDrive}>
-              Get from USB Drive
+              Copy from USB Drive
             </Button>
+            </Tooltip>
           </Grid>
           <Grid item>
             <Button
