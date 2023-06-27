@@ -12,13 +12,7 @@ dtoverlay=vc4-fkms-v3d
 # composite PAL
 sdtv_mode=2
 
-# Ignore HDMI auto config, force 1080p at 60 hz
-# this can fix problems with silly projectors or displays
-# remove the # on all three lines below
 
-#hdmi_ignore_cec=1
-#hdmi_group=1
-#hdmi_mode=16
 
 ############
 
@@ -26,6 +20,14 @@ sdtv_mode=2
 # http://rpf.io/configtxt
 
 ############
+
+# Ignore HDMI auto config, force 1080p at 60 hz
+# this can fix problems with silly projectors or displays
+# remove the # on all three lines below
+
+#hdmi_ignore_cec=1
+#hdmi_group=1
+#hdmi_mode=16
 
 
 [pi4]

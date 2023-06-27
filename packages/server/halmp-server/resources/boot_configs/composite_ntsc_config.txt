@@ -13,13 +13,7 @@ dtoverlay=vc4-fkms-v3d
 # composite NTSC
 sdtv_mode=0
 
-# Ignore HDMI auto config, force 1080p at 60 hz
-# this can fix problems with silly projectors or displays
-# remove the # on all three lines below
 
-#hdmi_ignore_cec=1
-#hdmi_group=1
-#hdmi_mode=16
 
 
 
@@ -29,6 +23,14 @@ sdtv_mode=0
 # http://rpf.io/configtxt
 
 ############
+
+# Ignore HDMI auto config, force 1080p at 60 hz
+# this can fix problems with silly projectors or displays
+# remove the # on all three lines below
+
+#hdmi_ignore_cec=1
+#hdmi_group=1
+#hdmi_mode=16
 
 [pi4]
 # Enable DRM VC4 V3D driver on top of the dispmanx display stack

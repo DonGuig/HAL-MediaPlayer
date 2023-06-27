@@ -278,7 +278,7 @@ def set_wired_network_config():
         netmask = request.json["netmask"]
 
         if DHCPorFixed == "DHCP":
-            command = f'sudo nmcli con mod eth0 ipv4.method auto'
+            command = f'sudo nmcli con mod eth0 ipv4.method auto && sudo nmcli con mod eth0 ipv4.addresses ""'
         else:
             #the following line will return an Exception if not a valid netmask
             netmask_bit_count = IPv4Network(f'0.0.0.0/{netmask}').prefixlen
@@ -379,6 +379,8 @@ def set_video_output():
             p = resourcesPath / "boot_configs" / "composite_pal_config.txt"
         elif request.json["videoOutput"] == "CompositeNTSC":
             p = resourcesPath / "boot_configs" / "composite_ntsc_config.txt"
+        elif request.json["videoOutput"] == "HDMIForce1080p60":
+            p = resourcesPath / "boot_configs" / "hdmi_config_force_1080p60.txt"
         else:
             raise Exception("Incorrect request")
 
@@ -386,6 +388,41 @@ def set_video_output():
                        shell=True,
                        check=True,
                        capture_output=True)
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.get('/api/getConfigTXT')
+def get_config_txt():
+    try:
+        lines : str = ""
+        with open("/boot/config.txt", 'r') as f:
+            lines = f.read()
+        
+        return {"txt" : lines}
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.post('/api/sendConfigTXT')
+def send_config_txt():
+    try:
+        txt: str = request.json["txt"]
+        if txt != "":
+            with open("temp_config.txt", 'w') as f:
+                f.write(txt)
+
+            cmd = f'sudo cp "temp_config.txt" /boot/config.txt'
+            subprocess.run(cmd,
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+            
+            cmd = f'rm "temp_config.txt"'
+            subprocess.run(cmd,
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)
