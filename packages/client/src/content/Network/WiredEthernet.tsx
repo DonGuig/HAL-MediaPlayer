@@ -11,8 +11,11 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import CircleIcon from "@mui/icons-material/Circle";
+import { green, grey } from "@mui/material/colors";
+
 import * as React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
@@ -25,9 +28,12 @@ type WiredNetworkConfig = {
   DHCPorFixed: DHCPorFixed;
   ipAddress: String;
   netmask: String;
+  connected?: boolean;
 };
 
 const WiredEthernet: React.FC = () => {
+  const [cableConnected, setCableConnected] = useState<boolean>(false);
+
   const formik = useFormik<WiredNetworkConfig>({
     initialValues: {
       DHCPorFixed: "DHCP",
@@ -87,6 +93,7 @@ const WiredEthernet: React.FC = () => {
         formik.setFieldValue("DHCPorFixed", res.data.DHCPorFixed);
         formik.setFieldValue("ipAddress", res.data.ipAddress);
         formik.setFieldValue("netmask", res.data.netmask);
+        setCableConnected(res.data.connected);
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
@@ -128,10 +135,19 @@ const WiredEthernet: React.FC = () => {
   }, []);
 
   return (
-    <Stack marginY={4} direction="column" width="100%">
+    <Stack marginY={4} direction="column" width="100%" spacing={2}>
       <Typography variant="h4" align="center">
         Wired Ethernet
       </Typography>
+      <Stack direction="row" alignSelf="center" alignItems="center" spacing={2}>
+        Connected :{" "}
+        <CircleIcon
+          sx={{ color: cableConnected ? green[500] : grey[500] }}
+        />{" "}
+        <Button variant="contained" onClick={() => getWiredNetworkConfig()}>
+          Refresh
+        </Button>
+      </Stack>
       <Grid
         container
         margin={2}

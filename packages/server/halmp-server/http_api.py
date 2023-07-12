@@ -247,12 +247,12 @@ def set_device_name():
 @http_api.get('/api/getWiredNetwokConfig')
 def get_wired_network_config():
     try:
-        dhcp_process = subprocess.run('ip -4 addr show eth0',
+        dhcp_process = subprocess.run('nmcli con show eth0 | grep ipv4.method',
                                       shell=True,
                                       text=True,
                                       capture_output=True)
         if dhcp_process.stdout.find(
-                "dynamic") != -1 or dhcp_process.stdout.find("link") != -1:
+                "auto") != -1:
             dhcp_or_fixed = "DHCP"
         else:
             dhcp_or_fixed = "Fixed IP"
@@ -270,10 +270,23 @@ def get_wired_network_config():
             check=True,
             capture_output=True)
         netmask = netmask_process.stdout.strip()
+        connected_process = subprocess.run(
+            'nmcli -f WIRED-PROPERTIES.CARRIER device show eth0',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        if connected_process.stdout.find(
+                "on") != -1:
+            connected = True
+        else:
+            connected = False
+        
         return {
             "DHCPorFixed": dhcp_or_fixed,
             "ipAddress": ip_address,
-            "netmask": netmask
+            "netmask": netmask,
+            "connected": connected
         }
     except Exception as e:
         return Response(str(e), status=500)
