@@ -4,6 +4,7 @@ import _ from "lodash";
 import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -32,14 +33,14 @@ interface progressDialogProps {
   type: "Uploading" | "Copying";
   open: boolean;
   progress: number;
-  fileInfo: fileNameResponse
+  fileInfo: fileNameResponse;
 }
 
 const ProgressDialog: React.FC<progressDialogProps> = ({
   type,
   open,
   progress,
-  fileInfo
+  fileInfo,
 }) => {
   return (
     <>
@@ -52,6 +53,12 @@ const ProgressDialog: React.FC<progressDialogProps> = ({
               {fileInfo.fileName} ({convertBytes(fileInfo.fileSize)})
             </Typography>
             <LinearProgress variant="determinate" value={progress} />
+            {type === "Uploading" && (
+              <Alert severity="warning">
+                After uploading, it might take up to a few minutes for media
+                file to be replaced. Please be patient and do not reboot
+              </Alert>
+            )}
           </Stack>
         </DialogContent>
       </Dialog>
@@ -120,7 +127,7 @@ const FileManagement: React.FC = () => {
   const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files;
     if (file !== null) {
-      setFileInfo({fileName:file[0].name, fileSize:file[0].size})
+      setFileInfo({ fileName: file[0].name, fileSize: file[0].size });
       axiosServerAPI.post("/stop");
       setProgressType("Uploading");
       setOpenProgressDialog(true);
@@ -136,7 +143,7 @@ const FileManagement: React.FC = () => {
         .then(
           (res) => {
             setOpenProgressDialog(false);
-            setFileInfo({fileName:"waiting...", fileSize:0})
+            setFileInfo({ fileName: "waiting...", fileSize: 0 });
             setProgress(0);
             getFileNameAndSize();
             getAvalaibleSpace();
@@ -145,7 +152,7 @@ const FileManagement: React.FC = () => {
           },
           (err) => {
             setOpenProgressDialog(false);
-            setFileInfo({fileName:"waiting...", fileSize:0})
+            setFileInfo({ fileName: "waiting...", fileSize: 0 });
             setProgress(0);
             if (axios.isAxiosError(err)) {
               globalSnackbar.error(
@@ -207,10 +214,10 @@ const FileManagement: React.FC = () => {
         setFileInfo(info);
       });
     } else {
-      if (typeof socket != "undefined"){
+      if (typeof socket != "undefined") {
         socket.off("file_info");
       }
-      setFileInfo({fileName:"waiting...", fileSize:0})
+      setFileInfo({ fileName: "waiting...", fileSize: 0 });
     }
   }, [openProgressDialog, socket]);
 
@@ -256,10 +263,14 @@ const FileManagement: React.FC = () => {
             </label>
           </Grid>
           <Grid item>
-            <Tooltip title={"Format a USB drive as ExFAT or FAT32 (MBR partiton map), put ONLY the media file you want to copy on the root, plug it in the RPi and press this button. When done, you can unplug the USB drive."}>
-            <Button variant="outlined" onClick={handleGetFromUSBDrive}>
-              Copy from USB Drive
-            </Button>
+            <Tooltip
+              title={
+                "Format a USB drive as ExFAT or FAT32 (MBR partiton map), put ONLY the media file you want to copy on the root, plug it in the RPi and press this button. When done, you can unplug the USB drive."
+              }
+            >
+              <Button variant="outlined" onClick={handleGetFromUSBDrive}>
+                Copy from USB Drive
+              </Button>
             </Tooltip>
           </Grid>
           <Grid item>

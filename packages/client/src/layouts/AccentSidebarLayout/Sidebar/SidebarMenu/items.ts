@@ -2,6 +2,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import LanIcon from '@mui/icons-material/Lan';
 import InfoIcon from '@mui/icons-material/Info';
 import BuildIcon from '@mui/icons-material/Build';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { SvgIconTypeMap } from "@mui/material";
 
@@ -38,6 +39,11 @@ const menuItems: MenuItems[] = [
         name: "Setup",
         icon: BuildIcon,
         link: "/setup",
+      },
+      {
+        name: "System",
+        icon: SettingsIcon,
+        link: "/system",
       },
       {
         name: "About",

@@ -130,6 +130,15 @@ def get_available_space():
         return {"space": free}
     except Exception as e:
         return Response(str(e), status=500)
+    
+@http_api.get('/api/getFSSize')
+def get_fs_size():
+    try:
+        total, used, free = shutil.disk_usage(
+            "/home/pi")
+        return {"size": total}
+    except Exception as e:
+        return Response(str(e), status=500)
 
 
 @http_api.post('/api/play')
@@ -362,6 +371,17 @@ def reboot():
 def shutdown():
     try:
         subprocess.run('sudo shutdown now',
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+        return Response(status=200)
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.post('/api/expandFS')
+def expandFS():
+    try:
+        subprocess.run('sudo raspi-config nonint do_expand_rootfs',
                        shell=True,
                        check=True,
                        capture_output=True)

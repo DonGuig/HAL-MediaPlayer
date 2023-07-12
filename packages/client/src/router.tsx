@@ -23,6 +23,9 @@ const Network = Loader(
 const Setup = Loader(
   lazy(() => import("src/content/Setup"))
 );
+const System = Loader(
+  lazy(() => import("src/content/System"))
+);
 const About = Loader(
   lazy(() => import("src/content/About"))
 );
@@ -53,6 +56,10 @@ const routes: RouteObject[] = [
       {
         path: "setup",
         element: <Setup />,
+      },
+      {
+        path: "system",
+        element: <System />,
       },
       {
         path: "network",

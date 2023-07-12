@@ -4,7 +4,6 @@ import {
 } from "@mui/material";
 
 import AudioSetup from './AudioSetup';
-import SystemControl from './SystemControl';
 import VideoSetup from './VideoSetup';
 
 
@@ -14,8 +13,6 @@ const Setup: React.FC = () => {
             <AudioSetup/>
             <Divider/>
             <VideoSetup/>
-            <Divider/>
-            <SystemControl/>
         </Container>
     );
 };
