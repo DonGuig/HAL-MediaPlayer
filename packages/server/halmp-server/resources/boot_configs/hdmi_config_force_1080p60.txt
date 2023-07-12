@@ -76,3 +76,4 @@ hdmi_enable_4kp60=1
 # no display
 #config_hdmi_boost=4
 
+[all]
