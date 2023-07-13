@@ -21,6 +21,7 @@
                 "start"
             ],
             "runtimeExecutable": "npm",
+            "runtimeVersion": "18.12.1",
             "cwd": "${workspaceFolder}/packages/client",
             "skipFiles": [
                 "<node_internals>/**"
@@ -66,6 +67,7 @@
                 "build"
             ],
             "runtimeExecutable": "npm",
+            "runtimeVersion": "18.12.1",
             "cwd": "${workspaceFolder}/packages/client",
             "skipFiles": [
                 "<node_internals>/**"
