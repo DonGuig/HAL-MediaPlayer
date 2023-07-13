@@ -7,6 +7,7 @@ import { SidebarContext } from "src/contexts/SidebarContext";
 import CloseTwoToneIcon from "@mui/icons-material/CloseTwoTone";
 
 import Name from "./Name";
+import OverlayInfo from "./OverlayInfo";
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -54,7 +55,9 @@ function Header() {
         <Grid item>
             <Name />
         </Grid>
-        <Grid item/>
+        <Grid item >
+            <OverlayInfo />
+        </Grid>
       </Grid>
     </HeaderWrapper>
   );

@@ -7,6 +7,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogContent,
   Grid,
@@ -19,6 +20,7 @@ import axiosServerAPI from "src/utils/axios";
 import { convertBytes } from "src/utils/util";
 import { PlaybackContext } from "./PlaybackContext";
 import { WebSocketContext } from "src/contexts/WebSocketContext";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 type fileNameResponse = {
   fileName: string;
@@ -83,6 +85,7 @@ const FileManagement: React.FC = () => {
   const { transportCommandAndUpdateStatus, updateStatus } =
     useContext(PlaybackContext);
   const { socket } = useContext(WebSocketContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   const fileUploadButtonRef = useRef<HTMLInputElement>();
 
@@ -229,7 +232,16 @@ const FileManagement: React.FC = () => {
   return (
     <>
       <Grid container marginY={2} justifyContent="center">
-        <Typography variant="h4">File</Typography>
+        <Typography variant="h4">
+          File{" "}
+          {overlayActive && (
+            <Chip
+              color="warning"
+              size="small"
+              label="Disabled while Overlay FS is active"
+            />
+          )}
+        </Typography>
         <Grid
           container
           margin={1}
@@ -252,6 +264,7 @@ const FileManagement: React.FC = () => {
             <label htmlFor="upload-file-input">
               <Button
                 variant="outlined"
+                disabled={overlayActive}
                 onClick={() => {
                   if (fileUploadButtonRef.current) {
                     fileUploadButtonRef.current.click();
@@ -268,7 +281,11 @@ const FileManagement: React.FC = () => {
                 "Format a USB drive as ExFAT or FAT32 (MBR partiton map), put ONLY the media file you want to copy on the root, plug it in the RPi and press this button. When done, you can unplug the USB drive."
               }
             >
-              <Button variant="outlined" onClick={handleGetFromUSBDrive}>
+              <Button
+                variant="outlined"
+                disabled={overlayActive}
+                onClick={handleGetFromUSBDrive}
+              >
                 Copy from USB Drive
               </Button>
             </Tooltip>
@@ -277,6 +294,7 @@ const FileManagement: React.FC = () => {
             <Button
               variant="outlined"
               color="error"
+              disabled={overlayActive}
               onClick={handleRemoveMediaFile}
             >
               Remove current media file
@@ -302,7 +320,7 @@ const FileManagement: React.FC = () => {
           <Grid item>
             <Typography variant="h6">
               <b>Available space : </b>
-              {convertBytes(availableSpace)}
+              {overlayActive ? "Not available while overlay file system is active": convertBytes(availableSpace)}
             </Typography>
           </Grid>
         </Grid>

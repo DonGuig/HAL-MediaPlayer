@@ -13,12 +13,13 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
 import Emitter from "src/utils/EventEmitter";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 
 type HostnameConfig = {
@@ -28,6 +29,8 @@ type HostnameConfig = {
 
 const Hostname: React.FC = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+
 
   const formik = useFormik<HostnameConfig>({
     initialValues: {
@@ -134,6 +137,8 @@ const Hostname: React.FC = () => {
                 // helperText={touched.ipAddress && errors.ipAddress}
                 label="Hostname"
                 name="hostname"
+                disabled={overlayActive || readOnlyBoot}
+
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.hostname}
@@ -146,7 +151,7 @@ const Hostname: React.FC = () => {
                 startIcon={
                   formik.isSubmitting ? <CircularProgress size="1rem" /> : null
                 }
-                disabled={formik.isSubmitting || !formik.isValid}
+                disabled={overlayActive || readOnlyBoot || formik.isSubmitting || !formik.isValid}
                 variant="contained"
               >
                 Apply

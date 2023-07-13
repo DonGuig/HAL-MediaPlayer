@@ -1,21 +1,37 @@
-import * as React from 'react';
-import {
-    Container, Divider
-} from "@mui/material";
+import * as React from "react";
+import { Chip, Container, Divider, Stack } from "@mui/material";
 
-import AudioSetup from './AudioSetup';
-import VideoSetup from './VideoSetup';
-
+import AudioSetup from "./AudioSetup";
+import VideoSetup from "./VideoSetup";
+import { useContext } from "react";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 const Setup: React.FC = () => {
-    return (
-        <Container>
-            <AudioSetup/>
-            <Divider/>
-            <VideoSetup/>
-        </Container>
-    );
-};
+  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
+  return (
+    <Container>
+      {overlayActive || readOnlyBoot ? (
+        <Stack
+          marginY={4}
+          direction="column"
+          width="100%"
+          alignItems="center"
+          spacing={2}
+        >
+          <Chip
+            color="warning"
+            size="small"
+            sx={{ width: "500px" }}
+            label="Changes disabled while Overlay FS active or read-only /boot"
+          />
+        </Stack>
+      ) : null}
+      <AudioSetup />
+      <Divider />
+      <VideoSetup />
+    </Container>
+  );
+};
 
 export default Setup;

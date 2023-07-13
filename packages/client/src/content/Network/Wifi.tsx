@@ -17,11 +17,12 @@ import CircleIcon from "@mui/icons-material/Circle";
 import { green, grey } from "@mui/material/colors";
 import axios from "axios";
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 type WifiConfig = {
   SSID: string;
@@ -40,6 +41,7 @@ type WifiActive = {
 const Wifi: React.FC = () => {
   const [wifiActivated, setWifiActivated] = useState<"true" | "false">("true");
   const [currentWifi, setCurrentWifi] = useState<String>("None");
+  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const formik = useFormik<WifiConfig>({
     initialValues: {
@@ -176,6 +178,7 @@ const Wifi: React.FC = () => {
         <ToggleButtonGroup
           value={wifiActivated}
           exclusive
+          disabled={overlayActive || readOnlyBoot}
           onChange={handleActiveWifiChange}
         >
           <ToggleButton value="true">Active</ToggleButton>
@@ -221,7 +224,9 @@ const Wifi: React.FC = () => {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.SSID}
-              disabled={wifiActivated === "false"}
+              disabled={
+                overlayActive || readOnlyBoot || wifiActivated === "false"
+              }
               variant="outlined"
             />
           </Grid>
@@ -239,7 +244,9 @@ const Wifi: React.FC = () => {
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.pass}
-              disabled={wifiActivated === "false"}
+              disabled={
+                overlayActive || readOnlyBoot || wifiActivated === "false"
+              }
               variant="outlined"
             />
           </Grid>
@@ -249,6 +256,7 @@ const Wifi: React.FC = () => {
                 control={
                   <Checkbox
                     name="hidden"
+                    disabled={overlayActive || readOnlyBoot}
                     checked={formik.values.hidden}
                     onChange={formik.handleChange}
                   />
@@ -263,7 +271,12 @@ const Wifi: React.FC = () => {
               startIcon={
                 formik.isSubmitting ? <CircularProgress size="1rem" /> : null
               }
-              disabled={formik.isSubmitting || !formik.isValid}
+              disabled={
+                overlayActive ||
+                readOnlyBoot ||
+                formik.isSubmitting ||
+                !formik.isValid
+              }
               variant="contained"
             >
               Apply

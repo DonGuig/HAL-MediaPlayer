@@ -13,10 +13,11 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
 import axiosServerAPI from "src/utils/axios";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 type VideoOutputType =
   | "CompositePAL"
@@ -122,6 +123,7 @@ const VideoSetup: React.FC = () => {
   const [openRebootDialog, setOpenRebootDialog] = useState<boolean>(false);
   const [openConfEditorDialog, setOpenConfEditorDialog] =
     useState<boolean>(false);
+  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const setVideoOutput = (type: VideoOutputType) => {
     axiosServerAPI
@@ -170,6 +172,7 @@ const VideoSetup: React.FC = () => {
           >
             <Button
               variant="outlined"
+              disabled={overlayActive || readOnlyBoot}
               onClick={() => handleVideoOutputChange("HDMI")}
             >
               HDMI
@@ -177,6 +180,7 @@ const VideoSetup: React.FC = () => {
             <Tooltip title="Useful to force the HDMI output on, for exemple to start the RPi before the connected screen turns on.">
               <Button
                 variant="outlined"
+                disabled={overlayActive || readOnlyBoot}
                 onClick={() => handleVideoOutputChange("HDMIForce1080p60")}
               >
                 HDMI force 1080p60
@@ -184,12 +188,14 @@ const VideoSetup: React.FC = () => {
             </Tooltip>
             <Button
               variant="outlined"
+              disabled={overlayActive || readOnlyBoot}
               onClick={() => handleVideoOutputChange("CompositePAL")}
             >
               Composite PAL
             </Button>
             <Button
               variant="outlined"
+              disabled={overlayActive || readOnlyBoot}
               onClick={() => handleVideoOutputChange("CompositeNTSC")}
             >
               Composite NTSC
@@ -199,6 +205,7 @@ const VideoSetup: React.FC = () => {
             variant="contained"
             color="primary"
             sx={{ width: "200px" }}
+            disabled={overlayActive || readOnlyBoot}
             onClick={() => setOpenConfEditorDialog(true)}
           >
             Edit /boot/config.txt

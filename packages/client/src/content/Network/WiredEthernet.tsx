@@ -15,12 +15,13 @@ import CircleIcon from "@mui/icons-material/Circle";
 import { green, grey } from "@mui/material/colors";
 
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import _ from "lodash";
 
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
 import ipRegex from "ip-regex";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 type DHCPorFixed = "DHCP" | "Fixed IP";
 
@@ -33,6 +34,7 @@ type WiredNetworkConfig = {
 
 const WiredEthernet: React.FC = () => {
   const [cableConnected, setCableConnected] = useState<boolean>(false);
+  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const formik = useFormik<WiredNetworkConfig>({
     initialValues: {
@@ -141,9 +143,7 @@ const WiredEthernet: React.FC = () => {
       </Typography>
       <Stack direction="row" alignSelf="center" alignItems="center" spacing={2}>
         Connected :{" "}
-        <CircleIcon
-          sx={{ color: cableConnected ? green[500] : grey[500] }}
-        />{" "}
+        <CircleIcon sx={{ color: cableConnected ? green[500] : grey[500] }} />{" "}
         <Button variant="contained" onClick={() => getWiredNetworkConfig()}>
           Refresh
         </Button>
@@ -165,6 +165,7 @@ const WiredEthernet: React.FC = () => {
             <ToggleButtonGroup
               value={formik.values.DHCPorFixed}
               exclusive
+              disabled={overlayActive || readOnlyBoot}
               onChange={handleDHCPorFixedChange}
             >
               <ToggleButton value="DHCP">DHCP</ToggleButton>
@@ -180,6 +181,7 @@ const WiredEthernet: React.FC = () => {
               // helperText={touched.ipAddress && errors.ipAddress}
               label="IP address"
               name="ipAddress"
+              disabled={overlayActive || readOnlyBoot}
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.ipAddress}
@@ -194,6 +196,7 @@ const WiredEthernet: React.FC = () => {
               // helperText={touched.ipAddress && errors.ipAddress}
               label="Netmask"
               name="netmask"
+              disabled={overlayActive || readOnlyBoot}
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.netmask}
@@ -204,6 +207,7 @@ const WiredEthernet: React.FC = () => {
           <Grid item margin={1}>
             <Button
               type="submit"
+              disabled={overlayActive || readOnlyBoot}
               startIcon={
                 formik.isSubmitting ? <CircularProgress size="1rem" /> : null
               }

@@ -7,10 +7,11 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
 import axiosServerAPI from "src/utils/axios";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 type audioOutputResponse = {
   audioOutput: AudioOutputType;
@@ -19,6 +20,7 @@ type AudioOutputType = "jack" | "HDMI" | "USB";
 
 const AudioSetup: React.FC = () => {
   const [audioOutputDisplay, setAudioOutputDisplay] = useState<AudioOutputType>("jack");
+  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const getCurrentAudioOutput = useCallback(() => {
     axiosServerAPI
@@ -85,6 +87,7 @@ const AudioSetup: React.FC = () => {
         <ToggleButtonGroup
           value={audioOutputDisplay}
           exclusive
+          disabled={overlayActive || readOnlyBoot}
           onChange={handleAudioOutputChange}
         >
           <ToggleButton value="jack">Headphone Jack</ToggleButton>

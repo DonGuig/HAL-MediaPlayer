@@ -551,3 +551,79 @@ def get_transport_status():
 
     except Exception as e:
         return Response(str(e), status=500)
+    
+@http_api.get('/api/getOverlayInfo')
+def get_overlay_info():
+    try:
+        overlay_process = subprocess.run(
+            'sudo raspi-config nonint get_overlay_now',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        if overlay_process.stdout.strip() == "0":
+            overlay_active = True
+        else:
+            overlay_active = False
+
+        boot_ro_process = subprocess.run(
+            'sudo raspi-config nonint get_bootro_now',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+        if boot_ro_process.stdout.strip() == "0":
+            boot_ro = True
+        else:
+            boot_ro = False
+
+        return {"overlayActive": overlay_active, "readOnlyBoot": boot_ro}
+
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.post('/api/setReadOnlyFS')
+def set_read_only_filesystem():
+    try:
+        process = subprocess.run(
+            'sudo raspi-config nonint do_overlayfs 0',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+
+@http_api.post('/api/disableBootRO')
+def disable_boot_read_only():
+    try:
+        process = subprocess.run(
+            'sudo raspi-config nonint disable_bootro',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        return Response(str(e), status=500)
+    
+@http_api.post('/api/disableOverlayFS')
+def disable_overlay():
+    try:
+        process = subprocess.run(
+            'sudo raspi-config nonint disable_overlayfs',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        return Response(str(e), status=500)

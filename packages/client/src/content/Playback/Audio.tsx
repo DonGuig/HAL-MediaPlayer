@@ -1,11 +1,13 @@
 import axios from "axios";
 import * as React from "react";
 import _ from "lodash";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+
 
 import globalSnackbar from "src/utils/snackbarUtils";
-import { Grid, InputAdornment, TextField, Typography } from "@mui/material";
+import { Chip, Grid, InputAdornment, TextField, Typography } from "@mui/material";
 import axiosServerAPI from "src/utils/axios";
+import { OverlayContext } from "src/contexts/OverlayContext";
 
 type volumeResponse = {
   volume: number;
@@ -18,6 +20,7 @@ type delayResponse = {
 const AudioControls: React.FC = () => {
   const [volume, setVolume] = useState<number>(0);
   const [audioDelay, setAudioDelay] = useState<number>(0);
+  const { overlayActive } = useContext(OverlayContext);
 
   const getVolume = () => {
     axiosServerAPI
@@ -128,7 +131,16 @@ const AudioControls: React.FC = () => {
 
   return (
     <Grid container marginY={2} justifyContent="center">
-      <Typography variant="h4">Audio</Typography>
+      <Typography variant="h4">
+        Audio{' '}
+        {overlayActive && (
+          <Chip
+            color="warning"
+            size="small"
+            label="Changes will be lost after reboot while Overlay FS is active"
+          />
+        )}
+      </Typography>
       <Grid
         container
         margin={1}
