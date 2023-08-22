@@ -17,10 +17,21 @@ import {
   Typography,
 } from "@mui/material";
 import axiosServerAPI from "src/utils/axios";
+import ChunkedUploady from "@rpldy/chunked-uploady";
+import {
+  useItemFinalizeListener,
+  useItemProgressListener,
+  useItemStartListener,
+  useItemErrorListener,
+  useItemFinishListener,
+} from "@rpldy/uploady";
+import { asUploadButton } from "@rpldy/upload-button";
 import { convertBytes } from "src/utils/util";
 import { PlaybackContext } from "./PlaybackContext";
 import { WebSocketContext } from "src/contexts/WebSocketContext";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import { SERVER_URL } from "src/ServerURL";
+import { Upload } from "@mui/icons-material";
 
 type fileNameResponse = {
   fileName: string;
@@ -68,7 +79,7 @@ const ProgressDialog: React.FC<progressDialogProps> = ({
   );
 };
 
-const FileManagement: React.FC = () => {
+const FileManagementWithoutUploady: React.FC = () => {
   const [fileName, setFileName] = useState<string>("...");
   const [openProgressDialog, setOpenProgressDialog] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -86,8 +97,50 @@ const FileManagement: React.FC = () => {
     useContext(PlaybackContext);
   const { socket } = useContext(WebSocketContext);
   const { overlayActive } = useContext(OverlayContext);
+  const progressData = useItemProgressListener();
 
   const fileUploadButtonRef = useRef<HTMLInputElement>();
+
+  useItemStartListener((item) => {
+    setFileInfo({ fileName: item.file.name, fileSize: item.file.size });
+    axiosServerAPI.post("/stop");
+    setProgressType("Uploading");
+    setOpenProgressDialog(true);
+  });
+
+  useItemFinalizeListener((item) => {
+    axiosServerAPI.post("/uploadFinalized");
+    setOpenProgressDialog(false);
+    setFileInfo({ fileName: "waiting...", fileSize: 0 });
+    setProgress(0);
+    getFileNameAndSize();
+    getAvalaibleSpace();
+    updateStatus();
+  });
+
+  useItemFinishListener((item) => {
+    globalSnackbar.success("Media file changed");
+  });
+
+  useItemErrorListener((item) => {
+    globalSnackbar.error(
+      `Problème dans l'envoi du fichier : ${item.uploadResponse}`
+    );
+  });
+
+  useEffect(() => {
+    if (progressData && progressData.completed) {
+      setProgress(progressData.completed);
+    }
+  }, [progressData]);
+
+  const MUIUploadButton = asUploadButton((props) => {
+    return (
+      <Button {...props} variant="outlined" disabled={props.overlayActive}>
+        Upload file
+      </Button>
+    );
+  });
 
   const getFileNameAndSize = () => {
     axiosServerAPI
@@ -251,29 +304,7 @@ const FileManagement: React.FC = () => {
           alignItems="center"
         >
           <Grid item>
-            <input
-              type="file"
-              ref={fileUploadButtonRef}
-              hidden
-              accept="mov mp4 mp3 wav flac aac aiff"
-              onChange={handleUpload}
-              onClick={() => {
-                fileUploadButtonRef.current.value = "";
-              }}
-            />
-            <label htmlFor="upload-file-input">
-              <Button
-                variant="outlined"
-                disabled={overlayActive}
-                onClick={() => {
-                  if (fileUploadButtonRef.current) {
-                    fileUploadButtonRef.current.click();
-                  }
-                }}
-              >
-                Upload file
-              </Button>
-            </label>
+            <MUIUploadButton />
           </Grid>
           <Grid item>
             <Tooltip
@@ -320,7 +351,9 @@ const FileManagement: React.FC = () => {
           <Grid item>
             <Typography variant="h6">
               <b>Available space : </b>
-              {overlayActive ? "Not available while overlay file system is active": convertBytes(availableSpace)}
+              {overlayActive
+                ? "Not available while overlay file system is active"
+                : convertBytes(availableSpace)}
             </Typography>
           </Grid>
         </Grid>
@@ -332,6 +365,18 @@ const FileManagement: React.FC = () => {
         fileInfo={fileInfo}
       ></ProgressDialog>
     </>
+  );
+};
+
+const FileManagement = () => {
+  return (
+    <ChunkedUploady
+      destination={{ url: `http://${SERVER_URL}/api/uploadMediaFile` }}
+      chunkSize={5242880}
+      accept=".mov,.mp4,.mp3,.wav,.flac,.aac,.aiff"
+    >
+      <FileManagementWithoutUploady />
+    </ChunkedUploady>
   );
 };
 

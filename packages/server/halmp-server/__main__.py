@@ -1,8 +1,6 @@
 import os
-import subprocess
 from flask import Flask, send_from_directory, request
 from flask_socketio import SocketIO
-from flask_uploads import configure_uploads, UploadSet
 from flask_cors import CORS
 from pathlib import Path
 from dotenv import load_dotenv
@@ -26,16 +24,6 @@ app = Flask(__name__, static_url_path='')
 CORS(app)
 app.register_blueprint(http_api)
 # app.config['SECRET_KEY'] = 'secret!'
-
-
-# Configure uploads
-app.config["UPLOADED_MEDIA_DEST"] = "halmp-server/media"
-app.config["UPLOADED_MEDIA_ALLOW"] = accepted_media_extensions
-app.config["UPLOADED_MEDIA_DENY"] = ["exe", "bat", "sh", "run", "dll", "ps"]
-
-media = UploadSet('media')
-
-configure_uploads(app, (media,))
 
 socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins='*')
 

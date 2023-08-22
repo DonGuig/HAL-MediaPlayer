@@ -1,5 +1,5 @@
-from flask import request, Response, redirect, Blueprint
-from flask_uploads import UploadSet, configure_uploads
+from flask import request, Response, redirect, Blueprint, jsonify
+from werkzeug.utils import secure_filename
 import os
 import subprocess
 import shutil
@@ -18,14 +18,58 @@ media_folder_path = Path(__file__).parent / "media"
 @http_api.post('/api/uploadMediaFile')
 def upload_file():
     try:
-        if 'media' in request.files:
-            print("Handle here.")
-            __main__.vlc_handler.stop()
-            __main__.vlc_handler.remove_all_media_files()
-            filename = __main__.media.save(request.files['media'])
-            __main__.vlc_handler.refresh_media_file()
-            __main__.vlc_handler.play()
+        if 'file' not in request.files:
+            return Response("No file in request", status=400)
+        else :
+            file = request.files['file']
+            filename = secure_filename(file.filename)
+
+            saved_file_path = media_folder_path / filename
+
+
+
+            if 'Content-Range' in request.headers:
+                # extract starting byte from Content-Range header string
+                range_str = request.headers['Content-Range']
+                start_bytes = int(range_str.split(' ')[1].split('-')[0])
+
+                if start_bytes == 0:
+                    # we are at the beginning of a new file transfer
+                    __main__.vlc_handler.stop()
+                    __main__.vlc_handler.remove_all_media_files()
+
+                # append chunk to the file on disk, or create new
+                with open(saved_file_path, 'ab') as f:
+                    f.seek(start_bytes)
+                    f.write(file.stream.read())
+
+            else:
+                # this is not a chunked request, so just save the whole file
+                __main__.vlc_handler.stop()
+                __main__.vlc_handler.remove_all_media_files()
+                file.save(saved_file_path)
+
+            # send response with appropriate mime type header
+            return jsonify({"name": file.filename,
+                            "size": os.path.getsize(saved_file_path),
+                            "url": 'uploads/' + file.filename,
+                            "thumbnail_url": None,
+                            "delete_url": None,
+                            "delete_type": None,})
+    except Exception as e:
+        print(e)
+        return Response(str(e), status=500)
+    
+@http_api.post('/api/uploadFinalized')
+def upload_finalized():
+    try:
+        __main__.vlc_handler.refresh_media_file()
+        __main__.vlc_handler.play()
+
+        print("received uploadFinalized")
+
         return Response(status=200)
+
     except Exception as e:
         return Response(str(e), status=500)
 
