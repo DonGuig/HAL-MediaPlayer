@@ -1,10 +1,9 @@
 import axios from "axios";
 import * as React from "react";
 import _ from "lodash";
-import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import {
-  Alert,
   Box,
   Button,
   Chip,
@@ -31,7 +30,6 @@ import { PlaybackContext } from "./PlaybackContext";
 import { WebSocketContext } from "src/contexts/WebSocketContext";
 import { OverlayContext } from "src/contexts/OverlayContext";
 import { SERVER_URL } from "src/ServerURL";
-import { Upload } from "@mui/icons-material";
 
 type fileNameResponse = {
   fileName: string;
@@ -66,12 +64,6 @@ const ProgressDialog: React.FC<progressDialogProps> = ({
               {fileInfo.fileName} ({convertBytes(fileInfo.fileSize)})
             </Typography>
             <LinearProgress variant="determinate" value={progress} />
-            {type === "Uploading" && (
-              <Alert severity="warning">
-                After uploading, it might take up to a few minutes for media
-                file to be replaced. Please be patient and do not reboot
-              </Alert>
-            )}
           </Stack>
         </DialogContent>
       </Dialog>
@@ -99,7 +91,6 @@ const FileManagementWithoutUploady: React.FC = () => {
   const { overlayActive } = useContext(OverlayContext);
   const progressData = useItemProgressListener();
 
-  const fileUploadButtonRef = useRef<HTMLInputElement>();
 
   useItemStartListener((item) => {
     setFileInfo({ fileName: item.file.name, fileSize: item.file.size });
@@ -180,44 +171,8 @@ const FileManagementWithoutUploady: React.FC = () => {
       });
   };
 
-  const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files;
-    if (file !== null) {
-      setFileInfo({ fileName: file[0].name, fileSize: file[0].size });
-      axiosServerAPI.post("/stop");
-      setProgressType("Uploading");
-      setOpenProgressDialog(true);
-      const formData = new FormData();
-      formData.append("media", file[0], file[0].name);
-      axiosServerAPI
-        .post(`/uploadMediaFile`, formData, {
-          onUploadProgress: (event) => {
-            const progress = (event.loaded / event.total) * 100;
-            setProgress(progress);
-          },
-        })
-        .then(
-          (res) => {
-            setOpenProgressDialog(false);
-            setFileInfo({ fileName: "waiting...", fileSize: 0 });
-            setProgress(0);
-            getFileNameAndSize();
-            getAvalaibleSpace();
-            updateStatus();
-            globalSnackbar.success("Media file changed");
-          },
-          (err) => {
-            setOpenProgressDialog(false);
-            setFileInfo({ fileName: "waiting...", fileSize: 0 });
-            setProgress(0);
-            if (axios.isAxiosError(err)) {
-              globalSnackbar.error(
-                `Problème dans l'envoi du fichier : ${err.response.data}`
-              );
-            }
-          }
-        );
-    }
+  const handleUploadClick = () => {
+    transportCommandAndUpdateStatus("/stop");
   };
 
   const handleGetFromUSBDrive = () => {
@@ -304,7 +259,7 @@ const FileManagementWithoutUploady: React.FC = () => {
           alignItems="center"
         >
           <Grid item>
-            <MUIUploadButton />
+            <MUIUploadButton onClick={handleUploadClick}/>
           </Grid>
           <Grid item>
             <Tooltip
@@ -372,7 +327,7 @@ const FileManagement = () => {
   return (
     <ChunkedUploady
       destination={{ url: `http://${SERVER_URL}/api/uploadMediaFile` }}
-      chunkSize={5242880}
+      chunkSize={52428800}
       accept=".mov,.mp4,.mp3,.wav,.flac,.aac,.aiff"
     >
       <FileManagementWithoutUploady />
