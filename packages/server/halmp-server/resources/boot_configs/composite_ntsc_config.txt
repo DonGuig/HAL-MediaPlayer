@@ -5,10 +5,10 @@
 
 disable_splash=1
 avoid_warnings=1
-gpu_mem=256
+gpu_mem=128
 dtparam=audio=on
 disable_overscan=1
-dtoverlay=vc4-fkms-v3d
+#dtoverlay=vc4-fkms-v3d
 
 # composite NTSC
 sdtv_mode=0
