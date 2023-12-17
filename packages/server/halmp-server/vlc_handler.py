@@ -78,7 +78,7 @@ class VLC_Handler():
             if self.media_list != None :
                 self.media_list_player.set_media_list(self.media_list)
                 self.media_list_player.play()
-                time.sleep(0.5)
+                time.sleep(2.0)
                 self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), force_pause=True)
                 self.is_stopped=False
         else:
