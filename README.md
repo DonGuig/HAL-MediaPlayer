@@ -26,18 +26,8 @@ pip install eventlet
 Ca donne un message d'erreur, pour réparer, faire :
 python3 -m pip install dnspython==2.2.1
 
-pip install git+https://github.com/maxcountryman/flask-uploads.git@f66d7dc93e684fa0a3a4350a38e41ae00483a796
-
-Or in a requirements.txt:
-
-git+https://github.com/maxcountryman/flask-uploads.git@f66d7dc93e684fa0a3a4350a38e41ae00483a796
-
-
-curl -sL https://deb.nodesource.com/setup_18.x | sudo bash -
-sudo apt install nodejs
-
 Si RPi 3B+ :
-sudo raspi-config nonint do_memory_split 256
+sudo raspi-config nonint do_memory_split 128
 
 Networking :
 in raspi-config, switch network config to Network Manager
@@ -75,7 +65,7 @@ sudo touch /etc/authbind/byport/80
 sudo chmod 777 /etc/authbind/byport/80
 
 then start server with :
-authbind --deep python3 app.py
+authbind --deep python3 -m halmp-server
 
 https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d
 
