@@ -29,7 +29,8 @@ python3 -m pip install dnspython==2.2.1
 Si RPi 3B+ :
 sudo raspi-config nonint do_memory_split 128
 
-Networking :
+#### Networking
+
 in raspi-config, switch network config to Network Manager
 
 `sudo raspi-config`
@@ -44,31 +45,51 @@ Add the two connection profiles for ethernet :
 and
 `nmcli con add type ethernet ifname eth0 con-name eth0-ll connection.autoconnect-priority 50 ipv4.method link-local`
 
+`sudo reboot`
 
+#### Run with webserver on port 80
 
-reboot
-
-options pour clvc audio :
---aout alsa --alsa-audio-device hw:0,0
-hw:0,0 : HDMI
-hw:1,0 : jack
-hw:2,0 : USB card
-
-option pour cvlc :
---intf http --http-password vlcremote
---input-repeat 999999 ???
-
-Run on raspberry pi on port 80 :
-
+```shell
 sudo apt install authbind
 sudo touch /etc/authbind/byport/80
 sudo chmod 777 /etc/authbind/byport/80
+```
 
 then start server with :
-authbind --deep python3 -m halmp-server
+`authbind --deep python3 -m halmp-server`
 
-https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d
+<https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d>
 
+#### enable usb drives automount
 
+```shell
+cd ~
+git clone https://github.com/rbrito/usbmount.git
+cd usbmount
 
-TODO :
+# Install dependencies
+sudo apt-get update && sudo apt-get install -y debhelper build-essential
+
+# Build
+sudo dpkg-buildpackage -us -uc -b
+
+cd ..
+# Try install, will not necessarily complete if you're missing a dependency
+dpkg -i usbmount_0.0.24_all.deb
+# Will install missing dependencies and finish the install process
+apt-get install -f
+```
+
+To enable exfat drives :
+
+```shell
+sudo apt-get install exfat-fuse
+sudo apt-get install exfat-utils
+```
+
+Then got edit the file usbmount.conf :
+`sudo nano /etc/usbmount/usbmount.conf`
+...and add exfat to the following line :
+`FILESYSTEMS="vfat ext2 ext3 ext4 hfsplus exfat"`
+
+## TODO
