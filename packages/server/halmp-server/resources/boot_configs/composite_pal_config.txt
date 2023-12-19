@@ -2,6 +2,7 @@
 # credits to mp4museum for inspiration
 
 [all]
+bootcode_delay=10
 disable_splash=1
 avoid_warnings=1
 gpu_mem=128
