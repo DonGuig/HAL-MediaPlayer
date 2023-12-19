@@ -29,6 +29,8 @@ const FileSystem: React.FC = () => {
   const [fsSize, setFsSize] = useState<number>(0);
   const [fileSystemROloading, setFileSystemROloading] =
     useState<boolean>(false);
+  const [fileSystemExpandloading, setFileSystemExpandloading] =
+    useState<boolean>(false);
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const getFSSize = useCallback(() => {
@@ -48,6 +50,7 @@ const FileSystem: React.FC = () => {
   }, [setFsSize]);
 
   const sendExpandFS = () => {
+    setFileSystemExpandloading(true);
     axiosServerAPI
       .post(`/expandFS`)
       .then((res) => {
@@ -60,6 +63,9 @@ const FileSystem: React.FC = () => {
             globalSnackbar.error(toDisplay);
           }
         }
+      })
+      .finally(() => {
+        setFileSystemExpandloading(false);
       });
   };
 
@@ -138,29 +144,44 @@ const FileSystem: React.FC = () => {
           justifyContent="center"
           spacing={2}
         >
-          <Tooltip title="Use this if file system size seems A LOT smaller than it should (typically less than 5 GB)">
-            <Button
-              color="primary"
-              variant="contained"
-              disabled={overlayActive || readOnlyBoot}
-              onClick={() => {
-                sendExpandFS();
-              }}
-            >
-              Expand File System
-            </Button>
-          </Tooltip>
+          <Box sx={{ position: "relative" }}>
+            <Tooltip title="Use this if file system size seems A LOT smaller than it should (typically less than 5 GB)">
+              <Button
+                color="primary"
+                variant="contained"
+                disabled={overlayActive || readOnlyBoot || fileSystemExpandloading}
+                onClick={() => {
+                  sendExpandFS();
+                }}
+              >
+                Expand File System
+              </Button>
+            </Tooltip>
+            {fileSystemExpandloading && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  // color: green[500],
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  marginTop: "-12px",
+                  marginLeft: "-12px",
+                }}
+              />
+            )}
+          </Box>
+
           <Typography>
             File System Size : {overlayActive ? "N/A" : convertBytes(fsSize)}
           </Typography>
-          {(overlayActive ||
-            readOnlyBoot) && (
-              <Chip
-                color="warning"
-                size="small"
-                label="Disabled while Overlay FS active or read-only /boot"
-              />
-            )}
+          {(overlayActive || readOnlyBoot) && (
+            <Chip
+              color="warning"
+              size="small"
+              label="Disabled while Overlay FS active or read-only /boot"
+            />
+          )}
         </Stack>
         <Typography variant="h4" margin={2}>
           Read-only file system management
