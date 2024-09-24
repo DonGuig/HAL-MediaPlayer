@@ -16,13 +16,12 @@ disable_overscan=1
 # Hifiberry overlays
 # Uncomment the line corresponding to your Hifiberry model
 # See https://www.hifiberry.com/docs/software/configuring-linux-3-18-x/ for more info
+# when reading the above webpage, please now that Kernel version is < 6.1.77
+
 
 # dtoverlay=hifiberry-dac
 # dtoverlay=hifiberry-dac8x
 # dtoverlay=hifiberry-dacplus
-# dtoverlay=hifiberry-dacplus-std
-# dtoverlay=hifiberry-dacplus
-# dtoverlay=hifiberry-dacplus-pro
 # dtoverlay=hifiberry-dacplushd
 # dtoverlay=hifiberry-dacplusadc
 # dtoverlay=hifiberry-dacplusadcpro
