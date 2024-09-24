@@ -13,7 +13,25 @@ disable_overscan=1
 # composite PAL
 sdtv_mode=2
 
+############
+# Hifiberry overlays
+# Uncomment the line corresponding to your Hifiberry model
+# See https://www.hifiberry.com/docs/software/configuring-linux-3-18-x/ for more info
 
+# dtoverlay=hifiberry-dac
+# dtoverlay=hifiberry-dac8x
+# dtoverlay=hifiberry-dacplus
+# dtoverlay=hifiberry-dacplus-std
+# dtoverlay=hifiberry-dacplus
+# dtoverlay=hifiberry-dacplus-pro
+# dtoverlay=hifiberry-dacplushd
+# dtoverlay=hifiberry-dacplusadc
+# dtoverlay=hifiberry-dacplusadcpro
+# dtoverlay=hifiberry-digi
+# dtoverlay=hifiberry-digi-pro
+# dtoverlay=hifiberry-amp
+# dtoverlay=hifiberry-amp3
+# dtoverlay=hifiberry-amp4pro
 
 ############
 

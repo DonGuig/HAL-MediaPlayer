@@ -158,6 +158,9 @@ const VideoSetup: React.FC = () => {
         <Typography variant="h4" margin={2}>
           Video Output
         </Typography>
+        <Typography variant="body2" marginBottom={2}>
+          Clicking on one of these button will remove any manual customization you did (i.e. Hifiberry customization)
+        </Typography>
         <Stack
           direction="column"
           spacing={2}

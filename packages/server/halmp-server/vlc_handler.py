@@ -32,7 +32,10 @@ class VLC_Handler():
         self.media_player = self.media_list_player.get_media_player()
         self.black_image_media_list = self.vlc_instance.media_list_new([black_video_path])
         self.media_list = None
-        self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
+        try:
+            self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
+        except Exception as e :
+            pass
         self.refresh_media_file()
         self.media_player.audio_set_volume(__main__.cfg_handler.cfg.volume)
         self.media_player.audio_set_delay(__main__.cfg_handler.cfg.audio_delay)
@@ -79,7 +82,10 @@ class VLC_Handler():
                 self.media_list_player.set_media_list(self.media_list)
                 self.media_list_player.play()
                 time.sleep(2.0)
-                self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), force_pause=True)
+                try: 
+                    self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), force_pause=True)
+                except Exception as e:
+                    pass
                 self.is_stopped=False
         else:
             self.media_list_player.play()
@@ -105,12 +111,15 @@ class VLC_Handler():
             # self.media_list_player.play()
             self.media_list_player.set_media_list(self.black_image_media_list)
             self.play()
-            self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
+            try :
+                self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
+            except Exception as e:
+                pass
             self.is_stopped = True
 
 
     def get_audio_outputs_list(self, vlc_inst):
-        res = {"jack": b'', "HDMI": b'', "USB": b''}
+        res = {"jack": b'', "HDMI": b'', "USB": b'', "Hifiberry":b''}
         devices = vlc_inst.audio_output_device_list_get("alsa")
         if devices:
             mod = devices
@@ -123,15 +132,17 @@ class VLC_Handler():
                     res["jack"]=mod.device
                 elif desc.find("USB Audio Direct hardware device without any conversions") != -1:
                     res["USB"]=mod.device
+                elif desc.find("hifiberry") != -1 and desc.find("Direct hardware device without any conversions") != -1:
+                    res["Hifiberry"]=mod.device
                 mod = mod.next
         # free devices
         vlc.libvlc_audio_output_device_list_release(devices)
-        print(res)
+        # print(res)
         return res
 
     def set_current_audio_output(self, type, force_pause=False):
-        """ type should be "jack" | "HDMI" | "USB" """
-        if type != "jack" and type != "HDMI" and type != "USB":
+        """ type should be "jack" | "HDMI" | "USB" | "Hifiberry """
+        if type != "jack" and type != "HDMI" and type != "USB" and type!="Hifiberry":
             return
         devices = self.get_audio_outputs_list(self.vlc_instance)
         if devices[type] != b'':
@@ -141,6 +152,8 @@ class VLC_Handler():
                 self.pause()
                 self.media_list_player.play()
             __main__.cfg_handler.change_config("audio_output", type)
+        else :
+            raise Exception("Could not find audio device")
 
 
     def get_current_audio_output(self):
@@ -153,6 +166,8 @@ class VLC_Handler():
             res="USB"
         elif ao == devices["HDMI"].decode('utf-8', 'ignore'):
             res="HDMI"
+        elif ao == devices["Hifiberry"].decode('utf-8', 'ignore'):
+            res="Hifiberry"
         return res
 
     def get_current_media_filename(self):

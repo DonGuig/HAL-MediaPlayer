@@ -4,6 +4,7 @@ import {
   Stack,
   ToggleButtonGroup,
   ToggleButton,
+  Tooltip,
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
@@ -16,10 +17,11 @@ import { OverlayContext } from "src/contexts/OverlayContext";
 type audioOutputResponse = {
   audioOutput: AudioOutputType;
 };
-type AudioOutputType = "jack" | "HDMI" | "USB";
+type AudioOutputType = "jack" | "HDMI" | "USB" | "Hifiberry";
 
 const AudioSetup: React.FC = () => {
-  const [audioOutputDisplay, setAudioOutputDisplay] = useState<AudioOutputType>("jack");
+  const [audioOutputDisplay, setAudioOutputDisplay] =
+    useState<AudioOutputType>("jack");
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const getCurrentAudioOutput = useCallback(() => {
@@ -93,6 +95,9 @@ const AudioSetup: React.FC = () => {
           <ToggleButton value="jack">Headphone Jack</ToggleButton>
           <ToggleButton value="HDMI">HDMI</ToggleButton>
           <ToggleButton value="USB">USB Audio</ToggleButton>
+          <Tooltip title="Remember to edit /boot/config.txt below">
+            <ToggleButton value="Hifiberry">Hifiberry</ToggleButton>
+          </Tooltip>
         </ToggleButtonGroup>
       </Stack>
     </Grid>
