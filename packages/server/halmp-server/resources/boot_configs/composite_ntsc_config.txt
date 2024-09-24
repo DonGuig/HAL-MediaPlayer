@@ -62,6 +62,10 @@ hdmi_enable_4kp60=1
 #hdmi_group=1
 #hdmi_mode=97
 
+
+
+[all]
+
 # uncomment if you get no picture on HDMI for a default "safe" mode
 #hdmi_safe=1
 
