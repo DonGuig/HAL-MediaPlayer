@@ -333,7 +333,11 @@ def get_wired_network_config():
             "connected": connected
         }
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/setWiredNetwokConfig')
@@ -364,7 +368,11 @@ def set_wired_network_config():
 
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.get('/api/getAudioOutput')
@@ -395,7 +403,11 @@ def get_hostname():
                              capture_output=True)
         return {"hostname": out.stdout.strip()}
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/setHostname')
@@ -409,7 +421,11 @@ def set_hostname():
                              capture_output=True)
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/reboot')
@@ -421,7 +437,11 @@ def reboot():
                        capture_output=True)
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/shutdown')
@@ -433,7 +453,11 @@ def shutdown():
                        capture_output=True)
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
     
 @http_api.post('/api/expandFS')
 def expandFS():
@@ -444,7 +468,11 @@ def expandFS():
                        capture_output=True)
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/setVideoOutput')
@@ -467,7 +495,11 @@ def set_video_output():
                        capture_output=True)
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
     
 @http_api.get('/api/getConfigTXT')
 def get_config_txt():
@@ -502,7 +534,11 @@ def send_config_txt():
 
         return Response(status=200)
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/setWifiConfig')
@@ -518,7 +554,7 @@ def set_wifi_config():
             hidden_cmd = "false"
 
         subprocess.run(
-            f'sudo nmcli device wifi connect "{ssid}" password "{password}" hidden {hidden_cmd}',
+            f'sudo nmcli device wifi connect {ssid} password {password} hidden {hidden_cmd}',
             shell=True,
             text=True,
             check=True,
@@ -527,7 +563,11 @@ def set_wifi_config():
         return Response(status=200)
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.get('/api/getIsWifiActive')
@@ -544,7 +584,11 @@ def get_is_wifi_active():
         return {"active": active}
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.post('/api/setIsWifiActive')
@@ -568,7 +612,11 @@ def set_is_wifi_active():
         return Response(status=200)
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.get('/api/getCurrentWifi')
@@ -585,7 +633,11 @@ def get_current_wifi():
         return {"SSID": ssid}
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
 
 
 @http_api.get('/api/getTransportStatus')
@@ -624,7 +676,11 @@ def get_overlay_info():
         return {"overlayActive": overlay_active, "readOnlyBoot": boot_ro}
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
     
 @http_api.post('/api/setReadOnlyFS')
 def set_read_only_filesystem():
@@ -639,7 +695,11 @@ def set_read_only_filesystem():
         return Response(status=200)
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
     
 
 @http_api.post('/api/disableBootRO')
@@ -655,7 +715,11 @@ def disable_boot_read_only():
         return Response(status=200)
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
     
 @http_api.post('/api/disableOverlayFS')
 def disable_overlay():
@@ -670,4 +734,8 @@ def disable_overlay():
         return Response(status=200)
 
     except Exception as e:
-        return Response(str(e), status=500)
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
