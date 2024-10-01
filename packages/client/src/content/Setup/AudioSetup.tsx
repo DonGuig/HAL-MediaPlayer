@@ -96,7 +96,7 @@ const AudioSetup: React.FC = () => {
           <ToggleButton value="HDMI">HDMI</ToggleButton>
           <ToggleButton value="USB">USB Audio</ToggleButton>
           <Tooltip title="Remember to edit /boot/config.txt below">
-            <ToggleButton value="Hifiberry">Hifiberry</ToggleButton>
+              <ToggleButton value="Hifiberry">Hifiberry</ToggleButton>
           </Tooltip>
         </ToggleButtonGroup>
       </Stack>
