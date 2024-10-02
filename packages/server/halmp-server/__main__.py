@@ -11,12 +11,12 @@ from .vlc_handler import VLC_Handler
 from .config_handler import ConfigHandler
 from .http_api import http_api
 
-subprocess.run(
-    "setterm -cursor off && sudo sh -c 'TERM=linux setterm -foreground black -clear all >/dev/tty0'",
-    shell=True,
-    text=True,
-    capture_output=True,
-)
+# subprocess.run(
+#     "setterm -cursor off && sudo sh -c 'TERM=linux setterm -foreground black -clear all >/dev/pts/0'",
+#     shell=True,
+#     text=True,
+#     capture_output=True,
+# )
 
 
 accepted_media_extensions = ["mp4", "mov", "mp3", "wav", "flac", "aac", "aiff"]

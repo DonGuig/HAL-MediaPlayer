@@ -1,6 +1,6 @@
 [Unit]
 Description=HAL Media Player startup service
-After=network.target
+After=multi-user.target
 
 [Service]
 WorkingDirectory=/home/pi/HAL-MediaPlayer/packages/server
@@ -9,4 +9,4 @@ User=pi
 ExecStart=authbind --deep python -m halmp-server
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=graphical.target
