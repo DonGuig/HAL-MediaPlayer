@@ -1,4 +1,4 @@
-from flask import request, Response, redirect, Blueprint, jsonify
+from flask import request, Response, redirect, Blueprint, jsonify, send_file
 from werkzeug.utils import secure_filename
 import os
 import subprocess
@@ -739,3 +739,12 @@ def disable_overlay():
         else:
             err = str(e)
         return Response(err, status=500)
+    
+@http_api.get('/api/handbrakepreset')
+def get_handbrake_preset():
+    try:
+        return send_file(resourcesPath / "handbrake_preset" / "HAL_Media_Player_H264_1080p.json", as_attachment=True,)
+        #return Response(str(e), status=500)
+
+    except Exception as e:
+        return Response(str(e), status=500)

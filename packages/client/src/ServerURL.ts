@@ -5,7 +5,6 @@ if (process.env.NODE_ENV === "production"){
   url = `${window.location.hostname}:${window.location.port}`
 } else {
   if (process.env.REACT_APP_LOCAL_DEV_SERVER === '1'){
-    console.log("CHELOUUUUU")
     url = `127.0.0.1:${process.env.REACT_APP_SERVER_PORT}`
   } else {
     url = `${process.env.REACT_APP_RASPBERRY_PI_IP}:${process.env.REACT_APP_SERVER_PORT}`
