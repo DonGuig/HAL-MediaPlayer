@@ -97,7 +97,7 @@ const ConfigEditorDialog: React.FC<ConfigEditorProps> = ({
         >
           <Alert severity="warning">
             For advanced users. Refer to{" "}
-            <Link href="https://www.raspberrypi.com/documentation/computers/config_txt.html">
+            <Link href="https://www.raspberrypi.com/documentation/computers/legacy_config_txt.html#legacy-options">
               this webpage
             </Link>
             .
