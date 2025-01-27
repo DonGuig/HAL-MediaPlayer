@@ -7,14 +7,11 @@ import {
   DialogActions,
   DialogContent,
   Divider,
-  Grid,
   Link,
   Stack,
   Typography,
 } from "@mui/material";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ArticleIcon from "@mui/icons-material/Article";
-import axiosServerAPI from "src/utils/axios";
 import { SERVER_URL } from "src/ServerURL";
 import packJSON from "../../../package.json";
 import { useState } from "react";
@@ -60,9 +57,7 @@ const About: React.FC = () => {
           v{packJSON.version}
         </Typography>
         <Typography align="center" variant="h5">
-          <Link href="http://www.hal-art.io">
-          www.hal-art.io
-          </Link>
+          <Link href="http://www.hal-art.io">www.hal-art.io</Link>
         </Typography>
       </Stack>
       <Divider />
@@ -113,11 +108,11 @@ const About: React.FC = () => {
           Expand File System
         </Typography>
         <Typography>
-          When first flashing HAL Media Player's system image to an SD card, you
-          should see that the available space reported in the web interface is
-          really small compared to your SD card's capacity. This is because you
-          have yet to expand the flashed file system to use all the available
-          space. You will need to reboot after this.
+          When first booting HAL Media Player after flashing to an SD card, the
+          raspberry should expand its file system to use the full size of the SD
+          card. You should see that the available space reported in the web
+          interface is just a bit smaller than your SD card's capacity. If not,
+          you can manually expand the file system in the System tab.
         </Typography>
       </Stack>
       <Divider />
