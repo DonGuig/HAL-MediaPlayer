@@ -92,4 +92,17 @@ Then got edit the file usbmount.conf :
 ...and add exfat to the following line :
 `FILESYSTEMS="vfat ext2 ext3 ext4 hfsplus exfat"`
 
+#### Enable auto filesystem resize on first boot
+
+Add the following to `/etc/rc.local` :
+```shell
+if [ ! -f /home/pi/resize_done ]; then
+    raspi-config --expand-rootfs
+    touch /home/pi/resize_done
+    reboot
+fi
+```
+
+Make sure to remove the file /home/pi/resize_done before making a disk image out of the SD card.
+
 ## TODO
