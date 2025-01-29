@@ -54,6 +54,9 @@ const OSCDictionaryDialog: React.FC<OSCDictionaryDialogProps> = ({
           <Grid item>
             <Chip size="small" label="/hdmi_off" />
           </Grid>
+          <Grid item>
+            <Chip size="small" label="/set_time time_in_seconds_float" />
+          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions sx={{ p: 2 }} disableSpacing={true}>
