@@ -4,6 +4,9 @@ import {
   Button,
   Checkbox,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
   FormControlLabel,
   FormGroup,
   Grid,
@@ -24,6 +27,32 @@ import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
 import { OverlayContext } from "src/contexts/OverlayContext";
 
+type TCallback = () => void;
+
+type ConfirmDialogProps = {
+  open: boolean;
+  confirmCallback: TCallback;
+  cancelCallback: TCallback;
+};
+
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  open,
+  confirmCallback,
+  cancelCallback,
+}) => {
+  return (
+    <Dialog fullWidth maxWidth="sm" open={open} onClose={cancelCallback}>
+      <DialogContent sx={{ p: 2 }}>
+        Are you sure you want to forget all known wifis ? Wifi will be turned off.
+      </DialogContent>
+      <DialogActions sx={{ p: 2 }} disableSpacing={true}>
+        <Button onClick={confirmCallback}>Ok</Button>
+        <Button onClick={cancelCallback}>Cancel</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 type WifiConfig = {
   SSID: string;
   pass: String;
@@ -42,6 +71,8 @@ const Wifi: React.FC = () => {
   const [wifiActivated, setWifiActivated] = useState<"true" | "false">("true");
   const [currentWifi, setCurrentWifi] = useState<String>("None");
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const [openForgetDialog, setOpenForgetDialog] = useState<boolean>(false);
+
 
   const formik = useFormik<WifiConfig>({
     initialValues: {
@@ -164,9 +195,28 @@ const Wifi: React.FC = () => {
     }
   };
 
+  const sendWifiForget = () => {
+    axiosServerAPI.post(`/forgetKnownWifis`).then(() => {
+      setTimeout(getIsActiveWifi, 1000);
+      setTimeout(getCurrentWifi, 1000);
+    }).catch((err) => {
+      if (axios.isAxiosError(err)) {
+        const toDisplay = err.response.data;
+        if (_.isString(toDisplay)) {
+          globalSnackbar.error(toDisplay);
+        }
+      }
+    });
+  };
+
   useEffect(() => {
     getIsActiveWifi();
     getCurrentWifi();
+  }, []);
+
+  const confirmForgetCB = useCallback(() => {
+    sendWifiForget();
+    setOpenForgetDialog(false);
   }, []);
 
   return (
@@ -193,6 +243,9 @@ const Wifi: React.FC = () => {
         {currentWifi}{" "}
         <Button variant="contained" onClick={() => getCurrentWifi()}>
           Refresh
+        </Button>
+        <Button variant="outlined" size="small" onClick={() => setOpenForgetDialog(true)}>
+          Forget known wifis
         </Button>
       </Stack>
       <Grid
@@ -284,6 +337,13 @@ const Wifi: React.FC = () => {
           </Grid>
         </form>
       </Grid>
+      <ConfirmDialog
+        open={openForgetDialog}
+        confirmCallback={confirmForgetCB}
+        cancelCallback={() => {
+          setOpenForgetDialog(false);
+        }}
+      />
     </Stack>
   );
 };

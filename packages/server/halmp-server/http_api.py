@@ -644,6 +644,51 @@ def get_current_wifi():
         return Response(err, status=500)
 
 
+@http_api.post('/api/forgetKnownWifis')
+def http_post_forget_known_wifis():
+    try:
+        forget_known_wifis()
+        return Response(status=200)
+
+    except Exception as e:
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
+
+
+def forget_known_wifis():
+    # forget all wifi settings and deactivate wifi
+    subprocess.run(f'sudo nmcli radio wifi off',
+                   shell=True,
+                   text=True,
+                   check=True,
+                   capture_output=True)
+
+    print('turned wifi off')
+
+    # Check for existing Wi-Fi connections
+    wifi_connections = subprocess.run(
+        "nmcli -t -f TYPE connection show | grep '^802-11-wireless'",
+        shell=True,
+        text=True,
+        capture_output=True
+    )
+
+    if wifi_connections.stdout.strip():
+        subprocess.run(
+            "sudo nmcli connection delete $(nmcli -t -f NAME,TYPE connection show | awk -F: '$2==\"802-11-wireless\" {print $1}')",
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True
+        )
+        print('deleted known wifi connections')
+    else:
+        print("no wifi connections to delete")
+
+
 @http_api.get('/api/getTransportStatus')
 def get_transport_status():
     try:
@@ -807,35 +852,7 @@ def factory_reset():
 
         print('removed media file')
 
-        # forget all wifi settings and deactivate wifi
-        subprocess.run(f'sudo nmcli radio wifi off',
-                       shell=True,
-                       text=True,
-                       check=True,
-                       capture_output=True)
-        
-        print('turned wifi off')
-
-
-        # Check for existing Wi-Fi connections
-        wifi_connections = subprocess.run(
-            "nmcli -t -f TYPE connection show | grep '^802-11-wireless'",
-            shell=True,
-            text=True,
-            capture_output=True
-        )
-
-        if wifi_connections.stdout.strip():
-            subprocess.run(
-                "sudo nmcli connection delete $(nmcli -t -f NAME,TYPE connection show | awk -F: '$2==\"802-11-wireless\" {print $1}')",
-                shell=True,
-                text=True,
-                check=True,
-                capture_output=True
-            )
-            print('deleted known wifi connections')
-        else :
-            print("no wifi connections to delete")
+        forget_know_wifis()
 
         # put eth0 back to DHCP
 
@@ -852,21 +869,20 @@ def factory_reset():
                        text=True,
                        check=True,
                        capture_output=True)
-        
+
         print('put ethernet connection back to DHCP')
-        
+
         # reset hostname
 
         subprocess.run('sudo raspi-config nonint do_hostname ' +
-                     "raspberrypi",
-                     shell=True,
-                     text=True,
-                     check=True,
-                     capture_output=True)
-        
+                       "raspberrypi",
+                       shell=True,
+                       text=True,
+                       check=True,
+                       capture_output=True)
+
         print('reset hostname')
 
-        
         # put volume at 100%
 
         __main__.vlc_handler.media_player.audio_set_volume(100)
@@ -884,7 +900,7 @@ def factory_reset():
         # put audio device to headphone jack
 
         __main__.vlc_handler.set_current_audio_output(
-        "jack")
+            "jack")
 
         print('put audio out to jack')
 
@@ -896,7 +912,7 @@ def factory_reset():
                        shell=True,
                        check=True,
                        capture_output=True)
-        
+
         print('loaded default hdmi config.txt')
 
         # auto expand file system flag removed
