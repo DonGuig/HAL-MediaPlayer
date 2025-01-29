@@ -3,21 +3,12 @@ import {
   Typography,
   Stack,
   Button,
-  Dialog,
-  DialogContent,
-  DialogActions,
-  Tooltip,
-  TextField,
-  Link,
-  Alert,
 } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
-import { useCallback, useContext, useEffect, useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
 import axiosServerAPI from "src/utils/axios";
-import { OverlayContext } from "src/contexts/OverlayContext";
 
 const HDMIOnOff: React.FC = () => {
   const sendHDMIOnOrOffMessage = (hmdiOn: boolean) => {
