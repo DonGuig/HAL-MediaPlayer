@@ -923,3 +923,19 @@ def factory_reset():
         else:
             err = str(e)
         return Response(err, status=500)
+
+
+@http_api.post('/api/set_time')
+def set_time():
+    try:
+        time = request.json["time"]
+        __main__.vlc_handler.media_player.set_time(int(time*1000))
+
+        return Response(status=200)
+
+    except Exception as e:
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
