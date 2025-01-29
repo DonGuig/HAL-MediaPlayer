@@ -177,7 +177,7 @@ const WiredEthernet: React.FC = () => {
               error={Boolean(
                 formik.touched.ipAddress && formik.errors.ipAddress
               )}
-              sx={{ width: "180px" }}
+              sx={{ width: "150px" }}
               // helperText={touched.ipAddress && errors.ipAddress}
               label="IP address"
               name="ipAddress"
@@ -192,7 +192,7 @@ const WiredEthernet: React.FC = () => {
           <Grid item margin={1}>
             <TextField
               error={Boolean(formik.touched.netmask && formik.errors.netmask)}
-              fullWidth
+              sx={{ width: "150px" }}
               // helperText={touched.ipAddress && errors.ipAddress}
               label="Netmask"
               name="netmask"
