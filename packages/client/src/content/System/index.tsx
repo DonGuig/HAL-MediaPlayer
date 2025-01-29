@@ -5,6 +5,7 @@ import {
 
 import SystemControl from './SystemControl';
 import FileSystem from './FileSystem';
+import FactoryReset from './FactoryReset';
 
 
 
@@ -14,6 +15,8 @@ const System: React.FC = () => {
             <SystemControl/>
             <Divider/>
             <FileSystem/>
+            <Divider/>
+            <FactoryReset/>
         </Container>
     );
 };

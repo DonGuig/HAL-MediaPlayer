@@ -801,24 +801,119 @@ def hdmi_off():
 @http_api.post('/api/factory_reset')
 def factory_reset():
     try:
+        # delete media file
+        __main__.vlc_handler.stop()
+        __main__.vlc_handler.remove_all_media_files()
+
+        print('removed media file')
+
         # forget all wifi settings and deactivate wifi
         subprocess.run(f'sudo nmcli radio wifi off',
                        shell=True,
                        text=True,
                        check=True,
                        capture_output=True)
+        
+        print('turned wifi off')
 
-        subprocess.run('nmcli connection delete $(nmcli -t -f NAME,TYPE connection show | awk -F: `$2 == "802-11-wireless" {print $1}`)',
+
+        # Check for existing Wi-Fi connections
+        wifi_connections = subprocess.run(
+            "nmcli -t -f TYPE connection show | grep '^802-11-wireless'",
+            shell=True,
+            text=True,
+            capture_output=True
+        )
+
+        if wifi_connections.stdout.strip():
+            subprocess.run(
+                "sudo nmcli connection delete $(nmcli -t -f NAME,TYPE connection show | awk -F: '$2==\"802-11-wireless\" {print $1}')",
+                shell=True,
+                text=True,
+                check=True,
+                capture_output=True
+            )
+            print('deleted known wifi connections')
+        else :
+            print("no wifi connections to delete")
+
+        # put eth0 back to DHCP
+
+        command = f'sudo nmcli con mod eth0 ipv4.method auto && sudo nmcli con mod eth0 ipv4.addresses ""'
+
+        subprocess.run(command,
+                       shell=True,
+                       text=True,
+                       check=True,
+                       capture_output=True)
+
+        subprocess.run(f'sudo nmcli con up eth0',
                        shell=True,
                        text=True,
                        check=True,
                        capture_output=True)
         
-        # delete media file
+        print('put ethernet connection back to DHCP')
+        
+        # reset hostname
+
+        subprocess.run('sudo raspi-config nonint do_hostname ' +
+                     "raspberrypi",
+                     shell=True,
+                     text=True,
+                     check=True,
+                     capture_output=True)
+        
+        print('reset hostname')
+
+        
+        # put volume at 100%
+
+        __main__.vlc_handler.media_player.audio_set_volume(100)
+        __main__.cfg_handler.change_config("volume", 100)
+
+        print('put volume at 100%')
+
+        # put audio delay at 0
+
+        __main__.vlc_handler.media_player.audio_set_delay(0)
+        __main__.cfg_handler.change_config("audio_delay", 0)
+
+        print('put audio delay at 0')
+
+        # put audio device to headphone jack
+
+        __main__.vlc_handler.set_current_audio_output(
+        "jack")
+
+        print('put audio out to jack')
+
+        # load default hdmi config.txt
+
+        p = resourcesPath / "boot_configs" / "hdmi_config.txt"
+
+        subprocess.run(f'sudo cp {p} /boot/config.txt',
+                       shell=True,
+                       check=True,
+                       capture_output=True)
+        
+        print('loaded default hdmi config.txt')
 
         # auto expand file system flag removed
+        file_path = "home/pi/resize_done"
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"Deleted: {file_path}")
+        else:
+            print("No resize_done file found.")
+
+        print('removed auto expand file system flag')
 
         # reboot
+        subprocess.run('sudo reboot',
+                       shell=True,
+                       check=True,
+                       capture_output=True)
 
         return Response(status=200)
 
