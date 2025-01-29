@@ -20,13 +20,11 @@ def upload_file():
     try:
         if 'file' not in request.files:
             return Response("No file in request", status=400)
-        else :
+        else:
             file = request.files['file']
             filename = secure_filename(file.filename)
 
             saved_file_path = media_folder_path / filename
-
-
 
             if 'Content-Range' in request.headers:
                 # extract starting byte from Content-Range header string
@@ -55,11 +53,12 @@ def upload_file():
                             "url": 'uploads/' + file.filename,
                             "thumbnail_url": None,
                             "delete_url": None,
-                            "delete_type": None,})
+                            "delete_type": None, })
     except Exception as e:
         print(e)
         return Response(str(e), status=500)
-    
+
+
 @http_api.post('/api/uploadFinalized')
 def upload_finalized():
     try:
@@ -132,7 +131,8 @@ def get_file_from_usb_drive():
                                 percentage)
                 if cmd.poll() != None:
                     if cmd.poll() != 0:
-                        raise Exception("Error copying : %s" % cmd.stderr.read())
+                        raise Exception("Error copying : %s" %
+                                        cmd.stderr.read())
 
             __main__.vlc_handler.refresh_media_file()
             __main__.vlc_handler.play()
@@ -149,7 +149,7 @@ def remove_media_file():
     try:
         __main__.vlc_handler.stop()
         __main__.vlc_handler.remove_all_media_files()
-        #__main__.vlc_handler.refresh_media_file()
+        # __main__.vlc_handler.refresh_media_file()
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)
@@ -174,7 +174,8 @@ def get_available_space():
         return {"space": free}
     except Exception as e:
         return Response(str(e), status=500)
-    
+
+
 @http_api.get('/api/getFSSize')
 def get_fs_size():
     try:
@@ -325,7 +326,7 @@ def get_wired_network_config():
             connected = True
         else:
             connected = False
-        
+
         return {
             "DHCPorFixed": dhcp_or_fixed,
             "ipAddress": ip_address,
@@ -350,7 +351,7 @@ def set_wired_network_config():
         if DHCPorFixed == "DHCP":
             command = f'sudo nmcli con mod eth0 ipv4.method auto && sudo nmcli con mod eth0 ipv4.addresses ""'
         else:
-            #the following line will return an Exception if not a valid netmask
+            # the following line will return an Exception if not a valid netmask
             netmask_bit_count = IPv4Network(f'0.0.0.0/{netmask}').prefixlen
             command = f'sudo nmcli con mod eth0 ipv4.method manual ipv4.addresses {ipAddress}/{netmask_bit_count}'
 
@@ -458,7 +459,8 @@ def shutdown():
         else:
             err = str(e)
         return Response(err, status=500)
-    
+
+
 @http_api.post('/api/expandFS')
 def expandFS():
     try:
@@ -500,18 +502,20 @@ def set_video_output():
         else:
             err = str(e)
         return Response(err, status=500)
-    
+
+
 @http_api.get('/api/getConfigTXT')
 def get_config_txt():
     try:
-        lines : str = ""
+        lines: str = ""
         with open("/boot/config.txt", 'r') as f:
             lines = f.read()
-        
-        return {"txt" : lines}
+
+        return {"txt": lines}
     except Exception as e:
         return Response(str(e), status=500)
-    
+
+
 @http_api.post('/api/sendConfigTXT')
 def send_config_txt():
     try:
@@ -522,15 +526,15 @@ def send_config_txt():
 
             cmd = f'sudo cp "temp_config.txt" /boot/config.txt'
             subprocess.run(cmd,
-                       shell=True,
-                       check=True,
-                       capture_output=True)
-            
+                           shell=True,
+                           check=True,
+                           capture_output=True)
+
             cmd = f'rm "temp_config.txt"'
             subprocess.run(cmd,
-                       shell=True,
-                       check=True,
-                       capture_output=True)
+                           shell=True,
+                           check=True,
+                           capture_output=True)
 
         return Response(status=200)
     except Exception as e:
@@ -647,7 +651,8 @@ def get_transport_status():
 
     except Exception as e:
         return Response(str(e), status=500)
-    
+
+
 @http_api.get('/api/getOverlayInfo')
 def get_overlay_info():
     try:
@@ -681,7 +686,8 @@ def get_overlay_info():
         else:
             err = str(e)
         return Response(err, status=500)
-    
+
+
 @http_api.post('/api/setReadOnlyFS')
 def set_read_only_filesystem():
     try:
@@ -700,7 +706,7 @@ def set_read_only_filesystem():
         else:
             err = str(e)
         return Response(err, status=500)
-    
+
 
 @http_api.post('/api/disableBootRO')
 def disable_boot_read_only():
@@ -720,7 +726,8 @@ def disable_boot_read_only():
         else:
             err = str(e)
         return Response(err, status=500)
-    
+
+
 @http_api.post('/api/disableOverlayFS')
 def disable_overlay():
     try:
@@ -739,12 +746,85 @@ def disable_overlay():
         else:
             err = str(e)
         return Response(err, status=500)
-    
+
+
 @http_api.get('/api/handbrakepreset')
 def get_handbrake_preset():
     try:
         return send_file(resourcesPath / "handbrake_preset" / "HAL_Media_Player_H264_1080p.json", as_attachment=True,)
-        #return Response(str(e), status=500)
+        # return Response(str(e), status=500)
 
     except Exception as e:
         return Response(str(e), status=500)
+
+
+@http_api.post('/api/hdmi_on')
+def hdmi_on():
+    try:
+        process = subprocess.run(
+            'vcgencmd display_power 1',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
+
+
+@http_api.post('/api/hdmi_off')
+def hdmi_off():
+    try:
+        process = subprocess.run(
+            'vcgencmd display_power 0',
+            shell=True,
+            text=True,
+            check=True,
+            capture_output=True)
+
+        return Response(status=200)
+
+    except Exception as e:
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)
+
+
+@http_api.post('/api/factory_reset')
+def factory_reset():
+    try:
+        # forget all wifi settings and deactivate wifi
+        subprocess.run(f'sudo nmcli radio wifi off',
+                       shell=True,
+                       text=True,
+                       check=True,
+                       capture_output=True)
+
+        subprocess.run('nmcli connection delete $(nmcli -t -f NAME,TYPE connection show | awk -F: `$2 == "802-11-wireless" {print $1}`)',
+                       shell=True,
+                       text=True,
+                       check=True,
+                       capture_output=True)
+        
+        # delete media file
+
+        # auto expand file system flag removed
+
+        # reboot
+
+        return Response(status=200)
+
+    except Exception as e:
+        if hasattr(e, "stderr"):
+            err = e.stderr
+        else:
+            err = str(e)
+        return Response(err, status=500)

@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   Divider,
+  Grid,
   Link,
   Stack,
   Typography,
@@ -28,14 +29,32 @@ const OSCDictionaryDialog: React.FC<OSCDictionaryDialogProps> = ({
   return (
     <Dialog fullWidth maxWidth="sm" open={open}>
       <DialogContent sx={{ p: 2 }}>
-        <Stack direction="row">
-          <Chip size="small" label="/play" />
-          <Chip size="small" label="/pause" />
-          <Chip size="small" label="/stop" />
-          <Chip size="small" label="/restart" />
-          <Chip size="small" label="/reboot" />
-          <Chip size="small" label="/shutdown" />
-        </Stack>
+        <Grid container direction="row" spacing={1}>
+          <Grid item>
+            <Chip size="small" label="/play" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/pause" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/stop" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/restart" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/reboot" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/shutdown" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/hdmi_on" />
+          </Grid>
+          <Grid item>
+            <Chip size="small" label="/hdmi_off" />
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions sx={{ p: 2 }} disableSpacing={true}>
         <Button onClick={() => onClose()}>Ok</Button>
@@ -142,8 +161,9 @@ const About: React.FC = () => {
         </Typography>
         <Stack direction={"column"}>
           <Typography>
-            HAL Media Player can be controlled by OSC messages. Click here to
-            see the available commands :{" "}
+            HAL Media Player can be controlled by OSC messages. Send your OSC
+            messages on <b>port 5005</b> of the raspberry pi. Click here to see
+            the available commands :{" "}
             <Link
               component="button"
               variant="body2"

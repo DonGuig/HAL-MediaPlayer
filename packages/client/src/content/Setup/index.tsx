@@ -5,6 +5,7 @@ import AudioSetup from "./AudioSetup";
 import VideoSetup from "./VideoSetup";
 import { useContext } from "react";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HDMIOnOff from "./HDMIOnOff";
 
 const Setup: React.FC = () => {
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
@@ -30,6 +31,8 @@ const Setup: React.FC = () => {
       <AudioSetup />
       <Divider />
       <VideoSetup />
+      <Divider />
+      <HDMIOnOff />
     </Container>
   );
 };
