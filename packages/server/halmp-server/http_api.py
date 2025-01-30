@@ -852,7 +852,7 @@ def factory_reset():
 
         print('removed media file')
 
-        forget_know_wifis()
+        forget_known_wifis()
 
         # put eth0 back to DHCP
 
