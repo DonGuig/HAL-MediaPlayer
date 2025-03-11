@@ -1,5 +1,11 @@
 # HAL MediaPlayer - Raspberry Pi Networked Media Player with web interface and HTTP / OSC control.
 
+## Releases
+
+You can download the latest configured OS disk image from the website : [https://www.hal-art.io/hal-media-player](https://www.hal-art.io/hal-media-player)
+
+This the fastest way to start working on development, as the player relies on a very specific OS environment and there is no need to recreate this environment from scratch (although you will find instructions to do so below).
+
 ## Development environment
 
 The client is in Typescript/React. The server in Python/Flask.
