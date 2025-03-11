@@ -1,21 +1,23 @@
-# HAL MediaPlayer - Player pour Raspberry Pi avec contrôle par web // OSC
+# HAL MediaPlayer - Raspberry Pi Networked Media Player with web interface and HTTP / OSC control.
 
-## Environnement de développement
+## Development environment
 
-Version de node utilisée : `18.12.1` (utiliser nvm)
+The client is in Typescript/React. The server in Python/Flask.
 
-Il faut peut-être faire `nvm alias default 18.12.1` pour que cette version de Node soit utilisée par VSCode.
+Node version used : `18.12.1` (use nvm)
 
-Exécuter à la racine du projet, puis dans les dossiers `packages/client` et `packages/server`:
+You may have to do `nvm alias default 18.12.1` for this node version to be used by VSCode.
+
+Execute in project root, then in folders `packages/client` et `packages/server` the following command :
 `npm install`
 
-### Développement
+### Development
 
-Se servir des "launch configuration" de VSCode :
+Use the "launch configuration" in VSCode :
 
-Pour le développement du client et du server, utiliser les launch configurations `Run client (dev)`, `run server (python)`, et `Chrome (dev client)`.
+To dev on client and server, use launch configurations `Run client (dev)`, `run server (python)`, et `Chrome (dev client)`.
 
-Pour utiliser en local sur le client + server en configuration prod (par exemple pour travailler sur le light_engine en python tout en ayant accès à l'interface web et au server Node), utiliser les launch configuration `Build server + client (prod)` et `Run server + client (prod)`.
+To dev the client locally on your machine but control the server on a RPi and configure in `.env`in project root : `REACT_APP_LOCAL_DEV_SERVER=0` and `REACT_APP_RASPBERRY_PI_IP` with the IP or hostname of your raspberry pi. You can then use the launch configuration `run client (dev)`.
 
 ### Install RPi
 
@@ -23,11 +25,8 @@ sudo apt update
 sudo apt install vlc
 
 pip install eventlet
-Ca donne un message d'erreur, pour réparer, faire :
+This may give an error message :
 python3 -m pip install dnspython==2.2.1
-
-Si RPi 3B+ :
-sudo raspi-config nonint do_memory_split 128
 
 #### Networking
 
