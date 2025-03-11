@@ -35,7 +35,7 @@ sdtv_mode=2
 ############
 
 # before chaning anything below, please read
-# http://rpf.io/configtxt
+# https://www.raspberrypi.com/documentation/computers/legacy_config_txt.html#legacy-options
 
 ############
 
