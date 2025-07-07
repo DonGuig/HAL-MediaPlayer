@@ -1,4 +1,4 @@
-import { FC, useState, createContext } from 'react';
+import { useState, createContext } from 'react';
 type SidebarContext = { sidebarToggle: any; toggleSidebar: () => void };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

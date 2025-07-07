@@ -130,8 +130,8 @@ const AudioControls: React.FC = () => {
   }, []);
 
   return (
-    <Grid container marginY={2} justifyContent="center">
-      <Typography variant="h4">
+    <Grid container marginY={2} justifyContent="center" direction="column">
+      <Typography variant="h4" align="center" marginY={2}>
         Audio{' '}
         {overlayActive && (
           <Chip
@@ -144,11 +144,11 @@ const AudioControls: React.FC = () => {
       <Grid
         container
         margin={1}
-        spacing={2}
+        spacing={3}
         direction="row"
         justifyContent="center"
       >
-        <Grid item>
+        <Grid>
           <TextField
             id="outlined-number"
             label="Volume (0-200%)"
@@ -173,7 +173,7 @@ const AudioControls: React.FC = () => {
             onKeyDown={handleVolumeKeyDown}
           />
         </Grid>
-        <Grid item>
+        <Grid>
           <TextField
             id="outlined-number"
             label="Delay"

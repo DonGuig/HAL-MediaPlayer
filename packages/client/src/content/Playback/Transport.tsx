@@ -26,8 +26,8 @@ const Transport: React.FC = () => {
   };
 
   return (
-    <Grid container marginY={2} justifyContent="center">
-      <Typography variant="h4">Transport</Typography>
+    <Grid container marginY={2} justifyContent="center" direction="column">
+      <Typography variant="h4" align="center" marginY={2}>Transport</Typography>
       <Grid
         container
         margin={1}
@@ -35,17 +35,17 @@ const Transport: React.FC = () => {
         direction="row"
         justifyContent="center"
       >
-        <Grid item>
+        <Grid>
           <Button variant="contained" onClick={handleClickPlay}>
             Play
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button variant="contained" onClick={handleClickPause}>
             Pause
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             variant="contained"
             color="warning"
@@ -54,7 +54,7 @@ const Transport: React.FC = () => {
             Restart
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button variant="contained" color="error" onClick={handleClickStop}>
             Stop
           </Button>

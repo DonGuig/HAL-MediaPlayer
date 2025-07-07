@@ -1,6 +1,6 @@
 import App from "./App";
 import { createRoot } from 'react-dom/client';
-import * as serviceWorker from "./serviceWorker";
+// import * as serviceWorker from "./serviceWorker";
 // import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter } from "react-router-dom";
 
@@ -24,4 +24,4 @@ root.render(// <HelmetProvider>
   // </HelmetProvider>,);
 )
 
-serviceWorker.unregister();
+// serviceWorker.unregister();

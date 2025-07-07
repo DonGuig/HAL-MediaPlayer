@@ -1,12 +1,7 @@
-import { Chip, Stack, Tooltip, Typography } from "@mui/material";
-import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { Chip, Stack, Tooltip } from "@mui/material";
+import { useContext } from "react";
 import _ from "lodash";
 import ErrorIcon from "@mui/icons-material/Error";
-
-import globalSnackbar from "src/utils/snackbarUtils";
-import Emitter from "src/utils/EventEmitter";
-import axiosServerAPI from "src/utils/axios";
 import { OverlayContext } from "src/contexts/OverlayContext";
 
 const OverlayInfo: React.FC = () => {

@@ -161,7 +161,7 @@ const WiredEthernet: React.FC = () => {
           onSubmit={formik.handleSubmit}
           style={{ display: "flex", alignItems: "center" }}
         >
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <ToggleButtonGroup
               value={formik.values.DHCPorFixed}
               exclusive
@@ -172,7 +172,7 @@ const WiredEthernet: React.FC = () => {
               <ToggleButton value="Fixed IP">Fixed IP</ToggleButton>
             </ToggleButtonGroup>{" "}
           </Grid>
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <TextField
               error={Boolean(
                 formik.touched.ipAddress && formik.errors.ipAddress
@@ -189,7 +189,7 @@ const WiredEthernet: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <TextField
               error={Boolean(formik.touched.netmask && formik.errors.netmask)}
               sx={{ width: "150px" }}
@@ -204,7 +204,7 @@ const WiredEthernet: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <Button
               type="submit"
               disabled={overlayActive || readOnlyBoot}

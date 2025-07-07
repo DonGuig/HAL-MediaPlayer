@@ -1,6 +1,13 @@
 import { useContext } from "react";
 
-import { Box, Hidden, IconButton, Tooltip, Grid, Stack } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Tooltip,
+  Grid,
+  Stack,
+  useMediaQuery,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import MenuTwoToneIcon from "@mui/icons-material/MenuTwoTone";
 import { SidebarContext } from "src/contexts/SidebarContext";
@@ -32,6 +39,7 @@ const HeaderWrapper = styled(Box)(
 
 function Header() {
   const { sidebarToggle, toggleSidebar } = useContext(SidebarContext);
+  const hidden = useMediaQuery((theme) => theme.breakpoints.down("lg"));
 
   return (
     <HeaderWrapper display="flex">
@@ -41,22 +49,22 @@ function Header() {
         width="100%"
         justifyContent="space-between"
       >
-        <Grid item>
+        <Grid>
           <Stack direction="row" spacing={1}>
-            <Hidden lgUp>
+            {hidden && (
               <Tooltip arrow title="Toggle Menu">
                 <IconButton color="primary" onClick={toggleSidebar}>
                   {!sidebarToggle ? <MenuTwoToneIcon /> : <CloseTwoToneIcon />}
                 </IconButton>
               </Tooltip>
-            </Hidden>
+            )}
           </Stack>
         </Grid>
-        <Grid item>
-            <Name />
+        <Grid>
+          <Name />
         </Grid>
-        <Grid item >
-            <OverlayInfo />
+        <Grid>
+          <OverlayInfo />
         </Grid>
       </Grid>
     </HeaderWrapper>

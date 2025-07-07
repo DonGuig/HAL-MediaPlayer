@@ -43,7 +43,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   return (
     <Dialog fullWidth maxWidth="sm" open={open} onClose={cancelCallback}>
       <DialogContent sx={{ p: 2 }}>
-        Are you sure you want to forget all known wifis ? Wifi will be turned off.
+        Are you sure you want to forget all known wifis ? Wifi will be turned
+        off.
       </DialogContent>
       <DialogActions sx={{ p: 2 }} disableSpacing={true}>
         <Button onClick={confirmCallback}>Ok</Button>
@@ -72,7 +73,6 @@ const Wifi: React.FC = () => {
   const [currentWifi, setCurrentWifi] = useState<String>("None");
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
   const [openForgetDialog, setOpenForgetDialog] = useState<boolean>(false);
-
 
   const formik = useFormik<WifiConfig>({
     initialValues: {
@@ -196,17 +196,20 @@ const Wifi: React.FC = () => {
   };
 
   const sendWifiForget = () => {
-    axiosServerAPI.post(`/forgetKnownWifis`).then(() => {
-      setTimeout(getIsActiveWifi, 1000);
-      setTimeout(getCurrentWifi, 1000);
-    }).catch((err) => {
-      if (axios.isAxiosError(err)) {
-        const toDisplay = err.response.data;
-        if (_.isString(toDisplay)) {
-          globalSnackbar.error(toDisplay);
+    axiosServerAPI
+      .post(`/forgetKnownWifis`)
+      .then(() => {
+        setTimeout(getIsActiveWifi, 1000);
+        setTimeout(getCurrentWifi, 1000);
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          }
         }
-      }
-    });
+      });
   };
 
   useEffect(() => {
@@ -224,7 +227,7 @@ const Wifi: React.FC = () => {
       <Typography variant="h4" align="center">
         Wifi
       </Typography>
-      <Grid item margin={1} alignSelf="center">
+      <Grid margin={1} alignSelf="center">
         <ToggleButtonGroup
           value={wifiActivated}
           exclusive
@@ -241,10 +244,18 @@ const Wifi: React.FC = () => {
           sx={{ color: currentWifi === "None" ? grey[500] : green[500] }}
         />{" "}
         {currentWifi}{" "}
-        <Button variant="contained" onClick={() => getCurrentWifi()}>
+        <Button
+          variant="contained"
+          onClick={() => getCurrentWifi()}
+        >
           Refresh
         </Button>
-        <Button variant="outlined" size="small" onClick={() => setOpenForgetDialog(true)}>
+        <Button
+          disabled={overlayActive || readOnlyBoot}
+          variant="outlined"
+          size="small"
+          onClick={() => setOpenForgetDialog(true)}
+        >
           Forget known wifis
         </Button>
       </Stack>
@@ -263,7 +274,7 @@ const Wifi: React.FC = () => {
           onSubmit={formik.handleSubmit}
           style={{ display: "flex", alignItems: "center" }}
         >
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <TextField
               error={
                 wifiActivated === "false"
@@ -283,7 +294,7 @@ const Wifi: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <TextField
               error={
                 wifiActivated === "false"
@@ -303,7 +314,7 @@ const Wifi: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <FormGroup>
               <FormControlLabel
                 control={
@@ -318,7 +329,7 @@ const Wifi: React.FC = () => {
               />
             </FormGroup>
           </Grid>
-          <Grid item margin={1}>
+          <Grid margin={1}>
             <Button
               type="submit"
               startIcon={

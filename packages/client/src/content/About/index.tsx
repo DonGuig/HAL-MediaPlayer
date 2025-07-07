@@ -30,31 +30,31 @@ const OSCDictionaryDialog: React.FC<OSCDictionaryDialogProps> = ({
     <Dialog fullWidth maxWidth="sm" open={open}>
       <DialogContent sx={{ p: 2 }}>
         <Grid container direction="row" spacing={1}>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/play" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/pause" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/stop" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/restart" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/reboot" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/shutdown" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/hdmi_on" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/hdmi_off" />
           </Grid>
-          <Grid item>
+          <Grid>
             <Chip size="small" label="/set_time time_in_seconds_float" />
           </Grid>
         </Grid>

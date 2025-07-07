@@ -21,7 +21,7 @@
                 "start"
             ],
             "runtimeExecutable": "npm",
-            "runtimeVersion": "18.12.1",
+            "runtimeVersion": "22.14.0",
             "cwd": "${workspaceFolder}/packages/client",
             "skipFiles": [
                 "<node_internals>/**"
@@ -30,7 +30,7 @@
         },
         {
             "name": "run server (python)",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "halmp-server",
             "env": {
@@ -42,7 +42,7 @@
         },
         {
             "name": "run OSC server (python)",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "halmp-OSCserver",
             "env": {
@@ -61,13 +61,14 @@
         },
         {
             "name": "Build client (prod)",
+            "console": "integratedTerminal",
             "request": "launch",
             "runtimeArgs": [
                 "run-script",
                 "build"
             ],
             "runtimeExecutable": "npm",
-            "runtimeVersion": "18.12.1",
+            "runtimeVersion": "22.14.0",
             "cwd": "${workspaceFolder}/packages/client",
             "skipFiles": [
                 "<node_internals>/**"

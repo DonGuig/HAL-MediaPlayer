@@ -3,6 +3,7 @@ import { useLocation, matchPath } from 'react-router-dom';
 import SidebarMenuItem from './item';
 import menuItems, { MenuItem } from './items';
 import { styled } from '@mui/material/styles';
+import React from 'react';
 
 const MenuWrapper = styled(Box)(
   ({ theme }) => `
@@ -185,7 +186,7 @@ const renderSidebarMenuItems = ({
 }: {
   items: MenuItem[];
   path: string;
-}): JSX.Element => (
+}): React.JSX.Element => (
   <SubMenuWrapper>
     <List component="div">
       {items.reduce((ev, item) => reduceChildRoutes({ ev, item, path }), [])}
@@ -198,10 +199,10 @@ const reduceChildRoutes = ({
   path,
   item
 }: {
-  ev: JSX.Element[];
+  ev: React.JSX.Element[];
   path: string;
   item: MenuItem;
-}): Array<JSX.Element> => {
+}): Array<React.JSX.Element> => {
   const key = item.name;
 
   const exactMatch = item.link ? !!matchPath({

@@ -128,7 +128,7 @@ const Hostname: React.FC = () => {
             onSubmit={formik.handleSubmit}
             style={{ display: "flex", alignItems: "center" }}
           >
-            <Grid item margin={1}>
+            <Grid margin={1}>
               <TextField
                 error={Boolean(
                   formik.touched.hostname && formik.errors.hostname
@@ -145,7 +145,7 @@ const Hostname: React.FC = () => {
                 variant="outlined"
               />
             </Grid>
-            <Grid item margin={1}>
+            <Grid margin={1}>
               <Button
                 type="submit"
                 startIcon={

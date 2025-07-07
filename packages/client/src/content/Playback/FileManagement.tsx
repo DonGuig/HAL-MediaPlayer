@@ -24,7 +24,8 @@ import {
   useItemErrorListener,
   useItemFinishListener,
 } from "@rpldy/uploady";
-import { asUploadButton } from "@rpldy/upload-button";
+import { asUploadButton, UploadButtonProps } from "@rpldy/upload-button";
+import UploadButton from "@rpldy/upload-button";
 import { convertBytes } from "src/utils/util";
 import { PlaybackContext } from "./PlaybackContext";
 import { WebSocketContext } from "src/contexts/WebSocketContext";
@@ -125,9 +126,9 @@ const FileManagementWithoutUploady: React.FC = () => {
     }
   }, [progressData]);
 
-  const MUIUploadButton = asUploadButton((props) => {
+  const MUIUploadButton = asUploadButton((props:UploadButtonProps) => {
     return (
-      <Button {...props} variant="outlined" disabled={props.overlayActive}>
+      <Button {...props} variant="outlined" disabled={overlayActive}>
         Upload file
       </Button>
     );
@@ -239,8 +240,8 @@ const FileManagementWithoutUploady: React.FC = () => {
 
   return (
     <>
-      <Grid container marginY={2} justifyContent="center">
-        <Typography variant="h4">
+      <Grid container marginY={2} justifyContent="center" direction="column">
+        <Typography variant="h4" align="center" marginY={2}>
           File{" "}
           {overlayActive && (
             <Chip
@@ -258,10 +259,10 @@ const FileManagementWithoutUploady: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Grid item>
+          <Grid>
             <MUIUploadButton onClick={handleUploadClick}/>
           </Grid>
-          <Grid item>
+          <Grid>
             <Tooltip
               title={
                 "Format a USB drive as ExFAT or FAT32 (MBR partiton map), put ONLY the media file you want to copy on the root, plug it in the RPi and press this button. When done, you can unplug the USB drive."
@@ -276,7 +277,7 @@ const FileManagementWithoutUploady: React.FC = () => {
               </Button>
             </Tooltip>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               color="error"
@@ -295,7 +296,7 @@ const FileManagementWithoutUploady: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Grid item>
+          <Grid>
             <Box height="100%" alignItems="center">
               <Typography variant="h6">
                 <b>Current file : </b>
@@ -303,7 +304,7 @@ const FileManagementWithoutUploady: React.FC = () => {
               </Typography>
             </Box>
           </Grid>
-          <Grid item>
+          <Grid>
             <Typography variant="h6">
               <b>Available space : </b>
               {overlayActive

@@ -1,12 +1,12 @@
-import { useContext } from 'react';
-import { Scrollbars } from 'react-custom-scrollbars-2';
-import { SidebarContext } from 'src/contexts/SidebarContext';
+import { useContext } from "react";
+// import { Scrollbars } from 'react-custom-scrollbars-2';
+import { SidebarContext } from "src/contexts/SidebarContext";
 
-import { Box, Drawer, Hidden } from '@mui/material';
+import { Box, Drawer, useMediaQuery } from "@mui/material";
 
-import { styled } from '@mui/material/styles';
-import SidebarMenu from './SidebarMenu';
-import Logo from 'src/components/Logo';
+import { styled } from "@mui/material/styles";
+import SidebarMenu from "./SidebarMenu";
+import Logo from "src/components/Logo";
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -34,20 +34,22 @@ const TopSection = styled(Box)(
 function Sidebar() {
   const { sidebarToggle, toggleSidebar } = useContext(SidebarContext);
   const closeSidebar = () => toggleSidebar();
+  const hiddenLgDown = useMediaQuery((theme) => theme.breakpoints.down("lg"));
+  const hiddenLgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
 
   return (
     <>
-      <Hidden lgDown>
+      {hiddenLgUp && (
         <SidebarWrapper>
-          <Scrollbars autoHide>
-            <TopSection>
-                <Logo />
-            </TopSection>
-            <SidebarMenu />
-          </Scrollbars>
+          {/* <Scrollbars autoHide> */}
+          <TopSection>
+            <Logo />
+          </TopSection>
+          <SidebarMenu />
+          {/* </Scrollbars> */}
         </SidebarWrapper>
-      </Hidden>
-      <Hidden lgUp>
+      )}
+      {hiddenLgDown && (
         <Drawer
           anchor="left"
           open={sidebarToggle}
@@ -56,17 +58,17 @@ function Sidebar() {
           elevation={9}
         >
           <SidebarWrapper>
-            <Scrollbars autoHide>
-              <TopSection>
-                {/* <Box sx={{ width: 52, ml: 1, mt: 1, mb: 3 }}> */}
-                  <Logo />
-                {/* </Box> */}
-              </TopSection>
-              <SidebarMenu />
-            </Scrollbars>
+            {/* <Scrollbars autoHide> */}
+            <TopSection>
+              {/* <Box sx={{ width: 52, ml: 1, mt: 1, mb: 3 }}> */}
+              <Logo />
+              {/* </Box> */}
+            </TopSection>
+            <SidebarMenu />
+            {/* </Scrollbars> */}
           </SidebarWrapper>
         </Drawer>
-      </Hidden>
+      )}
     </>
   );
 }

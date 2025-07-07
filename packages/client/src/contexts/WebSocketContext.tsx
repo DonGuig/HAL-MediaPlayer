@@ -1,4 +1,4 @@
-import { FC, createContext, useState } from "react";
+import { createContext, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { SERVER_URL } from "src/ServerURL";
 

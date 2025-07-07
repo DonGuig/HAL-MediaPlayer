@@ -2,8 +2,6 @@ import { FC, ReactNode, useState, useContext } from 'react';
 import { NavLink as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { SidebarContext } from 'src/contexts/SidebarContext';
-
-import PropTypes from 'prop-types';
 import { Button, Badge, Collapse, ListItem } from '@mui/material';
 import ExpandLessTwoToneIcon from '@mui/icons-material/ExpandLessTwoTone';
 import ExpandMoreTwoToneIcon from '@mui/icons-material/ExpandMoreTwoTone';
@@ -23,8 +21,8 @@ const SidebarMenuItem: FC<SidebarMenuItemProps> = ({
   link,
   icon: Icon,
   badge,
-  open: openParent,
-  active,
+  open: openParent = false,
+  active = false,
   name,
   ...rest
 }) => {
@@ -70,19 +68,9 @@ const SidebarMenuItem: FC<SidebarMenuItemProps> = ({
   );
 };
 
-SidebarMenuItem.propTypes = {
-  children: PropTypes.node,
-  active: PropTypes.bool,
-  link: PropTypes.string,
-  icon: PropTypes.elementType,
-  badge: PropTypes.string,
-  open: PropTypes.bool,
-  name: PropTypes.string.isRequired
-};
-
-SidebarMenuItem.defaultProps = {
-  open: false,
-  active: false,
-};
+// SidebarMenuItem.defaultProps = {
+//   open: false,
+//   active: false,
+// };
 
 export default SidebarMenuItem;

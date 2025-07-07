@@ -1,7 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
 
-import { FC, useState, createContext, useEffect } from "react";
+import { useState, createContext, useEffect } from "react";
 import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
 type OverlayContext = { overlayActive: boolean; readOnlyBoot: boolean };

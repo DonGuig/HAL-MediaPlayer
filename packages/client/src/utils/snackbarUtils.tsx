@@ -1,10 +1,10 @@
-import { OptionsObject, useSnackbar, WithSnackbarProps } from "notistack"
+import { OptionsObject, ProviderContext, useSnackbar } from "notistack"
 import React from "react"
 
 // here to use notistack outside of a react component or functional component
 
 // Must be imported at least once in the app to initialize the ref
-let snackbarRef: WithSnackbarProps
+let snackbarRef: ProviderContext
 export const SnackbarUtilsConfigurator: React.FC = () => {
   snackbarRef = useSnackbar()
   return null

@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogActions,
+  Chip,
 } from "@mui/material";
 import axios from "axios";
 import _ from "lodash";
@@ -92,6 +93,13 @@ const FactoryReset: React.FC = () => {
           >
             Factory Reset
           </Button>
+          {(overlayActive || readOnlyBoot) && (
+            <Chip
+              color="warning"
+              size="small"
+              label="Disabled while Overlay FS active or read-only /boot"
+            />
+          )}
         </Stack>
       </Grid>
       <ConfirmDialog
