@@ -10,11 +10,11 @@ This the fastest way to start working on development, as the player relies on a 
 
 The client is in Typescript/React. The server in Python/Flask.
 
-Node version used : `18.12.1` (use nvm)
+Node version used : `22.14.0` (use nvm)
 
-You may have to do `nvm alias default 18.12.1` for this node version to be used by VSCode.
+You may have to do `nvm alias default 22.14.0` for this node version to be used by VSCode.
 
-Execute in project root, then in folders `packages/client` et `packages/server` the following command :
+Execute in project root, then in folders `packages/client` the following command :
 `npm install`
 
 ### Development
@@ -23,7 +23,7 @@ Use the "launch configuration" in VSCode :
 
 To dev on client and server, use launch configurations `Run client (dev)`, `run server (python)`, et `Chrome (dev client)`.
 
-To dev the client locally on your machine but control the server on a RPi and configure in `.env`in project root : `REACT_APP_LOCAL_DEV_SERVER=0` and `REACT_APP_RASPBERRY_PI_IP` with the IP or hostname of your raspberry pi. You can then use the launch configuration `run client (dev)`.
+To dev the client locally on your machine but control the server on a RPi and configure in `.env`in project root : `VITE_LOCAL_DEV_SERVER=0` and `VITE_RASPBERRY_PI_IP` with the IP or hostname of your raspberry pi. You can then use the launch configuration `run client (dev)`.
 
 ### Install RPi
 
@@ -33,6 +33,10 @@ sudo apt install vlc
 pip install eventlet
 This may give an error message :
 python3 -m pip install dnspython==2.2.1
+
+### Autostart with systemd
+
+On the RPi, execute the script `install_service.sh` located in `./RPi Install`.
 
 #### Networking
 
