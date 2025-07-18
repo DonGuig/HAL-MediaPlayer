@@ -184,7 +184,7 @@ const AudioControls: React.FC = () => {
             id="outlined-number"
             label="Volume (0-200%)"
             size="small"
-            sx={{ width: "110px" }}
+            sx={{ width: "120px" }}
             InputLabelProps={{
               shrink: true,
             }}
