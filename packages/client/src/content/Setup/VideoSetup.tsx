@@ -50,10 +50,16 @@ const ConfigEditorDialog: React.FC<ConfigEditorProps> = ({
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching config.txt."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }, [setConfigTXT]);
@@ -67,10 +73,14 @@ const ConfigEditorDialog: React.FC<ConfigEditorProps> = ({
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while sending config.txt.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -97,7 +107,11 @@ const ConfigEditorDialog: React.FC<ConfigEditorProps> = ({
         >
           <Alert severity="warning">
             For advanced users. Refer to{" "}
-            <Link target="_blank" rel="noopener" href="https://www.raspberrypi.com/documentation/computers/legacy_config_txt.html#legacy-options">
+            <Link
+              target="_blank"
+              rel="noopener"
+              href="https://www.raspberrypi.com/documentation/computers/legacy_config_txt.html#legacy-options"
+            >
               this webpage
             </Link>
             .
@@ -133,10 +147,16 @@ const VideoSetup: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while setting video output."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -159,7 +179,8 @@ const VideoSetup: React.FC = () => {
           Video Output
         </Typography>
         <Typography variant="body2" marginBottom={2}>
-          Clicking on one of these button will remove any manual customization you did (i.e. Hifiberry customization)
+          Clicking on one of these button will remove any manual customization
+          you did (i.e. Hifiberry customization)
         </Typography>
         <Stack
           direction="column"

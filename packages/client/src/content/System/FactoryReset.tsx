@@ -33,8 +33,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <Dialog fullWidth maxWidth="sm" open={open} onClose={cancelCallback}>
       <DialogContent sx={{ p: 2 }}>
         Are you sure you want to factory reset the device ? Hostname will be set
-        back to raspberrypi, known wifis will be deleted, media file deleted, ethernet set to DHCP, audio settings resetted.
-        Device will be rebooted.
+        back to raspberrypi, known wifis will be deleted, media file deleted,
+        ethernet set to DHCP, audio settings resetted. Device will be rebooted.
       </DialogContent>
       <DialogActions sx={{ p: 2 }} disableSpacing={true}>
         <Button onClick={confirmCallback}>Ok</Button>
@@ -48,14 +48,17 @@ const FactoryReset: React.FC = () => {
   const [openResetDialog, setOpenResetDialog] = useState<boolean>(false);
   const { overlayActive, readOnlyBoot } = React.useContext(OverlayContext);
 
-
   const sendFactoryReset = () => {
     axiosServerAPI.post(`/factory_reset`).catch((err) => {
       if (axios.isAxiosError(err)) {
-        const toDisplay = err.response.data;
+        const toDisplay = err.response?.data;
         if (_.isString(toDisplay)) {
           globalSnackbar.error(toDisplay);
+        } else {
+          globalSnackbar.error("An error occurred while sending factory reset.");
         }
+      } else {
+        globalSnackbar.error("An unknown error occurred.");
       }
     });
   };

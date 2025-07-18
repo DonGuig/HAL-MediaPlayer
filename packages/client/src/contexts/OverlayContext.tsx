@@ -24,10 +24,14 @@ export const OverlayContextProvider = ({ children }) => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while fetching file system overlay status.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };

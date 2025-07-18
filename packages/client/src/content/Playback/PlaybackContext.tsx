@@ -7,7 +7,7 @@ import globalSnackbar from "src/utils/snackbarUtils";
 type PlaybackContext = {
   stopped: boolean;
   transportCommandAndUpdateStatus: (url: string) => void;
-  updateStatus : () => void;
+  updateStatus: () => void;
 };
 
 type TransportStatusResponse = { stopped: boolean };
@@ -26,13 +26,18 @@ export const PlaybackContextProvider = ({ children }) => {
       .then((res) => setStopped(res.data.stopped))
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching transport status."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
-
   };
 
   const transportCommandAndUpdateStatus = (url: string) => {
@@ -41,24 +46,28 @@ export const PlaybackContextProvider = ({ children }) => {
       .then(() => updateStatus())
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while issue transport command an updating status.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
 
   useEffect(() => {
-    updateStatus()
-  }, [])
+    updateStatus();
+  }, []);
 
   return (
     <PlaybackContext.Provider
       value={{
         stopped,
         transportCommandAndUpdateStatus,
-        updateStatus
+        updateStatus,
       }}
     >
       {children}

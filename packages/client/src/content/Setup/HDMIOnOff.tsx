@@ -1,9 +1,4 @@
-import {
-  Grid,
-  Typography,
-  Stack,
-  Button,
-} from "@mui/material";
+import { Grid, Typography, Stack, Button } from "@mui/material";
 import axios from "axios";
 import * as React from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
@@ -25,10 +20,14 @@ const HDMIOnOff: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while changing HDMI state.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };

@@ -99,10 +99,14 @@ const Wifi: React.FC = () => {
         setSubmitting(false);
       } catch (err) {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while setting wifi.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
         setStatus({ success: false });
         setSubmitting(false);
@@ -118,10 +122,14 @@ const Wifi: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while setting wifi.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }
@@ -134,10 +142,16 @@ const Wifi: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching wifi active status."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }, []);
@@ -154,10 +168,16 @@ const Wifi: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while setting wifi active status."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }
@@ -174,10 +194,16 @@ const Wifi: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching current wifi."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }, []);
@@ -204,10 +230,16 @@ const Wifi: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while sending wifi forget command."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -244,10 +276,7 @@ const Wifi: React.FC = () => {
           sx={{ color: currentWifi === "None" ? grey[500] : green[500] }}
         />{" "}
         {currentWifi}{" "}
-        <Button
-          variant="contained"
-          onClick={() => getCurrentWifi()}
-        >
+        <Button variant="contained" onClick={() => getCurrentWifi()}>
           Refresh
         </Button>
         <Button

@@ -3,9 +3,14 @@ import * as React from "react";
 import _ from "lodash";
 import { useContext, useEffect, useState } from "react";
 
-
 import globalSnackbar from "src/utils/snackbarUtils";
-import { Chip, Grid, InputAdornment, TextField, Typography } from "@mui/material";
+import {
+  Chip,
+  Grid,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import axiosServerAPI from "src/utils/axios";
 import { OverlayContext } from "src/contexts/OverlayContext";
 
@@ -30,10 +35,14 @@ const AudioControls: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while fetching volume.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -46,7 +55,14 @@ const AudioControls: React.FC = () => {
       },
       (err) => {
         if (axios.isAxiosError(err)) {
-          globalSnackbar.error(err.response.data);
+          const toDisplay = err.response?.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while setting volume.");
+          }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       }
     );
@@ -60,10 +76,16 @@ const AudioControls: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching audio delay."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -76,7 +98,16 @@ const AudioControls: React.FC = () => {
       },
       (err) => {
         if (axios.isAxiosError(err)) {
-          globalSnackbar.error(err.response.data);
+          const toDisplay = err.response?.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while sending audio delay."
+            );
+          }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       }
     );
@@ -132,7 +163,7 @@ const AudioControls: React.FC = () => {
   return (
     <Grid container marginY={2} justifyContent="center" direction="column">
       <Typography variant="h4" align="center" marginY={2}>
-        Audio{' '}
+        Audio{" "}
         {overlayActive && (
           <Chip
             color="warning"

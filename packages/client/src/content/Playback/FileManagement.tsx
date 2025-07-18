@@ -92,7 +92,6 @@ const FileManagementWithoutUploady: React.FC = () => {
   const { overlayActive } = useContext(OverlayContext);
   const progressData = useItemProgressListener();
 
-
   useItemStartListener((item) => {
     setFileInfo({ fileName: item.file.name, fileSize: item.file.size });
     axiosServerAPI.post("/stop");
@@ -126,7 +125,7 @@ const FileManagementWithoutUploady: React.FC = () => {
     }
   }, [progressData]);
 
-  const MUIUploadButton = asUploadButton((props:UploadButtonProps) => {
+  const MUIUploadButton = asUploadButton((props: UploadButtonProps) => {
     return (
       <Button {...props} variant="outlined" disabled={overlayActive}>
         Upload file
@@ -148,10 +147,14 @@ const FileManagementWithoutUploady: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while fetching file info.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -164,10 +167,16 @@ const FileManagementWithoutUploady: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching available space."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -197,7 +206,16 @@ const FileManagementWithoutUploady: React.FC = () => {
         setProgress(0);
         socket.off("copy_progress");
         if (axios.isAxiosError(err)) {
-          globalSnackbar.error(err.response.data);
+          const toDisplay = err.response?.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while handling get from usb drive."
+            );
+          }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       }
     );
@@ -214,7 +232,14 @@ const FileManagementWithoutUploady: React.FC = () => {
       (err) => {
         setOpenProgressDialog(false);
         if (axios.isAxiosError(err)) {
-          globalSnackbar.error(err.response.data);
+          const toDisplay = err.response?.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while removing media file.");
+          }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       }
     );
@@ -260,7 +285,7 @@ const FileManagementWithoutUploady: React.FC = () => {
           alignItems="center"
         >
           <Grid>
-            <MUIUploadButton onClick={handleUploadClick}/>
+            <MUIUploadButton onClick={handleUploadClick} />
           </Grid>
           <Grid>
             <Tooltip

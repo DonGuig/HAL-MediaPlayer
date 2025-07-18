@@ -41,10 +41,16 @@ const FileSystem: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while fetching file system size."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }, [setFsSize]);
@@ -58,10 +64,14 @@ const FileSystem: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while sending expand FS.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       })
       .finally(() => {
@@ -78,10 +88,16 @@ const FileSystem: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while sending readonly FS."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       })
       .finally(() => {
@@ -97,10 +113,16 @@ const FileSystem: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while sending disable Boot readonly."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -113,10 +135,16 @@ const FileSystem: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while sending disable overlay."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   };
@@ -149,7 +177,9 @@ const FileSystem: React.FC = () => {
               <Button
                 color="primary"
                 variant="contained"
-                disabled={overlayActive || readOnlyBoot || fileSystemExpandloading}
+                disabled={
+                  overlayActive || readOnlyBoot || fileSystemExpandloading
+                }
                 onClick={() => {
                   sendExpandFS();
                 }}

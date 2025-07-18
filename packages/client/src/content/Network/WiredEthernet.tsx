@@ -77,10 +77,16 @@ const WiredEthernet: React.FC = () => {
         setSubmitting(false);
       } catch (err) {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while sending wired ethernet config."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
         setStatus({ success: false });
         setSubmitting(false);
@@ -99,10 +105,16 @@ const WiredEthernet: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while getting wired network config."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }, [formik]);
@@ -115,10 +127,14 @@ const WiredEthernet: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while setting wired network config.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }

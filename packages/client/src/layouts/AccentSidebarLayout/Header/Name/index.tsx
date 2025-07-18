@@ -16,18 +16,22 @@ const Name: React.FC = () => {
 
   const getHostname = () => {
     axiosServerAPI
-    .get<HostnameConfig>("/getHostname")
-    .then((res) => {
-      setHostname(res.data.hostname);
-    })
-    .catch((err) => {
-      if (axios.isAxiosError(err)) {
-        const toDisplay = err.response.data;
-        if (_.isString(toDisplay)) {
-          globalSnackbar.error(toDisplay);
+      .get<HostnameConfig>("/getHostname")
+      .then((res) => {
+        setHostname(res.data.hostname);
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const toDisplay = err.response?.data;
+          if (_.isString(toDisplay)) {
+            globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while fetching hostname.");
+          }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
-      }
-    });
+      });
   };
 
   useEffect(() => {

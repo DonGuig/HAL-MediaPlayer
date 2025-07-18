@@ -21,16 +21,13 @@ import globalSnackbar from "src/utils/snackbarUtils";
 import Emitter from "src/utils/EventEmitter";
 import { OverlayContext } from "src/contexts/OverlayContext";
 
-
 type HostnameConfig = {
   hostname: string;
 };
 
-
 const Hostname: React.FC = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
-
 
   const formik = useFormik<HostnameConfig>({
     initialValues: {
@@ -61,10 +58,16 @@ const Hostname: React.FC = () => {
         setOpenDialog(true);
       } catch (err) {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error(
+              "An error occurred while submitting hostname."
+            );
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
         setStatus({ success: false });
         setSubmitting(false);
@@ -80,10 +83,14 @@ const Hostname: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while fetching hostname.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }, [formik]);
@@ -97,10 +104,14 @@ const Hostname: React.FC = () => {
       })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
-          const toDisplay = err.response.data;
+          const toDisplay = err.response?.data;
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
+          } else {
+            globalSnackbar.error("An error occurred while setting hostname.");
           }
+        } else {
+          globalSnackbar.error("An unknown error occurred.");
         }
       });
   }
@@ -138,7 +149,6 @@ const Hostname: React.FC = () => {
                 label="Hostname"
                 name="hostname"
                 disabled={overlayActive || readOnlyBoot}
-
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.hostname}
@@ -151,7 +161,12 @@ const Hostname: React.FC = () => {
                 startIcon={
                   formik.isSubmitting ? <CircularProgress size="1rem" /> : null
                 }
-                disabled={overlayActive || readOnlyBoot || formik.isSubmitting || !formik.isValid}
+                disabled={
+                  overlayActive ||
+                  readOnlyBoot ||
+                  formik.isSubmitting ||
+                  !formik.isValid
+                }
                 variant="contained"
               >
                 Apply
