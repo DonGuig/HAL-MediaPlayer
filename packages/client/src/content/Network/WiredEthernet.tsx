@@ -131,7 +131,9 @@ const WiredEthernet: React.FC = () => {
           if (_.isString(toDisplay)) {
             globalSnackbar.error(toDisplay);
           } else {
-            globalSnackbar.error("An error occurred while setting wired network config.");
+            globalSnackbar.error(
+              "An error occurred while setting wired network config."
+            );
           }
         } else {
           globalSnackbar.error("An unknown error occurred.");
@@ -197,7 +199,11 @@ const WiredEthernet: React.FC = () => {
               // helperText={touched.ipAddress && errors.ipAddress}
               label="IP address"
               name="ipAddress"
-              disabled={overlayActive || readOnlyBoot}
+              disabled={
+                overlayActive ||
+                readOnlyBoot ||
+                formik.values.DHCPorFixed === "DHCP"
+              }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.ipAddress}
@@ -212,7 +218,11 @@ const WiredEthernet: React.FC = () => {
               // helperText={touched.ipAddress && errors.ipAddress}
               label="Netmask"
               name="netmask"
-              disabled={overlayActive || readOnlyBoot}
+              disabled={
+                overlayActive ||
+                readOnlyBoot ||
+                formik.values.DHCPorFixed === "DHCP"
+              }
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               value={formik.values.netmask}
