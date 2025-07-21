@@ -15,6 +15,18 @@ resourcesPath = Path(__file__).parent / "resources"
 media_folder_path = Path(__file__).parent / "media"
 
 
+@http_api.post('/api/ping')
+def ping():
+    """
+    Endpoint to check if the server is running.
+    Returns a simple response to indicate server status.
+    """
+    try:
+        return Response(status=200)
+    except Exception as e:
+        print(e)
+        return Response(str(e), status=500)
+
 @http_api.post('/api/uploadMediaFile')
 def upload_file():
     try:
@@ -245,7 +257,9 @@ def get_volume():
 def set_volume():
     try:
         vol = int(request.json["volume"])
-        __main__.vlc_handler.media_player.audio_set_volume(vol)
+        res = __main__.vlc_handler.media_player.audio_set_volume(vol)
+        if res == -1:
+            raise Exception("Volume out of range")
         __main__.cfg_handler.change_config("volume", vol)
         return Response(status=200)
     except Exception as e:
@@ -264,7 +278,9 @@ def get_audio_delay():
 def set_audio_delay():
     try:
         delay = int(request.json["delay"])
-        __main__.vlc_handler.media_player.audio_set_delay(delay)
+        res = __main__.vlc_handler.media_player.audio_set_delay(delay)
+        if res == -1:
+            raise Exception("Error setting audio delay")
         __main__.cfg_handler.change_config("audio_delay", delay)
         return Response(status=200)
     except Exception as e:
