@@ -55,8 +55,8 @@
             "name": "Chrome (dev client)",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}"
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/packages/client/src"
         },
         {
             "name": "Build client (prod)",
