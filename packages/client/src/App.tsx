@@ -4,14 +4,62 @@ import { SnackbarProvider } from "notistack";
 import useScrollTop from "src/hooks/useScrollTop";
 
 import ThemeProvider from "./theme/ThemeProvider";
-import { CssBaseline } from "@mui/material";
+import {
+  Backdrop,
+  Box,
+  CircularProgress,
+  CssBaseline,
+  Typography,
+} from "@mui/material";
 
 import { SnackbarUtilsConfigurator } from "./utils/snackbarUtils";
 import { OverlayContextProvider } from "./contexts/OverlayContext";
+import { useEffect, useState } from "react";
+import axiosServerAPI from "./utils/axios";
 
 const App = () => {
+  const [isConnected, setIsConnected] = useState(true);
   const content = useRoutes(routes);
   useScrollTop();
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      axiosServerAPI
+        .get("/ping", {
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+            Expires: "Thu, 01 Jan 1970 00:00:00 GMT",
+          },
+        })
+        .then((res) => {
+          if (res.status !== 200) throw new Error("Server not OK");
+          setIsConnected(true);
+        })
+        .catch(() => {
+          setIsConnected(false);
+        });
+    }, 3000);
+
+    // Run once immediately on mount
+    axiosServerAPI
+      .get("/ping", {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "Thu, 01 Jan 1970 00:00:00 GMT",
+        },
+      })
+      .then((res) => {
+        if (res.status !== 200) throw new Error("Server not OK");
+        setIsConnected(true);
+      })
+      .catch(() => {
+        setIsConnected(false);
+      });
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <ThemeProvider>
@@ -26,6 +74,17 @@ const App = () => {
           <SnackbarUtilsConfigurator />
 
           <CssBaseline />
+          <Backdrop
+            open={!isConnected}
+            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          >
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <CircularProgress color="inherit" />
+              <Typography variant="h2" color="#fff" mt={2}>
+                Reconnecting to server...
+              </Typography>
+            </Box>
+          </Backdrop>
           {content}
         </OverlayContextProvider>
       </SnackbarProvider>
