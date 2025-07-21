@@ -1,14 +1,24 @@
 import EventEmitter from "events";
 
-const eventEmitter = new EventEmitter();
- 
-const Emitter = {
-    on: (event, fn) => eventEmitter.on(event, fn),
-    once: (event, fn) => eventEmitter.once(event, fn),
-    off: (event, fn) => eventEmitter.off(event, fn),
-    emit: (event, payload) => eventEmitter.emit(event, payload)
+class Emitterclass extends EventEmitter {
+  on(event, fn) {
+    super.on(event, fn);
   }
-  
-  Object.freeze(Emitter);
+
+  once(event, fn) {
+    super.once(event, fn);
+  }
+
+  off(event, fn) {
+    super.off(event, fn);
+  }
+
+  emit(event, payload) {
+    super.emit(event, payload);
+  }
+}
+
+const Emitter = new Emitterclass();
+
   
   export default Emitter;
