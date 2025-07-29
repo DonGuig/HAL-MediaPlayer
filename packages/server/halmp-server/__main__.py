@@ -15,8 +15,8 @@ accepted_media_extensions = ["mp4", "mov", "mp3", "wav", "flac", "aac", "aiff"]
 
 static_index_file_path = Path.resolve(
     Path(__file__).parent / "static" / "index.html")
-dotenv_path = Path.resolve(Path(__file__).parents[3] / ".env")
 
+dotenv_path = Path.resolve(Path(__file__).parents[3] / ".env")
 load_dotenv(dotenv_path=dotenv_path, override=True)
 
 app = Flask(__name__, static_url_path="")
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     cfg_handler: ConfigHandler = ConfigHandler()
     vlc_handler = VLC_Handler()
     print("Starting server on port %s" %
-          os.environ.get("REACT_APP_SERVER_PORT"))
+          os.getenv("VITE_SERVER_PORT"))
     socketio.run(
-        app, debug=False, host="0.0.0.0", port=os.environ.get("REACT_APP_SERVER_PORT")
+        app, debug=False, host="0.0.0.0", port=os.getenv("VITE_SERVER_PORT")
     )
