@@ -15,7 +15,7 @@ import {
 import { SnackbarUtilsConfigurator } from "./utils/snackbarUtils";
 import { OverlayContextProvider } from "./contexts/OverlayContext";
 import { useEffect, useState } from "react";
-import axiosServerAPI from "./utils/axios";
+import HttpApiRequests from "./utils/HttpRequests";
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(true);
@@ -24,16 +24,8 @@ const App = () => {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      axiosServerAPI
-        .get("/ping", {
-          headers: {
-            "Cache-Control": "no-cache",
-            Pragma: "no-cache",
-            Expires: "Thu, 01 Jan 1970 00:00:00 GMT",
-          },
-        })
+      HttpApiRequests.post("/ping", { silent: true })
         .then((res) => {
-          if (res.status !== 200) throw new Error("Server not OK");
           setIsConnected(true);
         })
         .catch(() => {
@@ -42,16 +34,8 @@ const App = () => {
     }, 3000);
 
     // Run once immediately on mount
-    axiosServerAPI
-      .get("/ping", {
-        headers: {
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-          Expires: "Thu, 01 Jan 1970 00:00:00 GMT",
-        },
-      })
+    HttpApiRequests.post("/ping", { silent: true })
       .then((res) => {
-        if (res.status !== 200) throw new Error("Server not OK");
         setIsConnected(true);
       })
       .catch(() => {
