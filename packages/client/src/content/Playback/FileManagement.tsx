@@ -200,13 +200,11 @@ const FileManagementWithoutUploady: React.FC = () => {
 
   useEffect(() => {
     if (openProgressDialog) {
-      socket.on("file_info", (info: fileNameResponse) => {
+      socket?.on("file_info", (info: fileNameResponse) => {
         setFileInfo(info);
       });
     } else {
-      if (typeof socket != "undefined") {
-        socket.off("file_info");
-      }
+      socket?.off("file_info");
       setFileInfo({ fileName: "waiting...", fileSize: 0 });
     }
   }, [openProgressDialog, socket]);
