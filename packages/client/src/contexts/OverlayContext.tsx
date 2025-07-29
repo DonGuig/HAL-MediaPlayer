@@ -1,9 +1,8 @@
-import axios from "axios";
 import _ from "lodash";
 
 import { useState, createContext, useEffect } from "react";
-import axiosServerAPI from "src/utils/axios";
-import globalSnackbar from "src/utils/snackbarUtils";
+import HttpApiRequests from "src/utils/HttpRequests";
+
 type OverlayContext = { overlayActive: boolean; readOnlyBoot: boolean };
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -16,24 +15,12 @@ export const OverlayContextProvider = ({ children }) => {
   const [readOnlyBoot, setReadOnlyBoot] = useState<boolean>(false);
 
   const getOverlayInfo = () => {
-    axiosServerAPI
-      .get<OverlayContext>("/getOverlayInfo")
+    HttpApiRequests.get<OverlayContext>("/getOverlayInfo")
       .then((res) => {
-        setOverlayActive(res.data.overlayActive);
-        setReadOnlyBoot(res.data.readOnlyBoot);
+        setOverlayActive(res.overlayActive);
+        setReadOnlyBoot(res.readOnlyBoot);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while fetching file system overlay status.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   useEffect(() => {

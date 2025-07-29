@@ -1,11 +1,10 @@
 import { Typography } from "@mui/material";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import _ from "lodash";
 
 import globalSnackbar from "src/utils/snackbarUtils";
 import Emitter from "src/utils/EventEmitter";
-import axiosServerAPI from "src/utils/axios";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type HostnameConfig = {
   hostname: string;
@@ -15,23 +14,11 @@ const Name: React.FC = () => {
   const [hostname, setHostname] = useState<string>("None");
 
   const getHostname = () => {
-    axiosServerAPI
-      .get<HostnameConfig>("/getHostname")
+    HttpApiRequests.get<HostnameConfig>("/getHostname")
       .then((res) => {
-        setHostname(res.data.hostname);
+        setHostname(res.hostname);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while fetching hostname.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   useEffect(() => {

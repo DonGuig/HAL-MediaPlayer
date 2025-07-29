@@ -18,14 +18,13 @@ import {
 } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import { green, grey } from "@mui/material/colors";
-import axios from "axios";
 import * as React from "react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import _ from "lodash";
 
-import axiosServerAPI from "src/utils/axios";
 import globalSnackbar from "src/utils/snackbarUtils";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type TCallback = () => void;
 
@@ -98,16 +97,6 @@ const Wifi: React.FC = () => {
         setStatus({ success: true });
         setSubmitting(false);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while setting wifi.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
         setStatus({ success: false });
         setSubmitting(false);
       }
@@ -115,97 +104,47 @@ const Wifi: React.FC = () => {
   });
 
   async function setWifiConfig(conf: WifiConfig) {
-    axiosServerAPI
-      .post<WifiConfig>("/setWifiConfig", conf)
+    HttpApiRequests
+      .post<WifiConfig>("/setWifiConfig", {data: conf})
       .then((res) => {
         getCurrentWifi();
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while setting wifi.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }
 
   const getIsActiveWifi = useCallback(() => {
-    axiosServerAPI
+    HttpApiRequests
       .get<WifiActive>("/getIsWifiActive")
       .then((res) => {
-        setWifiActivated(res.data.active ? "true" : "false");
+        setWifiActivated(res.active ? "true" : "false");
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching wifi active status."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, []);
 
   async function setIsActiveWifi(active: boolean) {
-    axiosServerAPI
+    HttpApiRequests
       .post<WifiActive>(
         "/setIsWifiActive",
-        active ? { active: "true" } : { active: "false" }
+        active ? { data : {active : "true"} } : { data : {active : "false"} }
       )
       .then((res) => {
         setTimeout(getIsActiveWifi, 3000);
         setTimeout(getCurrentWifi, 3000);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while setting wifi active status."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }
 
   const getCurrentWifi = useCallback(() => {
-    axiosServerAPI
+    HttpApiRequests
       .get<CurrentWifi>("/getCurrentWifi")
       .then((res) => {
-        if (res.data.SSID) {
-          setCurrentWifi(res.data.SSID);
+        if (res.SSID) {
+          setCurrentWifi(res.SSID);
         } else {
           setCurrentWifi("None");
         }
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching current wifi."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, []);
 
   const handleActiveWifiChange = (
@@ -222,26 +161,13 @@ const Wifi: React.FC = () => {
   };
 
   const sendWifiForget = () => {
-    axiosServerAPI
+    HttpApiRequests
       .post(`/forgetKnownWifis`)
       .then(() => {
         setTimeout(getIsActiveWifi, 1000);
         setTimeout(getCurrentWifi, 1000);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while sending wifi forget command."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   useEffect(() => {
@@ -276,7 +202,7 @@ const Wifi: React.FC = () => {
           sx={{ color: currentWifi === "None" ? grey[500] : green[500] }}
         />{" "}
         {currentWifi}{" "}
-        <Button variant="contained" onClick={() => getCurrentWifi()}>
+        <Button variant="contained" size="small" onClick={() => getCurrentWifi()}>
           Refresh
         </Button>
         <Button

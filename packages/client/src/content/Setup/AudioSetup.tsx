@@ -6,13 +6,11 @@ import {
   ToggleButton,
   Tooltip,
 } from "@mui/material";
-import axios from "axios";
 import * as React from "react";
 import { useEffect, useState, useCallback, useContext } from "react";
-import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
-import axiosServerAPI from "src/utils/axios";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type audioOutputResponse = {
   audioOutput: AudioOutputType;
@@ -25,47 +23,19 @@ const AudioSetup: React.FC = () => {
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const getCurrentAudioOutput = useCallback(() => {
-    axiosServerAPI
-      .get<audioOutputResponse>(`/getAudioOutput`)
+    HttpApiRequests.get<audioOutputResponse>(`/getAudioOutput`)
       .then((res) => {
-        setAudioOutputDisplay(res.data.audioOutput);
+        setAudioOutputDisplay(res.audioOutput);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching current audio output."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, [setAudioOutputDisplay]);
 
   const setCurrentAudioOutput = (type: AudioOutputType) => {
-    axiosServerAPI
-      .post(`/setAudioOutput`, { audioOutput: type })
+    HttpApiRequests.post(`/setAudioOutput`, { data: { audioOutput: type } })
       .then(() => {
         setTimeout(getCurrentAudioOutput, 500);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while setting audio output."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   useEffect(() => {

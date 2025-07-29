@@ -11,13 +11,12 @@ import {
   Link,
   Alert,
 } from "@mui/material";
-import axios from "axios";
 import * as React from "react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
-import axiosServerAPI from "src/utils/axios";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type VideoOutputType =
   | "CompositePAL"
@@ -43,46 +42,20 @@ const ConfigEditorDialog: React.FC<ConfigEditorProps> = ({
   const [configTXT, setConfigTXT] = useState<string>("");
 
   const getConfigTXT = useCallback(() => {
-    axiosServerAPI
-      .get<configTXTType>(`/getConfigTXT`)
+    HttpApiRequests.get<configTXTType>(`/getConfigTXT`)
       .then((res) => {
-        setConfigTXT(res.data.txt);
+        setConfigTXT(res.txt);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching config.txt."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, [setConfigTXT]);
 
   const sendConfigTXT = () => {
-    axiosServerAPI
-      .post(`/sendConfigTXT`, { txt: configTXT })
+    HttpApiRequests.post(`/sendConfigTXT`, { data: { txt: configTXT } })
       .then(() => {
         globalSnackbar.success("Successfully changed config file");
         rebootDialogFunc();
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while sending config.txt.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const handleOkClick = () => {
@@ -140,25 +113,11 @@ const VideoSetup: React.FC = () => {
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const setVideoOutput = (type: VideoOutputType) => {
-    axiosServerAPI
-      .post(`/setVideoOutput`, { videoOutput: type })
+    HttpApiRequests.post(`/setVideoOutput`, { data: { videoOutput: type } })
       .then(() => {
         globalSnackbar.success("Successfully changed config file");
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while setting video output."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const handleVideoOutputChange = (type: VideoOutputType) => {

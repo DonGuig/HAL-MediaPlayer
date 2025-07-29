@@ -1,9 +1,8 @@
 import { Grid, Typography, Stack, Button } from "@mui/material";
-import axios from "axios";
 import * as React from "react";
 import globalSnackbar from "src/utils/snackbarUtils";
 import _ from "lodash";
-import axiosServerAPI from "src/utils/axios";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 const HDMIOnOff: React.FC = () => {
   const sendHDMIOnOrOffMessage = (hmdiOn: boolean) => {
@@ -13,23 +12,12 @@ const HDMIOnOff: React.FC = () => {
     } else {
       url = "/hdmi_off";
     }
-    axiosServerAPI
+    HttpApiRequests
       .post(url)
       .then(() => {
         globalSnackbar.success("Successfully changed HDMI state");
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while changing HDMI state.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   return (

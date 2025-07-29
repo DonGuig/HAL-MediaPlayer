@@ -1,9 +1,7 @@
-import axios from "axios";
 import * as React from "react";
 import _ from "lodash";
 import { useContext, useEffect, useState } from "react";
 
-import globalSnackbar from "src/utils/snackbarUtils";
 import {
   Chip,
   Grid,
@@ -11,8 +9,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axiosServerAPI from "src/utils/axios";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type volumeResponse = {
   volume: number;
@@ -28,92 +26,46 @@ const AudioControls: React.FC = () => {
   const { overlayActive } = useContext(OverlayContext);
 
   const getVolume = () => {
-    axiosServerAPI
-      .get<volumeResponse>(`/getVolume`)
+    HttpApiRequests.get<volumeResponse>(`/getVolume`)
       .then((res) => {
-        setVolume(res.data.volume);
+        setVolume(res.volume);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while fetching volume.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const sendVolumeChange = (vol: number) => {
-    axiosServerAPI.post(`/setVolume`, { volume: vol }).then(
-      (res) => {
+    if (!vol) {
+      vol = 0;
+    }
+    HttpApiRequests.post(`/setVolume`, { data: { volume: vol } })
+      .then((res) => {
         setTimeout(getVolume, 50);
         return;
-      },
-      (err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while setting volume.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      }
-    );
+      })
+      .catch();
   };
 
   const getAudioDelay = () => {
-    axiosServerAPI
-      .get<delayResponse>(`/getAudioDelay`)
+    HttpApiRequests.get<delayResponse>(`/getAudioDelay`)
       .then((res) => {
-        setAudioDelay(res.data.delay / 1000);
+        setAudioDelay(res.delay / 1000);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching audio delay."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const sendAudioDelayChange = (delay: number) => {
-    axiosServerAPI.post(`/setAudioDelay`, { delay: delay * 1000 }).then(
-      (res) => {
+    HttpApiRequests.post(`/setAudioDelay`, { data: { delay: delay * 1000 } })
+      .then((res) => {
         getAudioDelay();
         return;
-      },
-      (err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while sending audio delay."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      }
-    );
+      })
+      .catch();
   };
 
   const handleVolumeChange = (event: React.ChangeEvent<any>) => {
+    if (event.target.value >200) {
+      
+    }
     if (Math.abs(event.target.value - volume) === 1) {
       setVolume(event.target.value);
       sendVolumeChange(event.target.value);
@@ -185,24 +137,26 @@ const AudioControls: React.FC = () => {
             label="Volume (0-200%)"
             size="small"
             sx={{ width: "120px" }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            InputProps={{
-              inputProps: {
-                max: "200",
-                min: "0",
-                step: "1",
-              },
-              endAdornment: <InputAdornment position="start">%</InputAdornment>,
-            }}
             type="number"
             // inputProps={{inputMode: 'numeric', pattern: '[0-9]*'}}
             value={volume}
             onBlur={handleVolumeBlur}
             onChange={handleVolumeChange}
             onKeyDown={handleVolumeKeyDown}
-          />
+            slotProps={{
+              input: {
+                inputProps: {
+                  max: "200",
+                  min: "0",
+                  step: "1",
+                },
+                endAdornment: <InputAdornment position="start">%</InputAdornment>,
+              },
+
+              inputLabel: {
+                shrink: true,
+              }
+            }} />
         </Grid>
         <Grid>
           <TextField
@@ -211,22 +165,24 @@ const AudioControls: React.FC = () => {
             type="number"
             size="small"
             sx={{ width: "130px" }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            InputProps={{
-              inputProps: {
-                step: "1",
-              },
-              endAdornment: (
-                <InputAdornment position="start">msec</InputAdornment>
-              ),
-            }}
             value={audioDelay}
             onBlur={handleDelayBlur}
             onChange={handleDelayChange}
             onKeyDown={handleDelayKeyDown}
-          />
+            slotProps={{
+              input: {
+                inputProps: {
+                  step: "1",
+                },
+                endAdornment: (
+                  <InputAdornment position="start">msec</InputAdornment>
+                ),
+              },
+
+              inputLabel: {
+                shrink: true,
+              }
+            }} />
         </Grid>
       </Grid>
     </Grid>

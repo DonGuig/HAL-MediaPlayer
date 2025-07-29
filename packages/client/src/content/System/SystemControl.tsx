@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import * as React from "react";
 import { useState, useCallback } from "react";
-import axiosServerAPI from "src/utils/axios";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type TCallback = () => void;
 
@@ -44,7 +44,7 @@ const SystemControl: React.FC = () => {
   const [openShutdownDialog, setOpenShutdownDialog] = useState<boolean>(false);
 
   const sendReboot = () => {
-    axiosServerAPI
+    HttpApiRequests
       .post(`/reboot`)
       .then((res) => {
         // setDisplayedDeviceName(res.data.deviceName);
@@ -55,7 +55,7 @@ const SystemControl: React.FC = () => {
   };
 
   const sendShutdown = () => {
-    axiosServerAPI
+    HttpApiRequests
       .post(`/shutdown`)
       .then((res) => {
         // setDisplayedDeviceName(res.data.deviceName);

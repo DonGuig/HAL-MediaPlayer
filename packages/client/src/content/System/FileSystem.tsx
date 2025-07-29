@@ -11,13 +11,11 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
-import axios from "axios";
 import _ from "lodash";
 import * as React from "react";
 import { useState, useCallback, useEffect, useContext } from "react";
 import { OverlayContext } from "src/contexts/OverlayContext";
-import axiosServerAPI from "src/utils/axios";
-import globalSnackbar from "src/utils/snackbarUtils";
+import HttpApiRequests from "src/utils/HttpRequests";
 import { convertBytes } from "src/utils/util";
 
 type sizeType = {
@@ -34,46 +32,22 @@ const FileSystem: React.FC = () => {
   const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
 
   const getFSSize = useCallback(() => {
-    axiosServerAPI
+    HttpApiRequests
       .get<sizeType>(`/getFSSize`)
       .then((res) => {
-        setFsSize(res.data.size);
+        setFsSize(res.size);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching file system size."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, [setFsSize]);
 
   const sendExpandFS = () => {
     setFileSystemExpandloading(true);
-    axiosServerAPI
+    HttpApiRequests
       .post(`/expandFS`)
       .then((res) => {
         setOpenRebootDialog(true);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while sending expand FS.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      })
+      .catch()
       .finally(() => {
         setFileSystemExpandloading(false);
       });
@@ -81,72 +55,33 @@ const FileSystem: React.FC = () => {
 
   const sendReadOnlyFS = () => {
     setFileSystemROloading(true);
-    axiosServerAPI
+    HttpApiRequests
       .post(`/setReadOnlyFS`)
       .then((res) => {
         setOpenRebootDialog(true);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while sending readonly FS."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      })
+      .catch()
       .finally(() => {
         setFileSystemROloading(false);
       });
   };
 
   const sendDisableBootRO = () => {
-    axiosServerAPI
+    HttpApiRequests
       .post(`/disableBootRO`)
       .then((res) => {
         setOpenRebootDialog(true);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while sending disable Boot readonly."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const sendDisableOverlay = () => {
-    axiosServerAPI
+    HttpApiRequests
       .post(`/disableOverlayFS`)
       .then((res) => {
         setOpenRebootDialog(true);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while sending disable overlay."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   useEffect(() => {

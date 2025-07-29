@@ -1,8 +1,6 @@
-import axios from "axios";
 import _ from "lodash";
 import { useState, createContext, useEffect } from "react";
-import axiosServerAPI from "src/utils/axios";
-import globalSnackbar from "src/utils/snackbarUtils";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type PlaybackContext = {
   stopped: boolean;
@@ -21,41 +19,17 @@ export const PlaybackContextProvider = ({ children }) => {
   const [stopped, setStopped] = useState<boolean>(false);
 
   const updateStatus = () => {
-    axiosServerAPI
+    HttpApiRequests
       .get<TransportStatusResponse>(`/getTransportStatus`)
-      .then((res) => setStopped(res.data.stopped))
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching transport status."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .then((res) => setStopped(res.stopped))
+      .catch();
   };
 
   const transportCommandAndUpdateStatus = (url: string) => {
-    axiosServerAPI
+    HttpApiRequests
       .post(url)
       .then(() => updateStatus())
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while issue transport command an updating status.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   useEffect(() => {

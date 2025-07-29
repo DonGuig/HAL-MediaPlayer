@@ -10,7 +10,6 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import axios from "axios";
 import CircleIcon from "@mui/icons-material/Circle";
 import { green, grey } from "@mui/material/colors";
 
@@ -18,10 +17,9 @@ import * as React from "react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import _ from "lodash";
 
-import axiosServerAPI from "src/utils/axios";
-import globalSnackbar from "src/utils/snackbarUtils";
 import ipRegex from "ip-regex";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type DHCPorFixed = "DHCP" | "Fixed IP";
 
@@ -76,18 +74,6 @@ const WiredEthernet: React.FC = () => {
         setStatus({ success: true });
         setSubmitting(false);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while sending wired ethernet config."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
         setStatus({ success: false });
         setSubmitting(false);
       }
@@ -95,50 +81,24 @@ const WiredEthernet: React.FC = () => {
   });
 
   const getWiredNetworkConfig = useCallback(() => {
-    axiosServerAPI
+    HttpApiRequests
       .get<WiredNetworkConfig>("/getWiredNetwokConfig")
       .then((res) => {
-        formik.setFieldValue("DHCPorFixed", res.data.DHCPorFixed);
-        formik.setFieldValue("ipAddress", res.data.ipAddress);
-        formik.setFieldValue("netmask", res.data.netmask);
-        setCableConnected(res.data.connected);
+        formik.setFieldValue("DHCPorFixed", res.DHCPorFixed);
+        formik.setFieldValue("ipAddress", res.ipAddress);
+        formik.setFieldValue("netmask", res.netmask);
+        setCableConnected(res.connected);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while getting wired network config."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, [formik]);
 
   async function setWiredNetworkSetting(conf: WiredNetworkConfig) {
-    axiosServerAPI
-      .post<WiredNetworkConfig>("/setWiredNetwokConfig", conf)
+    HttpApiRequests
+      .post<WiredNetworkConfig>("/setWiredNetwokConfig", {data: conf})
       .then((res) => {
         setTimeout(getWiredNetworkConfig, 1000);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while setting wired network config."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }
 
   const handleDHCPorFixedChange = (

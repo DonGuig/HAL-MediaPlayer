@@ -11,15 +11,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
+
 import * as React from "react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import _ from "lodash";
 
-import axiosServerAPI from "src/utils/axios";
+
 import globalSnackbar from "src/utils/snackbarUtils";
 import Emitter from "src/utils/EventEmitter";
 import { OverlayContext } from "src/contexts/OverlayContext";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type HostnameConfig = {
   hostname: string;
@@ -57,18 +58,6 @@ const Hostname: React.FC = () => {
         setSubmitting(false);
         setOpenDialog(true);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while submitting hostname."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
         setStatus({ success: false });
         setSubmitting(false);
       }
@@ -76,44 +65,22 @@ const Hostname: React.FC = () => {
   });
 
   const getHostname = useCallback(() => {
-    axiosServerAPI
+    HttpApiRequests
       .get<HostnameConfig>("/getHostname")
       .then((res) => {
-        formik.setFieldValue("hostname", res.data.hostname);
+        formik.setFieldValue("hostname", res.hostname);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while fetching hostname.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }, [formik]);
 
   async function setHostname(hn: HostnameConfig) {
-    axiosServerAPI
-      .post<HostnameConfig>("/setHostname", hn)
+    HttpApiRequests
+      .post<HostnameConfig>("/setHostname", {data: hn})
       .then((res) => {
         getHostname();
         Emitter.emit("hostnameChanged", []);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while setting hostname.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   }
 
   useEffect(() => {

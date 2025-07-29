@@ -8,13 +8,11 @@ import {
   DialogActions,
   Chip,
 } from "@mui/material";
-import axios from "axios";
 import _ from "lodash";
 import * as React from "react";
 import { useState, useCallback } from "react";
 import { OverlayContext } from "src/contexts/OverlayContext";
-import axiosServerAPI from "src/utils/axios";
-import globalSnackbar from "src/utils/snackbarUtils";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type TCallback = () => void;
 
@@ -49,18 +47,7 @@ const FactoryReset: React.FC = () => {
   const { overlayActive, readOnlyBoot } = React.useContext(OverlayContext);
 
   const sendFactoryReset = () => {
-    axiosServerAPI.post(`/factory_reset`).catch((err) => {
-      if (axios.isAxiosError(err)) {
-        const toDisplay = err.response?.data;
-        if (_.isString(toDisplay)) {
-          globalSnackbar.error(toDisplay);
-        } else {
-          globalSnackbar.error("An error occurred while sending factory reset.");
-        }
-      } else {
-        globalSnackbar.error("An unknown error occurred.");
-      }
-    });
+    HttpApiRequests.post(`/factory_reset`).catch();
   };
 
   const confirmResetCB = useCallback(() => {

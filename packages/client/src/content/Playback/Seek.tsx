@@ -2,9 +2,10 @@ import * as React from 'react';
 import { Grid, Paper, Slider, Stack, Typography } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { WebSocketContext } from 'src/contexts/WebSocketContext';
-import axiosServerAPI from 'src/utils/axios';
 import { PlaybackContext } from './PlaybackContext';
+import HttpApiRequests from 'src/utils/HttpRequests';
 
+type TimeRequestResponse = { time: number; length: number };
 
 
 const Seek: React.FC = () => {
@@ -28,10 +29,10 @@ const Seek: React.FC = () => {
     };
 
     const requestTime = () => {
-        axiosServerAPI.get(`/getTime`)
+        HttpApiRequests.get<TimeRequestResponse>(`/getTime`)
             .then((res) => {
-                setTime(res.data.time);
-                setLength(res.data.length);
+                setTime(res.time);
+                setLength(res.length);
             }).catch((err) => {
                 setTime(0);
             })

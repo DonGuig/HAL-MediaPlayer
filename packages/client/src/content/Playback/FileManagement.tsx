@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as React from "react";
 import _ from "lodash";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -15,7 +14,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import axiosServerAPI from "src/utils/axios";
 import ChunkedUploady from "@rpldy/chunked-uploady";
 import {
   useItemFinalizeListener,
@@ -31,6 +29,7 @@ import { PlaybackContext } from "./PlaybackContext";
 import { WebSocketContext } from "src/contexts/WebSocketContext";
 import { OverlayContext } from "src/contexts/OverlayContext";
 import { SERVER_URL } from "src/ServerURL";
+import HttpApiRequests from "src/utils/HttpRequests";
 
 type fileNameResponse = {
   fileName: string;
@@ -94,13 +93,13 @@ const FileManagementWithoutUploady: React.FC = () => {
 
   useItemStartListener((item) => {
     setFileInfo({ fileName: item.file.name, fileSize: item.file.size });
-    axiosServerAPI.post("/stop");
+    HttpApiRequests.post("/stop");
     setProgressType("Uploading");
     setOpenProgressDialog(true);
   });
 
   useItemFinalizeListener((item) => {
-    axiosServerAPI.post("/uploadFinalized");
+    HttpApiRequests.post("/uploadFinalized");
     setOpenProgressDialog(false);
     setFileInfo({ fileName: "waiting...", fileSize: 0 });
     setProgress(0);
@@ -134,51 +133,27 @@ const FileManagementWithoutUploady: React.FC = () => {
   });
 
   const getFileNameAndSize = () => {
-    axiosServerAPI
+    HttpApiRequests
       .get<fileNameResponse>(`/getFileNameAndSize`)
       .then((res) => {
-        if (res.data.fileName !== "black_1920.jpg") {
-          setFileName(res.data.fileName);
-          setFileSize(res.data.fileSize);
+        if (res.fileName !== "black_1920.jpg") {
+          setFileName(res.fileName);
+          setFileSize(res.fileSize);
         } else {
           setFileName("None");
           setFileSize(0);
         }
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while fetching file info.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const getAvalaibleSpace = () => {
-    axiosServerAPI
+    HttpApiRequests
       .get<AvailableSpaceResponse>(`/getAvailableSpace`)
       .then((res) => {
-        setAvailableSpace(res.data.space);
+        setAvailableSpace(res.space);
       })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while fetching available space."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
-      });
+      .catch();
   };
 
   const handleUploadClick = () => {
@@ -191,7 +166,7 @@ const FileManagementWithoutUploady: React.FC = () => {
     socket.on("copy_progress", (percent) => {
       setProgress(percent);
     });
-    axiosServerAPI.post(`/getFileFromUSBDrive`).then(
+    HttpApiRequests.post(`/getFileFromUSBDrive`).then(
       (res) => {
         setOpenProgressDialog(false);
         setProgress(0);
@@ -205,25 +180,13 @@ const FileManagementWithoutUploady: React.FC = () => {
         setOpenProgressDialog(false);
         setProgress(0);
         socket.off("copy_progress");
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error(
-              "An error occurred while handling get from usb drive."
-            );
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
       }
     );
   };
 
   const handleRemoveMediaFile = () => {
     transportCommandAndUpdateStatus("/stop");
-    axiosServerAPI.post(`/removeMediaFile`).then(
+    HttpApiRequests.post(`/removeMediaFile`).then(
       (res) => {
         getFileNameAndSize();
         getAvalaibleSpace();
@@ -231,16 +194,6 @@ const FileManagementWithoutUploady: React.FC = () => {
       },
       (err) => {
         setOpenProgressDialog(false);
-        if (axios.isAxiosError(err)) {
-          const toDisplay = err.response?.data;
-          if (_.isString(toDisplay)) {
-            globalSnackbar.error(toDisplay);
-          } else {
-            globalSnackbar.error("An error occurred while removing media file.");
-          }
-        } else {
-          globalSnackbar.error("An unknown error occurred.");
-        }
       }
     );
   };
