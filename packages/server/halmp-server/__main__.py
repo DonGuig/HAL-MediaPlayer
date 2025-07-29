@@ -20,7 +20,7 @@ dotenv_path = Path.resolve(Path(__file__).parents[3] / ".env")
 load_dotenv(dotenv_path=dotenv_path, override=True)
 
 app = Flask(__name__, static_url_path="")
-CORS(app)
+CORS(app, origins='*')
 app.register_blueprint(http_api)
 # app.config['SECRET_KEY'] = 'secret!'
 
