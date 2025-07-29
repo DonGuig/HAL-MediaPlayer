@@ -71,5 +71,5 @@ if __name__ == "__main__":
     print("Starting server on port %s" %
           os.getenv("VITE_SERVER_PORT"))
     socketio.run(
-        app, debug=False, host="0.0.0.0", port=os.getenv("VITE_SERVER_PORT")
+        app, debug=False, host="0.0.0.0", port=5000
     )
