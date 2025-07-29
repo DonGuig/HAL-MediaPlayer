@@ -13,7 +13,14 @@ from .utils.blank_console import blank_console
 
 
 media_folder_path = Path(__file__).parent / "media"
+
+# Check if the folder exists
+if not os.path.exists(media_folder_path):
+    # Create the folder
+    os.makedirs(media_folder_path)
+    
 black_video_path = Path(__file__).parent / "static_media/black_1920.jpg"
+
 
 
 
