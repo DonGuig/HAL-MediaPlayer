@@ -44,7 +44,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
 const FactoryReset: React.FC = () => {
   const [openResetDialog, setOpenResetDialog] = useState<boolean>(false);
-  const { overlayActive, readOnlyBoot } = React.useContext(OverlayContext);
+  const { overlayActive } = React.useContext(OverlayContext);
 
   const sendFactoryReset = () => {
     HttpApiRequests.post(`/factory_reset`).catch();
@@ -76,18 +76,18 @@ const FactoryReset: React.FC = () => {
           <Button
             color="error"
             variant="contained"
-            disabled={overlayActive || readOnlyBoot}
+            disabled={overlayActive}
             onClick={() => {
               setOpenResetDialog(true);
             }}
           >
             Factory Reset
           </Button>
-          {(overlayActive || readOnlyBoot) && (
+          {overlayActive && (
             <Chip
               color="warning"
               size="small"
-              label="Disabled while Overlay FS active or read-only /boot"
+              label="Disabled while Overlay FS active"
             />
           )}
         </Stack>

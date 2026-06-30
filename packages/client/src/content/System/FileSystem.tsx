@@ -29,7 +29,7 @@ const FileSystem: React.FC = () => {
     useState<boolean>(false);
   const [fileSystemExpandloading, setFileSystemExpandloading] =
     useState<boolean>(false);
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   const getFSSize = useCallback(() => {
     HttpApiRequests
@@ -64,15 +64,6 @@ const FileSystem: React.FC = () => {
       .finally(() => {
         setFileSystemROloading(false);
       });
-  };
-
-  const sendDisableBootRO = () => {
-    HttpApiRequests
-      .post(`/disableBootRO`)
-      .then((res) => {
-        setOpenRebootDialog(true);
-      })
-      .catch();
   };
 
   const sendDisableOverlay = () => {
@@ -112,9 +103,7 @@ const FileSystem: React.FC = () => {
               <Button
                 color="primary"
                 variant="contained"
-                disabled={
-                  overlayActive || readOnlyBoot || fileSystemExpandloading
-                }
+                disabled={overlayActive || fileSystemExpandloading}
                 onClick={() => {
                   sendExpandFS();
                 }}
@@ -140,11 +129,11 @@ const FileSystem: React.FC = () => {
           <Typography>
             File System Size : {overlayActive ? "N/A" : convertBytes(fsSize)}
           </Typography>
-          {(overlayActive || readOnlyBoot) && (
+          {overlayActive && (
             <Chip
               color="warning"
               size="small"
-              label="Disabled while Overlay FS active or read-only /boot"
+              label="Disabled while Overlay FS active"
             />
           )}
         </Stack>
@@ -153,7 +142,7 @@ const FileSystem: React.FC = () => {
         </Typography>
         <Stack direction="row" spacing={2} marginTop={2}>
           <Box sx={{ position: "relative" }}>
-            <Tooltip title="Use this once you are done configuring to avoid SD card corruption in case of power failure. It will both enable overlay file system and read-only /boot.">
+            <Tooltip title="Use this once you are done configuring to avoid SD card corruption in case of power failure.">
               <Button
                 color="error"
                 variant="contained"
@@ -180,7 +169,7 @@ const FileSystem: React.FC = () => {
               />
             )}
           </Box>
-          <Tooltip title="1st step to get back to a writable file system. Please reboot before the 2nd step.">
+          <Tooltip title="Disable the overlay file system to get back to a writable file system.">
             <Button
               color="error"
               variant="outlined"
@@ -189,17 +178,6 @@ const FileSystem: React.FC = () => {
               }}
             >
               Disable Overlay File System
-            </Button>
-          </Tooltip>
-          <Tooltip title="2nd step to get back to a writable file system.">
-            <Button
-              color="error"
-              variant="outlined"
-              onClick={() => {
-                sendDisableBootRO();
-              }}
-            >
-              Disable Read-Only /boot
             </Button>
           </Tooltip>
         </Stack>

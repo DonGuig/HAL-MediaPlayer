@@ -5,7 +5,7 @@ import ErrorIcon from "@mui/icons-material/Error";
 import { OverlayContext } from "src/contexts/OverlayContext";
 
 const OverlayInfo: React.FC = () => {
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   return (
     <Stack spacing={1}>
@@ -19,16 +19,6 @@ const OverlayInfo: React.FC = () => {
             color="warning"
             size="small"
             label="Overlay File System Active"
-            icon={<ErrorIcon />}
-          />
-        </Tooltip>
-      )}
-      {readOnlyBoot && (
-        <Tooltip title={"/boot partition is read-only"}>
-          <Chip
-            color="warning"
-            size="small"
-            label="Read-Only /boot"
             icon={<ErrorIcon />}
           />
         </Tooltip>
