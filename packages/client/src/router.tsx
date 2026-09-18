@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import { RouteObject } from "react-router";
 
 import AccentSidebarLayout from "src/layouts/AccentSidebarLayout";

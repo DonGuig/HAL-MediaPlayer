@@ -42,13 +42,14 @@ function Header() {
   const hidden = useMediaQuery((theme) => theme.breakpoints.down("lg"));
 
   return (
-    <HeaderWrapper display="flex">
+    <HeaderWrapper sx={{ display: "flex" }}>
       <Grid
         container
-        alignItems="center"
-        width="100%"
-        justifyContent="space-between"
-      >
+        sx={{
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "space-between"
+        }}>
         <Grid>
           <Stack direction="row" spacing={1}>
             {hidden && (

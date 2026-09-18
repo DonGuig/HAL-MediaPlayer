@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "run server (uv)",
+            "type": "shell",
+            "command": "sh -c 'uv run --with debugpy -- debugpy --listen 127.0.0.1:5678 --wait-for-client -m halmp_server & echo DEBUGPY_READY'",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/server"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "DEBUGPY_READY"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "DEBUGPY_READY"
+                }
+            }
+        },
+        {
+            "label": "run OSC server (uv)",
+            "type": "shell",
+            "command": "sh -c 'uv run --with debugpy -- debugpy --listen 127.0.0.1:5679 --wait-for-client -m halmp_OSCserver & echo DEBUGPY_READY'",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/OSCserver"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "DEBUGPY_READY"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "DEBUGPY_READY"
+                }
+            }
+        }
+    ]
+}

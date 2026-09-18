@@ -20,16 +20,19 @@ function Status404() {
     <>
       <MainContent>
         <Container maxWidth="md">
-          <Box textAlign="center">
+          <Box sx={{
+            textAlign: "center"
+          }}>
             <Typography variant="h2" sx={{ my: 2 }}>
               {"Erreur 404"}
             </Typography>
             <Typography
               variant="h4"
-              color="text.secondary"
-              fontWeight="normal"
-              sx={{ mb: 4 }}
-            >
+              sx={{
+                color: "text.secondary",
+                fontWeight: "normal",
+                mb: 4
+              }}>
               {"La page demandée n'existe pas."}
             </Typography>
           </Box>

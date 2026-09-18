@@ -1,4 +1,4 @@
-import { useRoutes } from "react-router-dom";
+import { useRoutes } from "react-router";
 import routes from "./router";
 import { SnackbarProvider } from "notistack";
 import useScrollTop from "src/hooks/useScrollTop";
@@ -62,9 +62,19 @@ const App = () => {
             open={!isConnected}
             sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
           >
-            <Box display="flex" flexDirection="column" alignItems="center">
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center"
+              }}>
               <CircularProgress color="inherit" />
-              <Typography variant="h2" color="#fff" mt={2}>
+              <Typography
+                variant="h2"
+                sx={{
+                  color: "#fff",
+                  mt: 2
+                }}>
                 Reconnecting to server...
               </Typography>
             </Box>

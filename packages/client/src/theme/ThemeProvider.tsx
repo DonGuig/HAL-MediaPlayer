@@ -29,11 +29,11 @@ const ThemeProviderWrapper = (props) => {
   return (
     // <StylesProvider injectFirst>
     //   {/* <CacheProvider value={cacheRtl}> */}
-      <ThemeContext.Provider value={setThemeName}>
-        <ThemeProvider theme={theme}>{props.children}</ThemeProvider >
-      </ThemeContext.Provider>
     //   {/* </CacheProvider>
     // </StylesProvider> */}
+    <ThemeContext.Provider value={setThemeName}>
+      <ThemeProvider theme={theme}>{props.children}</ThemeProvider >
+    </ThemeContext.Provider>
   );
 };
 

@@ -113,8 +113,16 @@ const AudioControls: React.FC = () => {
   }, []);
 
   return (
-    <Grid container marginY={2} justifyContent="center" direction="column">
-      <Typography variant="h4" align="center" marginY={2}>
+    <Grid
+      container
+      sx={{
+        flexDirection: "column",
+        marginY: 2,
+        justifyContent: "center"
+      }}>
+      <Typography variant="h4" align="center" sx={{
+        marginY: 2
+      }}>
         Audio{" "}
         {overlayActive && (
           <Chip
@@ -126,11 +134,12 @@ const AudioControls: React.FC = () => {
       </Typography>
       <Grid
         container
-        margin={1}
         spacing={3}
         direction="row"
-        justifyContent="center"
-      >
+        sx={{
+          margin: 1,
+          justifyContent: "center"
+        }}>
         <Grid>
           <TextField
             id="outlined-number"

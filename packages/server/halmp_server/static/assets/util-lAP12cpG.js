@@ -1,0 +1,2 @@
+var e=function(e){let t=[`Bytes`,`KB`,`MB`,`GB`,`TB`];if(e===0)return`n/a`;let n=Math.floor(Math.log(e)/Math.log(1024));return n===0?e+` `+t[n]:(e/1024**n).toFixed(1)+` `+t[n]};export{e as t};
+//# sourceMappingURL=util-lAP12cpG.js.map

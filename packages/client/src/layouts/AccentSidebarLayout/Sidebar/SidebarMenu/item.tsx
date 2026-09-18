@@ -1,5 +1,5 @@
 import { FC, ReactNode, useState, useContext } from 'react';
-import { NavLink as RouterLink } from 'react-router-dom';
+import { NavLink as RouterLink } from 'react-router';
 import clsx from 'clsx';
 import { SidebarContext } from 'src/contexts/SidebarContext';
 import { Button, Badge, Collapse, ListItem } from '@mui/material';

@@ -181,11 +181,21 @@ const Wifi: React.FC = () => {
   }, []);
 
   return (
-    <Stack marginY={4} spacing={2} direction="column" width="100%">
+    <Stack
+      spacing={2}
+      direction="column"
+      sx={{
+        marginY: 4,
+        width: "100%"
+      }}>
       <Typography variant="h4" align="center">
         Wifi
       </Typography>
-      <Grid margin={1} alignSelf="center">
+      <Grid
+        sx={{
+          margin: 1,
+          alignSelf: "center"
+        }}>
         <ToggleButtonGroup
           value={wifiActivated}
           exclusive
@@ -196,7 +206,13 @@ const Wifi: React.FC = () => {
           <ToggleButton value="false">Off</ToggleButton>
         </ToggleButtonGroup>{" "}
       </Grid>
-      <Stack direction="row" alignSelf="center" alignItems="center" spacing={2}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          alignSelf: "center",
+          alignItems: "center"
+        }}>
         Connected Wifi :{" "}
         <CircleIcon
           sx={{ color: currentWifi === "None" ? grey[500] : green[500] }}
@@ -216,20 +232,23 @@ const Wifi: React.FC = () => {
       </Stack>
       <Grid
         container
-        margin={2}
         spacing={3}
         direction="row"
-        justifyContent="center"
-        alignItems="center"
-        width="100%"
-      >
+        sx={{
+          margin: 2,
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%"
+        }}>
         {" "}
         <Typography>Connect to wifi :</Typography>
         <form
           onSubmit={formik.handleSubmit}
           style={{ display: "flex", alignItems: "center" }}
         >
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <TextField
               error={
                 wifiActivated === "false"
@@ -249,7 +268,9 @@ const Wifi: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <TextField
               error={
                 wifiActivated === "false"
@@ -269,7 +290,9 @@ const Wifi: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <FormGroup>
               <FormControlLabel
                 control={
@@ -284,7 +307,9 @@ const Wifi: React.FC = () => {
               />
             </FormGroup>
           </Grid>
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <Button
               type="submit"
               startIcon={

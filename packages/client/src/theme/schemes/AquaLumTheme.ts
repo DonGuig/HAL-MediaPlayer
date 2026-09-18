@@ -450,11 +450,11 @@ export const AquaLumTheme = createTheme({
     },
     MuiSelect: {
       styleOverrides: {
-        iconOutlined: {
-          color: colors.alpha.black[50]
-        },
         icon: {
-          top: 'calc(50% - 14px)'
+          top: 'calc(50% - 14px)',
+          '&.MuiSelect-outlined': {
+            color: colors.alpha.black[50]
+          }
         }
       }
     },
@@ -574,12 +574,10 @@ export const AquaLumTheme = createTheme({
     },
     MuiPaginationItem: {
       styleOverrides: {
-        page: {
+        root: {
           fontSize: 13,
           fontWeight: 'bold',
-          transition: 'all .2s'
-        },
-        textPrimary: {
+          transition: 'all .2s',
           '&.Mui-selected': {
             boxShadow: colors.shadows.primary
           },
@@ -605,23 +603,27 @@ export const AquaLumTheme = createTheme({
 
           '.MuiSvgIcon-root': {
             transition: 'all .2s'
-          }
+          },
+          '&.MuiButton-containedSecondary': {
+            backgroundColor: colors.secondary.main,
+            color: colors.alpha.white[100],
+            border: '1px solid ' + colors.alpha.black[30]
+          },
+          variants: [
+            {
+              props: { variant: 'outlined', color: 'secondary' },
+              style: {
+                backgroundColor: colors.alpha.white[100],
+                '&:hover, &.MuiSelected': {
+                  backgroundColor: colors.alpha.black[5],
+                  color: colors.alpha.black[100]
+                }
+              }
+            }
+          ]
         },
         endIcon: {
           marginRight: -8
-        },
-        containedSecondary: {
-          backgroundColor: colors.secondary.main,
-          color: colors.alpha.white[100],
-          border: '1px solid ' + colors.alpha.black[30]
-        },
-        outlinedSecondary: {
-          backgroundColor: colors.alpha.white[100],
-
-          '&:hover, &.MuiSelected': {
-            backgroundColor: colors.alpha.black[5],
-            color: colors.alpha.black[100]
-          }
         }
       }
     },
@@ -951,8 +953,10 @@ export const AquaLumTheme = createTheme({
           lineHeight: 1.5,
           fontSize: 14
         },
-        standardInfo: {
-          color: colors.info.main
+        root: {
+          '&.MuiAlert-standard.MuiAlert-colorInfo': {
+            color: colors.info.main
+          }
         },
         action: {
           color: colors.alpha.black[70]
@@ -1052,9 +1056,11 @@ export const AquaLumTheme = createTheme({
         gutterBottom: {
           marginBottom: 4
         },
-        paragraph: {
-          fontSize: 17,
-          lineHeight: 1.7
+        root: {
+          '&.MuiTypography-paragraph': {
+            fontSize: 17,
+            lineHeight: 1.7
+          }
         }
       }
     }

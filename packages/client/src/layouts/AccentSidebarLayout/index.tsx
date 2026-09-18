@@ -1,7 +1,7 @@
 import { FC, ReactNode } from 'react';
 import { styled } from '@mui/material/styles';
 import { Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 
 import Sidebar from './Sidebar';
 import Header from './Header';

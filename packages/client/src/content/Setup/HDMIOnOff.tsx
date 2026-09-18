@@ -24,33 +24,40 @@ const HDMIOnOff: React.FC = () => {
     <>
       <Grid
         container
-        marginY={2}
-        direction="column"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Typography variant="h4" margin={2}>
+        sx={{
+          flexDirection: "column",
+          marginY: 2,
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+        <Typography variant="h4" sx={{
+          margin: 2
+        }}>
           HDMI Output State
         </Typography>
         <Typography variant="body2">
           These commands allow to turn the HDMI signal on or off.
         </Typography>
-        <Typography variant="body2" marginBottom={2}>
+        <Typography variant="body2" sx={{
+          marginBottom: 2
+        }}>
           This can be useful to turn on or off connected screens if they are set
           up to turn on/off with hdmi input signal.
         </Typography>
         <Stack
           direction="column"
           spacing={2}
-          alignItems="center"
-          justifyContent="center"
-        >
+          sx={{
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
           <Stack
             direction="row"
-            alignItems="center"
-            justifyContent="center"
             spacing={2}
-          >
+            sx={{
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
             <Button
               variant="contained"
               onClick={() => sendHDMIOnOrOffMessage(true)}

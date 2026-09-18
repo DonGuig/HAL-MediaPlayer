@@ -83,21 +83,25 @@ const FileSystem: React.FC = () => {
     <>
       <Grid
         container
-        marginY={2}
-        direction="column"
-        justifyContent="center"
-        alignItems="center"
         spacing={2}
-      >
-        <Typography variant="h4" margin={2}>
+        sx={{
+          flexDirection: "column",
+          marginY: 2,
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+        <Typography variant="h4" sx={{
+          margin: 2
+        }}>
           File System
         </Typography>
         <Stack
           direction="row"
-          alignItems="center"
-          justifyContent="center"
           spacing={2}
-        >
+          sx={{
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
           <Box sx={{ position: "relative" }}>
             <Tooltip title="Use this if file system size seems A LOT smaller than it should (typically less than 5 GB)">
               <Button
@@ -137,10 +141,14 @@ const FileSystem: React.FC = () => {
             />
           )}
         </Stack>
-        <Typography variant="h4" margin={2}>
+        <Typography variant="h4" sx={{
+          margin: 2
+        }}>
           Read-only file system management
         </Typography>
-        <Stack direction="row" spacing={2} marginTop={2}>
+        <Stack direction="row" spacing={2} sx={{
+          marginTop: 2
+        }}>
           <Box sx={{ position: "relative" }}>
             <Tooltip title="Use this once you are done configuring to avoid SD card corruption in case of power failure.">
               <Button

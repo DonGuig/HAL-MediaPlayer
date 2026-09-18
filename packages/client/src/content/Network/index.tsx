@@ -12,7 +12,14 @@ const Network: React.FC = () => {
   return (
     <Container>
       {overlayActive || readOnlyBoot ? (
-        <Stack marginY={4} direction="column" width="100%" alignItems="center" spacing={2}>
+        <Stack
+          direction="column"
+          spacing={2}
+          sx={{
+            marginY: 4,
+            width: "100%",
+            alignItems: "center"
+          }}>
           
           <Chip
             color="warning"

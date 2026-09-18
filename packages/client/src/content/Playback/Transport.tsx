@@ -26,15 +26,24 @@ const Transport: React.FC = () => {
   };
 
   return (
-    <Grid container marginY={2} justifyContent="center" direction="column">
-      <Typography variant="h4" align="center" marginY={2}>Transport</Typography>
+    <Grid
+      container
+      sx={{
+        flexDirection: "column",
+        marginY: 2,
+        justifyContent: "center"
+      }}>
+      <Typography variant="h4" align="center" sx={{
+        marginY: 2
+      }}>Transport</Typography>
       <Grid
         container
-        margin={1}
         spacing={2}
         direction="row"
-        justifyContent="center"
-      >
+        sx={{
+          margin: 1,
+          justifyContent: "center"
+        }}>
         <Grid>
           <Button variant="contained" onClick={handleClickPlay}>
             Play

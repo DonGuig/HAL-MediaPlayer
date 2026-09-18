@@ -75,9 +75,10 @@ const ConfigEditorDialog: React.FC<ConfigEditorProps> = ({
         <Stack
           direction="column"
           spacing={2}
-          alignItems="center"
-          justifyContent="center"
-        >
+          sx={{
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
           <Alert severity="warning">
             For advanced users. Refer to{" "}
             <Link
@@ -129,30 +130,37 @@ const VideoSetup: React.FC = () => {
     <>
       <Grid
         container
-        marginY={2}
-        direction="column"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Typography variant="h4" margin={2}>
+        sx={{
+          flexDirection: "column",
+          marginY: 2,
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+        <Typography variant="h4" sx={{
+          margin: 2
+        }}>
           Video Output
         </Typography>
-        <Typography variant="body2" marginBottom={2}>
+        <Typography variant="body2" sx={{
+          marginBottom: 2
+        }}>
           Clicking on one of these button will remove any manual customization
           you did (i.e. Hifiberry customization)
         </Typography>
         <Stack
           direction="column"
           spacing={2}
-          alignItems="center"
-          justifyContent="center"
-        >
+          sx={{
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
           <Stack
             direction="row"
-            alignItems="center"
-            justifyContent="center"
             spacing={2}
-          >
+            sx={{
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
             <Button
               variant="outlined"
               disabled={overlayActive || readOnlyBoot}

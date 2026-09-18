@@ -55,9 +55,22 @@ const Seek: React.FC = () => {
     }, [pauseTimeInterval, stopped]);
 
     return (
-        <Grid container marginY={2} justifyContent="center">
+        <Grid
+            container
+            sx={{
+                marginY: 2,
+                justifyContent: "center"
+            }}>
             <Paper variant="outlined" sx={{padding:1, border: `#1975FF solid 1px`, width:"100%", minWidth: "150px", maxWidth: "80%" }}>
-                <Stack direction="row" spacing={2} marginX={2} width="100%" alignItems="center" justifyContent="center">
+                <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                        marginX: 2,
+                        width: "100%",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
                     <Typography>Seek</Typography>
                     <Slider
                         value={time}
@@ -76,9 +89,7 @@ const Seek: React.FC = () => {
                 </Stack>
             </Paper>
         </Grid>
-
-
-    )
+    );
 }
 
 export default Seek

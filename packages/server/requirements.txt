@@ -1,7 +1,0 @@
-Flask
-Flask-SocketIO
-flask_cors
-python-vlc
-python-dotenv
-python-configuration
-python-magic

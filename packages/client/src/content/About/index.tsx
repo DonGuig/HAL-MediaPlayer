@@ -71,7 +71,12 @@ const About: React.FC = () => {
 
   return (
     <Container>
-      <Stack marginY={2} spacing={0.5} justifyContent="center">
+      <Stack
+        spacing={0.5}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h2">
           HAL Media Player
         </Typography>
@@ -83,7 +88,12 @@ const About: React.FC = () => {
         </Typography>
       </Stack>
       <Divider />
-      <Stack marginY={2} spacing={2} justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h4">
           Audio
         </Typography>
@@ -92,9 +102,13 @@ const About: React.FC = () => {
           clipping depending on the media.
         </Typography>
       </Stack>
-
       <Divider />
-      <Stack marginY={2} spacing={2} justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h4">
           File
         </Typography>
@@ -113,7 +127,12 @@ const About: React.FC = () => {
         </Typography>
       </Stack>
       <Divider />
-      <Stack marginY={2} spacing={2} justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h4">
           Network
         </Typography>
@@ -125,7 +144,12 @@ const About: React.FC = () => {
         </Typography>
       </Stack>
       <Divider />
-      <Stack marginY={2} spacing={2} justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h4">
           Expand File System
         </Typography>
@@ -138,7 +162,12 @@ const About: React.FC = () => {
         </Typography>
       </Stack>
       <Divider />
-      <Stack marginY={2} spacing={2} justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h4">
           Read-only file system
         </Typography>
@@ -158,7 +187,12 @@ const About: React.FC = () => {
         </Typography>
       </Stack>
       <Divider />
-      <Stack marginY={2} spacing={2} justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          marginY: 2,
+          justifyContent: "center"
+        }}>
         <Typography align="center" variant="h4">
           OSC control
         </Typography>

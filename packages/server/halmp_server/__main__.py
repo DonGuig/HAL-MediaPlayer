@@ -24,7 +24,7 @@ CORS(app, origins='*')
 app.register_blueprint(http_api)
 # app.config['SECRET_KEY'] = 'secret!'
 
-socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
+socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")
 
 
 # Serve React App
@@ -68,8 +68,8 @@ def set_time(input_time):
 if __name__ == "__main__":
     cfg_handler: ConfigHandler = ConfigHandler()
     vlc_handler = VLC_Handler()
-    print("Starting server on port %s" %
-          os.getenv("VITE_SERVER_PORT"))
+    port = int(os.getenv("VITE_SERVER_PORT", 80))
+    print("Starting server on port %s" % port)
     socketio.run(
-        app, debug=False, host="0.0.0.0", port=5000
+        app, debug=False, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True
     )

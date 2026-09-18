@@ -2,7 +2,7 @@ import App from "./App";
 import { createRoot } from 'react-dom/client';
 // import * as serviceWorker from "./serviceWorker";
 // import { HelmetProvider } from "react-helmet-async";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router";
 
 import "nprogress/nprogress.css";
 import { SidebarProvider } from "./contexts/SidebarContext";

@@ -20,7 +20,7 @@
                 "start"
             ],
             "runtimeExecutable": "npm",
-            "runtimeVersion": "22.14.0",
+            "runtimeVersion": "24.18.0",
             "cwd": "${workspaceFolder}/packages/client",
             "skipFiles": [
                 "<node_internals>/**"
@@ -28,28 +28,24 @@
             "type": "node"
         },
         {
-            "name": "run server (python)",
+            "name": "run server (uv python)",
             "type": "debugpy",
+            "cwd": "${workspaceFolder}/packages/server/halmp_server",
+            "program": "__main__.py",
             "request": "launch",
-            "module": "halmp-server",
-            "env": {
-            },
-            "args": [
-            ],
-            "justMyCode": true,
-            "cwd": "${workspaceFolder}/packages/server"
+            "console": "integratedTerminal",
+            "justMyCode": true
         },
         {
             "name": "run OSC server (python)",
             "type": "debugpy",
-            "request": "launch",
-            "module": "halmp-OSCserver",
-            "env": {
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5679
             },
-            "args": [
-            ],
-            "justMyCode": true,
-            "cwd": "${workspaceFolder}/packages/OSCserver"
+            "preLaunchTask": "run OSC server (uv)",
+            "justMyCode": true
         },
         {
             "name": "Chrome (dev client)",
@@ -67,7 +63,7 @@
                 "build"
             ],
             "runtimeExecutable": "npm",
-            "runtimeVersion": "22.14.0",
+            "runtimeVersion": "24.18.0",
             "cwd": "${workspaceFolder}/packages/client",
             "skipFiles": [
                 "<node_internals>/**"

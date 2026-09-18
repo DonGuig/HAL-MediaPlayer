@@ -216,8 +216,16 @@ const FileManagementWithoutUploady: React.FC = () => {
 
   return (
     <>
-      <Grid container marginY={2} justifyContent="center" direction="column">
-        <Typography variant="h4" align="center" marginY={2}>
+      <Grid
+        container
+        sx={{
+          flexDirection: "column",
+          marginY: 2,
+          justifyContent: "center"
+        }}>
+        <Typography variant="h4" align="center" sx={{
+          marginY: 2
+        }}>
           File{" "}
           {overlayActive && (
             <Chip
@@ -229,12 +237,13 @@ const FileManagementWithoutUploady: React.FC = () => {
         </Typography>
         <Grid
           container
-          margin={1}
           spacing={2}
           direction="row"
-          justifyContent="center"
-          alignItems="center"
-        >
+          sx={{
+            margin: 1,
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
           <Grid>
             <MUIUploadButton onClick={handleUploadClick} />
           </Grid>
@@ -266,14 +275,19 @@ const FileManagementWithoutUploady: React.FC = () => {
         </Grid>
         <Grid
           container
-          margin={1}
           spacing={2}
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
-        >
+          sx={{
+            flexDirection: "column",
+            margin: 1,
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
           <Grid>
-            <Box height="100%" alignItems="center">
+            <Box
+              sx={{
+                height: "100%",
+                alignItems: "center"
+              }}>
               <Typography variant="h6">
                 <b>Current file : </b>
                 {fileName} ({convertBytes(fileSize)})

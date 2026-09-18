@@ -89,24 +89,32 @@ const Hostname: React.FC = () => {
 
   return (
     <>
-      <Stack marginY={4} direction="column" width="100%">
+      <Stack
+        direction="column"
+        sx={{
+          marginY: 4,
+          width: "100%"
+        }}>
         <Typography variant="h4" align="center">
           Hostname
         </Typography>
         <Grid
           container
-          margin={2}
           spacing={3}
           direction="row"
-          justifyContent="center"
-          alignItems="center"
-          width="100%"
-        >
+          sx={{
+            margin: 2,
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%"
+          }}>
           <form
             onSubmit={formik.handleSubmit}
             style={{ display: "flex", alignItems: "center" }}
           >
-            <Grid margin={1}>
+            <Grid sx={{
+              margin: 1
+            }}>
               <TextField
                 error={Boolean(
                   formik.touched.hostname && formik.errors.hostname
@@ -122,7 +130,9 @@ const Hostname: React.FC = () => {
                 variant="outlined"
               />
             </Grid>
-            <Grid margin={1}>
+            <Grid sx={{
+              margin: 1
+            }}>
               <Button
                 type="submit"
                 startIcon={

@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react';
 import PropTypes from 'prop-types';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 
 interface BaseLayoutProps {
   children?: ReactNode;

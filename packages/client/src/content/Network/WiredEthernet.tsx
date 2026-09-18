@@ -115,11 +115,23 @@ const WiredEthernet: React.FC = () => {
   }, []);
 
   return (
-    <Stack marginY={4} direction="column" width="100%" spacing={2}>
+    <Stack
+      direction="column"
+      spacing={2}
+      sx={{
+        marginY: 4,
+        width: "100%"
+      }}>
       <Typography variant="h4" align="center">
         Wired Ethernet
       </Typography>
-      <Stack direction="row" alignSelf="center" alignItems="center" spacing={2}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          alignSelf: "center",
+          alignItems: "center"
+        }}>
         Connected :{" "}
         <CircleIcon sx={{ color: cableConnected ? green[500] : grey[500] }} />{" "}
         <Button variant="contained" onClick={() => getWiredNetworkConfig()}>
@@ -128,18 +140,21 @@ const WiredEthernet: React.FC = () => {
       </Stack>
       <Grid
         container
-        margin={2}
         spacing={3}
         direction="row"
-        justifyContent="center"
-        alignItems="center"
-        width="100%"
-      >
+        sx={{
+          margin: 2,
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%"
+        }}>
         <form
           onSubmit={formik.handleSubmit}
           style={{ display: "flex", alignItems: "center" }}
         >
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <ToggleButtonGroup
               value={formik.values.DHCPorFixed}
               exclusive
@@ -150,7 +165,9 @@ const WiredEthernet: React.FC = () => {
               <ToggleButton value="Fixed IP">Fixed IP</ToggleButton>
             </ToggleButtonGroup>{" "}
           </Grid>
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <TextField
               error={Boolean(
                 formik.touched.ipAddress && formik.errors.ipAddress
@@ -171,7 +188,9 @@ const WiredEthernet: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <TextField
               error={Boolean(formik.touched.netmask && formik.errors.netmask)}
               sx={{ width: "150px" }}
@@ -190,7 +209,9 @@ const WiredEthernet: React.FC = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid margin={1}>
+          <Grid sx={{
+            margin: 1
+          }}>
             <Button
               type="submit"
               disabled={overlayActive || readOnlyBoot}

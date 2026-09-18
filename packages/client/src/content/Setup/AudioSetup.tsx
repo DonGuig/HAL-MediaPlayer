@@ -54,20 +54,24 @@ const AudioSetup: React.FC = () => {
   return (
     <Grid
       container
-      marginY={2}
-      direction="column"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Typography variant="h4" margin={2}>
+      sx={{
+        flexDirection: "column",
+        marginY: 2,
+        justifyContent: "center",
+        alignItems: "center"
+      }}>
+      <Typography variant="h4" sx={{
+        margin: 2
+      }}>
         Audio Output
       </Typography>
       <Stack
         direction="row"
-        alignItems="center"
-        justifyContent="center"
         spacing={2}
-      >
+        sx={{
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
         <ToggleButtonGroup
           value={audioOutputDisplay}
           exclusive
