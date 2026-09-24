@@ -6,7 +6,7 @@ After=multi-user.target
 WorkingDirectory=/home/pi/HAL-MediaPlayer/packages/server
 Restart=on-failure
 User=pi
-ExecStart=authbind --deep python -m halmp-server
+ExecStart=authbind --deep python -m halmp_server
 
 [Install]
 WantedBy=graphical.target

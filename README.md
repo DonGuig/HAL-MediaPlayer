@@ -65,7 +65,7 @@ sudo chmod 777 /etc/authbind/byport/80
 ```
 
 then start server with :
-`authbind --deep python3 -m halmp-server`
+`authbind --deep python3 -m halmp_server`
 
 <https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d>
 

@@ -26,7 +26,7 @@
   },
   "scripts": {
     "start": "rm .env && cp ../../.env .env && vite",
-    "build": "rm .env && cp ../../.env .env && tsc && vite build && rm -rf ../server/halmp-server/static/ && mkdir -p ../server/halmp-server/static/ && cp -R ./dist/* ../server/halmp-server/static/",
+    "build": "rm .env && cp ../../.env .env && tsc && vite build && rm -rf ../server/halmp_server/static/ && mkdir -p ../server/halmp_server/static/ && cp -R ./dist/* ../server/halmp_server/static/",
     "serve": "vite preview"
   },
   "eslintConfig": {
