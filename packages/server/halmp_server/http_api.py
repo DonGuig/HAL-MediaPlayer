@@ -895,13 +895,11 @@ def factory_reset():
 
         print('put audio out to jack')
 
-        # load default hdmi config.txt
+        # back to HDMI video output (config.txt managed block and cmdline.txt)
 
-        p = resourcesPath / "boot_configs" / "hdmi_config.txt"
+        apply_video_mode("HDMI")
 
-        write_config_txt(p.read_text())
-
-        print('loaded default hdmi config.txt')
+        print('set video output to HDMI')
 
         # auto expand file system flag removed
         file_path = "home/pi/resize_done"
