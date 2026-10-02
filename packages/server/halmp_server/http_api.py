@@ -9,7 +9,7 @@ import magic
 
 import __main__
 
-from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt
+from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode
 
 http_api = Blueprint("http_api", __name__)
 
@@ -498,18 +498,7 @@ def expandFS():
 @http_api.post('/api/setVideoOutput')
 def set_video_output():
     try:
-        if request.json["videoOutput"] == "HDMI":
-            p = resourcesPath / "boot_configs" / "hdmi_config.txt"
-        elif request.json["videoOutput"] == "CompositePAL":
-            p = resourcesPath / "boot_configs" / "composite_pal_config.txt"
-        elif request.json["videoOutput"] == "CompositeNTSC":
-            p = resourcesPath / "boot_configs" / "composite_ntsc_config.txt"
-        elif request.json["videoOutput"] == "HDMIForce1080p60":
-            p = resourcesPath / "boot_configs" / "hdmi_config_force_1080p60.txt"
-        else:
-            raise Exception("Incorrect request")
-
-        write_config_txt(p.read_text())
+        apply_video_mode(request.json["videoOutput"])
         return Response(status=200)
     except Exception as e:
         if hasattr(e, "stderr"):
