@@ -1,0 +1,14 @@
+# Applied for every video output mode.
+# Stock Trixie lines (dtoverlay=vc4-kms-v3d, auto_initramfs, max_framebuffers,
+# disable_overscan, dtparam=audio=on) live outside the managed block and are not repeated here.
+# Docs: https://www.raspberrypi.com/documentation/computers/config_txt.html
+disable_splash=1
+avoid_warnings=1
+# Memory for the firmware video decoder used on Pi 3/4 (ignored on Pi 5)
+gpu_mem=128
+# Gives slow displays time to wake up (Pi 3 and earlier only; Pi 4/5 ignore it)
+bootcode_delay=10
+
+[pi4]
+# 4K above 30 Hz
+hdmi_enable_4kp60=1

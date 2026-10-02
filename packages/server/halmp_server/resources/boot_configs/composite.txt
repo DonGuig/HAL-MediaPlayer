@@ -1,0 +1,13 @@
+# Added for Composite PAL/NTSC, on Pi 3 and Pi 4 only (refused on Pi 5).
+# The PAL/NTSC norm and the resolution are set in cmdline.txt, not here.
+# Docs: https://www.raspberrypi.com/documentation/computers/config_txt.html#video-options
+
+# TODO verify on hardware: the stock dtoverlay=vc4-kms-v3d line above the managed block
+# loads the overlay once already; check that loading it again with these params works.
+[all]
+# nohdmi makes Pi 3 composite-only like Pi 4 (where composite already disables HDMI)
+dtoverlay=vc4-kms-v3d,composite,nohdmi
+
+[pi4]
+# Composite is off by default on Pi 4
+enable_tvout=1

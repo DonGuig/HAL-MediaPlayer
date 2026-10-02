@@ -38,16 +38,17 @@ The three big breaking changes:
 
 ## 2. Video output setup / `config.txt` templates — **large**
 
-- [ ] **Path**: replace `/boot/config.txt` with `/boot/firmware/config.txt` in `http_api.py` (`setVideoOutput`, `getConfigTXT`, `sendConfigTXT`, `factory_reset`) and in the client label (`VideoSetup.tsx`).
+- [ ] **Path**: replace `/boot/config.txt` with `/boot/firmware/config.txt` in `http_api.py` (`setVideoOutput`, `getConfigTXT`, `sendConfigTXT`, `factory_reset`) and in the client label (`VideoSetup.tsx`). Server side done (`utils/boot_config.py`); client label still to do.
 - [ ] **Legacy options are ignored under KMS**: `hdmi_group`, `hdmi_mode`, `hdmi_force_hotplug`, `sdtv_mode`, `hdmi_safe`, `overscan_*`, `framebuffer_*`, `hdmi_drive`, `config_hdmi_boost`, and mostly `gpu_mem`. Replacements:
   - **Forced 1080p60**: `video=HDMI-A-1:1920x1080M@60D` in `/boot/firmware/cmdline.txt`. The feature must now edit **cmdline.txt** too.
   - **Composite PAL/NTSC (Pi 3 and Pi 4 only)**: `dtoverlay=vc4-kms-v3d,composite`, plus `enable_tvout=1` on Pi 4 (off by default there). In cmdline.txt: `vc4.tv_norm=PAL` with `video=Composite-1:720x576@50ie`, or `vc4.tv_norm=NTSC` with `video=Composite-1:720x480@60ie`. Since one image serves all models, put the Pi-specific lines under `[pi3]` / `[pi4]` filters in config.txt.
+  - [x] Templates rewritten as managed-block fragments in `resources/boot_configs/`: `common.txt` (every mode) and `composite.txt` (added for PAL/NTSC). HDMI modes need no config.txt lines; their differences are cmdline.txt values only. **To verify on hardware**: `composite.txt` loads `dtoverlay=vc4-kms-v3d,composite,nohdmi` a second time after the stock line.
   - **Composite is not supported on Pi 5.** The API (`setVideoOutput`) must refuse composite modes on Pi 5, and factory reset must never select composite there.
 - [ ] **Composite must be solid on Pi 3 and Pi 4**: test PAL and NTSC on both models with a real CRT/composite display. Check the picture fills the screen correctly (overscan settings no longer apply under KMS; use the `margin_*` / `tv_mode` cmdline options if needed), that VLC plays interlaced output smoothly, and that audio output selection still works with composite active.
   - Point the doc links (templates and UI) to the KMS video docs instead of `legacy_config_txt`.
 - [ ] **Important**: the templates replace the whole `config.txt`. That silently drops the Bookworm/Trixie defaults: `dtoverlay=vc4-kms-v3d`, `auto_initramfs=1`, `arm_64bit=1`, `display_auto_detect`, `camera_auto_detect`, `arm_boost`, and the `[pi5]`/`[cm4]` sections. Without `auto_initramfs`, **overlayfs will not work**. Rebuild the templates from a stock Trixie `config.txt`, or better, edit only the managed lines instead of copying whole files.
   - [x] **Decision: managed block.** The server only rewrites the lines between the `# --- HALMP managed: begin/end ---` markers at the end of `config.txt` (`utils/boot_config.py`); everything else, including HiFiBerry overlays, is left as is. `cmdline.txt` is edited value by value, never replaced, since it holds the per-install `PARTUUID` and cloud-init id.
-- [ ] **HiFiBerry**: after kernel 6.1.77, some overlays were renamed (for example `hifiberry-dacplus-std` / `-pro`). Update the list for kernel 6.12.
+- [ ] **HiFiBerry**: after kernel 6.1.77, some overlays were renamed (for example `hifiberry-dacplus-std` / `-pro`). Update the list for kernel 6.12. The commented list of overlays was in the old templates; it now belongs in the image's `config.txt`, **outside** the managed block (see §13).
 
 ## 3. HDMI on/off — **medium to large, needs research**
 
