@@ -901,16 +901,6 @@ def factory_reset():
 
         print('set video output to HDMI')
 
-        # auto expand file system flag removed
-        file_path = "home/pi/resize_done"
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"Deleted: {file_path}")
-        else:
-            print("No resize_done file found.")
-
-        print('removed auto expand file system flag')
-
         # reboot
         subprocess.run('sudo reboot',
                        shell=True,

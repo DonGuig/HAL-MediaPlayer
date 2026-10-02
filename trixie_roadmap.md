@@ -90,7 +90,7 @@ The three big breaking changes:
 - [ ] **PEP 668**: system-wide `pip install` is refused, so the README's `pip install eventlet` / `dnspython` steps are dead. `pyproject.toml` + `uv.lock` + `.python-version` 3.13 already exist, and **Trixie ships Python 3.13**. Run both servers from venvs with `ExecStart=/home/<user>/…/.venv/bin/python -m …`. The bare `python` command doesn't exist without `python-is-python3`.
 - [ ] Give the OSC server a `pyproject.toml` / venv as well (it only has `requirements.txt`).
 - [ ] System packages still needed: `vlc` / `libvlc`, `libmagic1`, `rsync`.
-- [ ] **No default `pi` user.** `/home/pi` is hard-coded in both units, in `shutil.disk_usage("/home/pi")` (`getAvailableSpace`, `getFSSize`) and in the resize flag. Either create `pi` when building the image, or make paths relative to the app or `Path.home()`.
+- [ ] **No default `pi` user.** `/home/pi` is hard-coded in both units, in `shutil.disk_usage("/home/pi")` (`getAvailableSpace`, `getFSSize`). Either create `pi` when building the image, or make paths relative to the app or `Path.home()`.
 - [x] Add an explicit `/etc/sudoers.d/halmp` for `nmcli`, `raspi-config`, `reboot`, `shutdown` and `cp`, instead of relying on the default user's NOPASSWD entry.
 - [ ] **authbind** still works, but `AmbientCapabilities=CAP_NET_BIND_SERVICE` in the unit is cleaner and removes a dependency.
 - [ ] Unit file bugs, independent of the port:
@@ -107,10 +107,8 @@ The three big breaking changes:
 
 ## 10. Filesystem expand / first-boot resize — **small**
 
-- [ ] Bookworm and Trixie already expand the root filesystem on first boot (in the initramfs on Trixie).
-- [ ] `/etc/rc.local` isn't there by default, and the rc-local compatibility layer is deprecated in systemd 257. Drop the README rc.local snippet, or replace it with a oneshot unit if really needed.
-- [ ] Check that `raspi-config nonint do_expand_rootfs` (the "Expand FS" button) still works on Trixie.
-- [ ] Existing bug: `"home/pi/resize_done"` in `factory_reset` is missing its leading `/`.
+- [x] **The old `rc.local` + `/home/pi/resize_done` mechanism is removed** (README snippet and the flag cleanup in `factory_reset`). First-boot expansion is now done by the separate macOS/Windows image tool, which shrinks the release image and installs a one-off systemd unit that expands the filesystem.
+- [ ] Keep the manual "Expand File System" button as a fallback: check that `raspi-config nonint do_expand_rootfs` still works on Trixie.
 
 ## 11. Hostname, reboot/shutdown, volume/delay, OSC, HTTP API — **little or nothing**
 
