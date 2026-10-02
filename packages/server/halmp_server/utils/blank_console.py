@@ -4,7 +4,7 @@ import subprocess
 def blank_console():
     try:
         ssid_out = subprocess.run(
-            'setterm -cursor off && sudo sh -c "TERM=linux setterm -foreground black -clear all >/dev/tty0"',
+            'setterm -cursor off && TERM=linux setterm -foreground black -clear all | sudo tee /dev/tty0 >/dev/null',
             shell=True,
             text=True,
             check=True,

@@ -14,8 +14,9 @@ The three big breaking changes:
 
 ## Decisions to make first
 
-- [ ] **Which Pi models to target.** Pi 5 changes audio (no jack), video (no practical composite, no H.264 hardware decode) and the HandBrake preset.
-- [ ] **Keep a `pi` user** in the image, or make all paths user-independent.
+- [x] **Which Pi models to target.** → **Pi 3, Pi 4 and Pi 5**, all from one image. Pi 5 changes audio (no jack), video (no practical composite, no H.264 hardware decode) and the HandBrake preset, so every Pi 5 caveat below must be handled, not skipped. A single image for all three must be arm64 (Pi 5 is 64-bit only; Pi 3 runs arm64 fine but has only 1 GB RAM).
+- [x] **Keep a `pi` user** in the image, or make all paths user-independent. → Keep `pi`: releases ship as a full OS image, so the user is part of the image.
+- [x] **Composite video.** → **Not supported on Pi 5** (test pads only). **Must be fully supported on Pi 3 and Pi 4** (PAL and NTSC). See §2.
 - [ ] **HDMI on/off approach**, since there is no direct KMS equivalent (see §3).
 
 ## Suggested order
@@ -40,9 +41,12 @@ The three big breaking changes:
 - [ ] **Path**: replace `/boot/config.txt` with `/boot/firmware/config.txt` in `http_api.py` (`setVideoOutput`, `getConfigTXT`, `sendConfigTXT`, `factory_reset`) and in the client label (`VideoSetup.tsx`).
 - [ ] **Legacy options are ignored under KMS**: `hdmi_group`, `hdmi_mode`, `hdmi_force_hotplug`, `sdtv_mode`, `hdmi_safe`, `overscan_*`, `framebuffer_*`, `hdmi_drive`, `config_hdmi_boost`, and mostly `gpu_mem`. Replacements:
   - **Forced 1080p60**: `video=HDMI-A-1:1920x1080M@60D` in `/boot/firmware/cmdline.txt`. The feature must now edit **cmdline.txt** too.
-  - **Composite PAL/NTSC**: `dtoverlay=vc4-kms-v3d,composite` plus `enable_tvout=1` (Pi 4), and `vc4.tv_norm=PAL`/`NTSC` with `video=Composite-1:720x576@50ie` in cmdline.txt. **Pi 5 has composite only on test pads**: decide whether to support it there.
+  - **Composite PAL/NTSC (Pi 3 and Pi 4 only)**: `dtoverlay=vc4-kms-v3d,composite`, plus `enable_tvout=1` on Pi 4 (off by default there). In cmdline.txt: `vc4.tv_norm=PAL` with `video=Composite-1:720x576@50ie`, or `vc4.tv_norm=NTSC` with `video=Composite-1:720x480@60ie`. Since one image serves all models, put the Pi-specific lines under `[pi3]` / `[pi4]` filters in config.txt.
+  - **Composite is not supported on Pi 5.** The API (`setVideoOutput`) must refuse composite modes on Pi 5, and factory reset must never select composite there.
+- [ ] **Composite must be solid on Pi 3 and Pi 4**: test PAL and NTSC on both models with a real CRT/composite display. Check the picture fills the screen correctly (overscan settings no longer apply under KMS; use the `margin_*` / `tv_mode` cmdline options if needed), that VLC plays interlaced output smoothly, and that audio output selection still works with composite active.
   - Point the doc links (templates and UI) to the KMS video docs instead of `legacy_config_txt`.
 - [ ] **Important**: the templates replace the whole `config.txt`. That silently drops the Bookworm/Trixie defaults: `dtoverlay=vc4-kms-v3d`, `auto_initramfs=1`, `arm_64bit=1`, `display_auto_detect`, `camera_auto_detect`, `arm_boost`, and the `[pi5]`/`[cm4]` sections. Without `auto_initramfs`, **overlayfs will not work**. Rebuild the templates from a stock Trixie `config.txt`, or better, edit only the managed lines instead of copying whole files.
+  - [x] **Decision: managed block.** The server only rewrites the lines between the `# --- HALMP managed: begin/end ---` markers at the end of `config.txt` (`utils/boot_config.py`); everything else, including HiFiBerry overlays, is left as is. `cmdline.txt` is edited value by value, never replaced, since it holds the per-install `PARTUUID` and cloud-init id.
 - [ ] **HiFiBerry**: after kernel 6.1.77, some overlays were renamed (for example `hifiberry-dacplus-std` / `-pro`). Update the list for kernel 6.12.
 
 ## 3. HDMI on/off — **medium to large, needs research**
@@ -86,7 +90,7 @@ The three big breaking changes:
 - [ ] Give the OSC server a `pyproject.toml` / venv as well (it only has `requirements.txt`).
 - [ ] System packages still needed: `vlc` / `libvlc`, `libmagic1`, `rsync`.
 - [ ] **No default `pi` user.** `/home/pi` is hard-coded in both units, in `shutil.disk_usage("/home/pi")` (`getAvailableSpace`, `getFSSize`) and in the resize flag. Either create `pi` when building the image, or make paths relative to the app or `Path.home()`.
-- [ ] Add an explicit `/etc/sudoers.d/halmp` for `nmcli`, `raspi-config`, `reboot`, `shutdown` and `cp`, instead of relying on the default user's NOPASSWD entry.
+- [x] Add an explicit `/etc/sudoers.d/halmp` for `nmcli`, `raspi-config`, `reboot`, `shutdown` and `cp`, instead of relying on the default user's NOPASSWD entry.
 - [ ] **authbind** still works, but `AmbientCapabilities=CAP_NET_BIND_SERVICE` in the unit is cleaner and removes a dependency.
 - [ ] Unit file bugs, independent of the port:
   - `halmp.service` uses `WantedBy=graphical.target`, but Lite boots to `multi-user.target`.
@@ -96,7 +100,8 @@ The three big breaking changes:
 
 ## 9. Console blanking / black screen — **small**
 
-- [ ] `setterm` still works on the KMS fbcon, but `black_shell.service` writes to `tty1` while `blank_console()` writes to `tty0`.
+- [x] Keep only `blank_console.py` for blacking out the console. `black_shell.service` is moved to `systemd/backup/` and no longer installed (it is not yet confirmed which of the two actually did the job).
+- [ ] Check on hardware that `blank_console()` (writes to `tty0`) blacks out the screen on its own; `setterm` still works on the KMS fbcon.
 - [ ] Cleaner on Trixie: add `consoleblank=0 vt.global_cursor_default=0 quiet loglevel=3 logo.nologo` to `cmdline.txt` and drop most of this. `disable_splash=1` still works.
 
 ## 10. Filesystem expand / first-boot resize — **small**
@@ -114,7 +119,7 @@ The three big breaking changes:
 ## 12. Web client — **trivial**
 
 - [ ] Change the `/boot/config.txt` label and the legacy-docs link in `VideoSetup.tsx`.
-- [ ] Adjust the video/audio options if the choices change: for example, no composite on Pi 5 and no jack on Pi 5.
+- [ ] Hide the composite options on Pi 5 (keep them on Pi 3 and Pi 4), and hide the jack audio option on Pi 5. The server must report the Pi model to the client.
 
 ## 13. README / image build
 

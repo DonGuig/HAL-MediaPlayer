@@ -1,0 +1,19 @@
+# Commands the HAL Media Player server (running as pi) may run with sudo.
+# Installed to /etc/sudoers.d/halmp by install_service.sh.
+
+Cmnd_Alias HALMP_NETWORK = /usr/bin/nmcli
+Cmnd_Alias HALMP_POWER = /usr/sbin/reboot "", /usr/sbin/shutdown now
+Cmnd_Alias HALMP_RASPI_CONFIG = \
+    /usr/bin/raspi-config nonint do_hostname *, \
+    /usr/bin/raspi-config nonint do_expand_rootfs, \
+    /usr/bin/raspi-config nonint get_overlay_now, \
+    /usr/bin/raspi-config nonint get_bootro_now, \
+    /usr/bin/raspi-config nonint do_overlayfs 0, \
+    /usr/bin/raspi-config nonint disable_bootro, \
+    /usr/bin/raspi-config nonint disable_overlayfs
+Cmnd_Alias HALMP_FILES = \
+    /usr/bin/tee /boot/firmware/config.txt, \
+    /usr/bin/tee /boot/firmware/cmdline.txt, \
+    /usr/bin/tee /dev/tty0
+
+pi ALL=(root) NOPASSWD: HALMP_NETWORK, HALMP_POWER, HALMP_RASPI_CONFIG, HALMP_FILES

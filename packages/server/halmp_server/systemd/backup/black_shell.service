@@ -1,0 +1,11 @@
+[Unit]
+Description=HAL Media Player black console
+After=getty.target
+
+[Service]
+Type=idle
+# Runs as root: writing to /dev/tty1 needs it
+ExecStart=/bin/sh -c "TERM=linux setterm -foreground black -clear all >/dev/tty1"
+
+[Install]
+WantedBy=multi-user.target

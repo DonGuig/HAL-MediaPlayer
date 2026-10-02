@@ -114,4 +114,10 @@ fi
 
 Make sure to remove the file /home/pi/resize_done before making a disk image out of the SD card.
 
+## TO REMOVE FROM RPi SD BEFORE RELEASE
+
+Github credentials
+Claude
+
+
 ## TODO

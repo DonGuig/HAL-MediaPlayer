@@ -9,6 +9,8 @@ import magic
 
 import __main__
 
+from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt
+
 http_api = Blueprint("http_api", __name__)
 
 resourcesPath = Path(__file__).parent / "resources"
@@ -507,10 +509,7 @@ def set_video_output():
         else:
             raise Exception("Incorrect request")
 
-        subprocess.run(f'sudo cp {p} /boot/config.txt',
-                       shell=True,
-                       check=True,
-                       capture_output=True)
+        write_config_txt(p.read_text())
         return Response(status=200)
     except Exception as e:
         if hasattr(e, "stderr"):
@@ -524,7 +523,7 @@ def set_video_output():
 def get_config_txt():
     try:
         lines: str = ""
-        with open("/boot/config.txt", 'r') as f:
+        with open(CONFIG_TXT_PATH, 'r') as f:
             lines = f.read()
 
         return {"txt": lines}
@@ -537,20 +536,7 @@ def send_config_txt():
     try:
         txt: str = request.json["txt"]
         if txt != "":
-            with open("temp_config.txt", 'w') as f:
-                f.write(txt)
-
-            cmd = f'sudo cp "temp_config.txt" /boot/config.txt'
-            subprocess.run(cmd,
-                           shell=True,
-                           check=True,
-                           capture_output=True)
-
-            cmd = f'rm "temp_config.txt"'
-            subprocess.run(cmd,
-                           shell=True,
-                           check=True,
-                           capture_output=True)
+            write_config_txt(txt)
 
         return Response(status=200)
     except Exception as e:
@@ -924,10 +910,7 @@ def factory_reset():
 
         p = resourcesPath / "boot_configs" / "hdmi_config.txt"
 
-        subprocess.run(f'sudo cp {p} /boot/config.txt',
-                       shell=True,
-                       check=True,
-                       capture_output=True)
+        write_config_txt(p.read_text())
 
         print('loaded default hdmi config.txt')
 

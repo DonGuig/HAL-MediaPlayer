@@ -1,12 +1,16 @@
 [Unit]
-Description=HAL Media Player startup service
-After=multi-user.target
+Description=HAL Media Player server
+After=network.target sound.target
 
 [Service]
-WorkingDirectory=/home/pi/HAL-MediaPlayer/packages/server
-Restart=on-failure
 User=pi
-ExecStart=authbind --deep python -m halmp_server
+WorkingDirectory=/home/pi/HAL-MediaPlayer/packages/server
+ExecStart=/home/pi/HAL-MediaPlayer/packages/server/.venv/bin/python -m halmp_server
+# Allows binding port 80 without root (replaces authbind)
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=2
 
 [Install]
-WantedBy=graphical.target
+WantedBy=multi-user.target

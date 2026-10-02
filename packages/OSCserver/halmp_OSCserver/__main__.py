@@ -10,7 +10,7 @@ dotenv_path = Path.resolve(Path(__file__).parents[3] / '.env')
 
 load_dotenv(dotenv_path=dotenv_path)
 
-server_api_url = f"http://localhost:{os.environ.get('REACT_APP_SERVER_PORT')}/api"
+server_api_url = f"http://localhost:{os.environ.get('VITE_SERVER_PORT', '80')}/api"
 
 
 def default_handler(address, *args):
