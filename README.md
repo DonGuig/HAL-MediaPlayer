@@ -49,10 +49,11 @@ Delete the default connection in Network Manager :
 `nmcli con show`then note down the name of the connection
 `nmcli con del name`where you substitue name for the name of the connection
 
-Add the two connection profiles for ethernet :
-`nmcli con add type ethernet ifname eth0 con-name eth0 connection.autoconnect-priority 100 connection.autoconnect-retries 1 ipv4.dhcp-timeout 3 ipv4.method auto`
-and
-`nmcli con add type ethernet ifname eth0 con-name eth0-ll connection.autoconnect-priority 50 ipv4.method link-local`
+Add the ethernet connection profile, using DHCP with a link-local (169.254.x.x) fallback when no DHCP server answers :
+```shell
+sudo nmcli con add type ethernet ifname eth0 con-name eth0 connection.autoconnect-priority 100 ipv4.method auto ipv4.link-local enabled ipv4.dhcp-timeout infinity ipv4.may-fail yes
+sudo nmcli con up eth0
+```
 
 `sudo reboot`
 
