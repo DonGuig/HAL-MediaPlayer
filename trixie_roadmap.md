@@ -115,10 +115,31 @@ The three big breaking changes:
 - [ ] `raspi-config nonint do_hostname` still works. Check that cloud-init doesn't reapply the Imager hostname on reboot (`preserve_hostname: true`).
 - Flask, Socket.IO and python-osc are unaffected apart from the venv change.
 
-## 12. Web client — **trivial**
+## 12. Web client — **small, postponed**
 
-- [ ] Change the `/boot/config.txt` label and the legacy-docs link in `VideoSetup.tsx`.
-- [ ] Hide the composite options on Pi 5 (keep them on Pi 3 and Pi 4), and hide the jack audio option on Pi 5. The server must report the Pi model to the client.
+Server side is done for video (`utils/boot_config.py`), so the client work is left for later. To do, all in `packages/client/src/content/`:
+
+**`Setup/VideoSetup.tsx`**
+- [ ] Rename the "Edit /boot/config.txt" button (line ~202) to `/boot/firmware/config.txt`.
+- [ ] Replace the `legacy_config_txt` doc link (line ~87) with the KMS docs: https://www.raspberrypi.com/documentation/computers/config_txt.html
+- [ ] Update the text above the buttons: they no longer remove all manual customization. They only rewrite the HALMP managed block of `config.txt` and the `video=` / `vc4.tv_norm=` values in `cmdline.txt`. HiFiBerry and other manual edits outside the block are kept.
+- [ ] Hide the Composite PAL / NTSC buttons on Pi 5 (the server already refuses them).
+- [ ] The raw editor only covers `config.txt`. Keep `cmdline.txt` out of it (a bad edit makes the Pi unbootable), but tell the user it exists, or show it read-only.
+- [ ] Show the current video mode, if wanted (nothing reports it today; it can be read from the managed block and `cmdline.txt`).
+
+**`Setup/AudioSetup.tsx`**
+- [ ] Fix the HiFiBerry tooltip (line ~84): "Remember to edit /boot/firmware/config.txt below".
+- [ ] Hide the "Headphone Jack" option on Pi 5, and make sure the default audio output isn't `"jack"` there (see §4).
+
+**`Setup/index.tsx` and `Network/index.tsx`**
+- [ ] Update the "read-only /boot" label (line ~28 in both) to say `/boot/firmware`, if the wording refers to the path.
+
+**New server endpoint (needed by the above)**
+- [ ] Report the Pi model to the client (for example `GET /api/getPiModel`, returning `pi3` / `pi4` / `pi5`), using `is_pi5()` in `utils/boot_config.py` or reading `/proc/device-tree/compatible`.
+
+**Other**
+- [ ] `System/FileSystem.tsx` and `About/index.tsx`: the "Expand File System" button and text stay, as the manual fallback (§10).
+- [ ] Rebuild the client and check that the built files land in `halmp_server/static/` (the server serves them from there).
 
 ## 13. README / image build
 
