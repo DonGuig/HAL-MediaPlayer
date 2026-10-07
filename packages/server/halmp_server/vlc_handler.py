@@ -133,8 +133,12 @@ class VLC_Handler():
             while mod:
                 mod = mod.contents
                 desc :str = mod.description.decode('utf-8', 'ignore')
-                if desc.find("bcm2835 HDMI 1 Direct hardware device without any conversions") != -1:
-                    res["HDMI"]=mod.device
+                # KMS: HDMI audio is the vc4-hdmi card (vc4hdmi on Pi 3, vc4hdmi0/1 on Pi 4/5).
+                # Only the hdmi: device works (the hw: ones reject non-IEC958 formats).
+                # Devices are listed in card order, so the first HDMI port wins.
+                if mod.device.startswith(b"hdmi:CARD=vc4hdmi"):
+                    if res["HDMI"] == b'':
+                        res["HDMI"]=mod.device
                 elif desc.find("bcm2835 Headphones Direct hardware device without any conversions") != -1:
                     res["jack"]=mod.device
                 elif desc.find("USB Audio Direct hardware device without any conversions") != -1:
