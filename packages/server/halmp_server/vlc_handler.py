@@ -31,7 +31,9 @@ class VLC_Handler():
         if sys.platform.startswith("linux"):
             # no-modeset: keep the mode the kernel set, or every change of media (stop, play)
             # makes the display lose sync. The resolution comes from video= in cmdline.txt.
-            args = '-A alsa --input-repeat 999999 --drm-vout-no-modeset'
+            # vout drm_vout: no fallback to the other outputs, one of which exits the process
+            # when the display is briefly unavailable
+            args = '-A alsa --vout drm_vout --input-repeat 999999 --drm-vout-no-modeset'
         elif sys.platform.startswith("darwin"):
             args = '-V dummy --input-repeat 999'
 
