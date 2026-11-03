@@ -797,13 +797,7 @@ def get_handbrake_preset():
 @http_api.post('/api/hdmi_on')
 def hdmi_on():
     try:
-        process = subprocess.run(
-            'vcgencmd display_power 1',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-
+        __main__.vlc_handler.hdmi_on()
         return Response(status=200)
 
     except Exception as e:
@@ -817,13 +811,7 @@ def hdmi_on():
 @http_api.post('/api/hdmi_off')
 def hdmi_off():
     try:
-        process = subprocess.run(
-            'vcgencmd display_power 0',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-
+        __main__.vlc_handler.hdmi_off()
         return Response(status=200)
 
     except Exception as e:

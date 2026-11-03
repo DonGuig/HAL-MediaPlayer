@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import __main__
 from .utils.blank_console import blank_console
+from .utils import hdmi_power
 
 
 media_folder_path = Path(__file__).parent / "media"
@@ -34,6 +35,8 @@ class VLC_Handler():
             args = '-V dummy --input-repeat 999'
 
         self.is_stopped = False
+        self.hdmi_is_off = False
+        self.hdmi_off_time = None
         self.vlc_instance = vlc.Instance(args)
         self.media_list_player = self.vlc_instance.media_list_player_new()
         self.media_player = self.media_list_player.get_media_player()
@@ -83,6 +86,11 @@ class VLC_Handler():
 
     # play media
     def play(self):
+        if self.hdmi_is_off:
+            self._wake_hdmi()
+            if self.hdmi_off_time is not None:
+                self._resume_at(self.hdmi_off_time, paused=False)
+                return
         if self.is_stopped :
             self.media_list_player.stop()
             if self.media_list != None :
@@ -101,15 +109,27 @@ class VLC_Handler():
 
 
     def pause(self):
+        if self.hdmi_is_off:
+            return
         if not self.is_stopped:
             self.media_list_player.pause()
 
     def restart(self):
+        if self.hdmi_is_off:
+            self.hdmi_off_time = None
+            self.is_stopped = True
+            self.play()
+            return
         if self.media_list != None:
             self.media_player.set_time(0)
             self.media_list_player.play()
 
     def stop(self):
+        if self.hdmi_is_off:
+            # Stays off, but the saved position no longer applies
+            self.hdmi_off_time = None
+            self.is_stopped = True
+            return
         blank_console()
         if not self.is_stopped :
             self.media_list_player.stop()
@@ -123,6 +143,52 @@ class VLC_Handler():
             except Exception as e:
                 pass
             self.is_stopped = True
+
+    def hdmi_off(self):
+        if self.hdmi_is_off:
+            return
+        # VLC can't stay paused here: it must stop to close its video output and
+        # release the display. The position is restored when HDMI comes back on.
+        self.hdmi_off_time = None if self.is_stopped else max(self.media_player.get_time(), 0)
+        self.hdmi_is_off = True
+        blank_console()
+        self.media_list_player.stop()
+        hdmi_power.power_down()
+
+    def hdmi_on(self):
+        if not self.hdmi_is_off:
+            return
+        self._wake_hdmi()
+        if self.hdmi_off_time is None:
+            self.media_list_player.set_media_list(self.black_image_media_list)
+            self.media_list_player.play()
+        else:
+            self._resume_at(self.hdmi_off_time, paused=True)
+
+    def _wake_hdmi(self):
+        blank_console()
+        hdmi_power.power_up()
+        self.hdmi_is_off = False
+
+    def _resume_at(self, time_ms, paused):
+        # Muted so nothing is heard between starting the media and seeking back
+        self.media_player.audio_set_mute(True)
+        self.media_list_player.set_media_list(self.media_list)
+        self.media_list_player.play()
+        deadline = time.monotonic() + 5.0
+        while not self.media_player.is_playing() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        try:
+            self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
+        except Exception as e:
+            pass
+        self.media_player.set_time(time_ms)
+        if paused:
+            # Leave time for the frame at this position to reach the screen
+            time.sleep(0.5)
+            self.media_player.set_pause(1)
+        self.media_player.audio_set_mute(False)
+        self.is_stopped = False
 
 
     def get_audio_outputs_list(self, vlc_inst):

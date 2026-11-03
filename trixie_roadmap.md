@@ -50,12 +50,12 @@ The three big breaking changes:
   - [x] **Decision: managed block.** The server only rewrites the lines between the `# --- HALMP managed: begin/end ---` markers at the end of `config.txt` (`utils/boot_config.py`); everything else, including HiFiBerry overlays, is left as is. `cmdline.txt` is edited value by value, never replaced, since it holds the per-install `PARTUUID` and cloud-init id.
 - [ ] **HiFiBerry**: after kernel 6.1.77, some overlays were renamed (for example `hifiberry-dacplus-std` / `-pro`). Update the list for kernel 6.12. The commented list of overlays was in the old templates; it now belongs in the image's `config.txt`, **outside** the managed block (see §13).
 
-## 3. HDMI on/off — **medium to large, needs research**
+## 3. HDMI on/off — **implemented, to verify**
 
-- [ ] `vcgencmd display_power 0/1` (`/api/hdmi_on`, `/api/hdmi_off`) **does not work under KMS**. No clean drop-in while VLC holds DRM master. Options to prototype:
-  - `cec-ctl --standby` / `--image-view-on`: changes the TV's power state over CEC rather than cutting the signal; CEC-capable displays only.
-  - Forcing the connector off through `/sys/class/drm/card*-HDMI-A-1/status`: a hack that depends on how VLC reacts to hotplug.
-  - Having VLC release the output: stop playback and close the vout.
+- [x] `vcgencmd display_power` has no effect under KMS (it exits 0 anyway). Replaced: `hdmi_off` stops VLC so it closes its video output, then writes `4` to `/sys/class/graphics/fb0/blank`; `hdmi_on` writes `0` (`utils/hdmi_power.py`, `vlc_handler.py`). Blanking by hand with the server stopped cut the signal on Pi 3.
+- [ ] Playback is paused while HDMI is off. VLC really stops (it must, to release the display), so the position is saved. `hdmi_on` brings the media back paused at that position, or the black image if it was stopped; play is then needed to continue. Play, restart and upload (from the UI or OSC) turn HDMI back on by themselves. Stop leaves HDMI off and forgets the position. The state isn't kept across a reboot (HDMI is on after boot).
+- [ ] Verify the full cycle through the API on Pi 3, 4 and 5 (Pi 5 is untested: check that `fb0` is still the display's framebuffer).
+- Other options looked at: forcing the connector off through `/sys/class/drm/*/status` (probably doesn't cut the signal while VLC holds the display), DPMS on VLC's own DRM handle, CEC standby (signal stays on; could be an optional extra).
 
 ## 4. Audio output selection — **medium**
 
