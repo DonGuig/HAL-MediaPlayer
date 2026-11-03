@@ -14,7 +14,6 @@ Cmnd_Alias HALMP_RASPI_CONFIG = \
 Cmnd_Alias HALMP_FILES = \
     /usr/bin/tee /boot/firmware/config.txt, \
     /usr/bin/tee /boot/firmware/cmdline.txt, \
-    /usr/bin/tee /dev/tty0, \
     /usr/bin/tee /sys/class/graphics/fb0/blank
 
 pi ALL=(root) NOPASSWD: HALMP_NETWORK, HALMP_POWER, HALMP_RASPI_CONFIG, HALMP_FILES

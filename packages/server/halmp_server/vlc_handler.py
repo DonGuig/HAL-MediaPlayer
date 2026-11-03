@@ -9,7 +9,6 @@ from urllib.request import url2pathname
 from urllib.parse import urlparse
 
 import __main__
-from .utils.blank_console import blank_console
 from .utils import hdmi_power
 
 
@@ -130,7 +129,6 @@ class VLC_Handler():
             self.hdmi_off_time = None
             self.is_stopped = True
             return
-        blank_console()
         if not self.is_stopped :
             self.media_list_player.stop()
             # self.media_list.release()
@@ -151,7 +149,6 @@ class VLC_Handler():
         # release the display. The position is restored when HDMI comes back on.
         self.hdmi_off_time = None if self.is_stopped else max(self.media_player.get_time(), 0)
         self.hdmi_is_off = True
-        blank_console()
         self.media_list_player.stop()
         hdmi_power.power_down()
 
@@ -166,7 +163,6 @@ class VLC_Handler():
             self._resume_at(self.hdmi_off_time, paused=True)
 
     def _wake_hdmi(self):
-        blank_console()
         hdmi_power.power_up()
         self.hdmi_is_off = False
 

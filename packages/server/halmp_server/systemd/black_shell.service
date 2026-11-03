@@ -1,0 +1,16 @@
+[Unit]
+Description=HAL Media Player black console
+# Boot messages stay on screen until the player starts
+After=halmp.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Runs as root: needs access to the console. Boot messages and the login prompt go to tty1,
+# so they stay hidden behind this empty console. tty7 is above logind's auto-started gettys.
+ExecStart=/bin/sh -c "TERM=linux setterm -cursor off -clear all >/dev/tty7; chvt 7"
+# Back to tty1 so shutdown messages are visible
+ExecStop=/usr/bin/chvt 1
+
+[Install]
+WantedBy=multi-user.target

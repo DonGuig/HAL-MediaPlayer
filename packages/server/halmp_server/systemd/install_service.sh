@@ -4,7 +4,7 @@ set -euo pipefail
 
 SYSTEMD_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SYSTEMD_DIR/../../../.." && pwd)"
-UNITS=(halmp.service halmp-OSCserver.service)
+UNITS=(halmp.service halmp-OSCserver.service black_shell.service)
 
 if [ "$(id -u)" -eq 0 ]; then
     echo "Run this script as the pi user, not as root." >&2

@@ -99,11 +99,13 @@ The three big breaking changes:
   - The OSC server reads `REACT_APP_SERVER_PORT`, the main server uses `VITE_SERVER_PORT`.
   - Unit files are duplicated in `RPi Install/` and `packages/server/halmp_server/systemd/`: keep one.
 
-## 9. Console blanking / black screen — **small**
+## 9. Console blanking / black screen — **done, to verify**
 
-- [x] Keep only `blank_console.py` for blacking out the console. `black_shell.service` is moved to `systemd/backup/` and no longer installed (it is not yet confirmed which of the two actually did the job).
-- [ ] Check on hardware that `blank_console()` (writes to `tty0`) blacks out the screen on its own; `setterm` still works on the KMS fbcon.
-- [ ] Cleaner on Trixie: add `consoleblank=0 vt.global_cursor_default=0 quiet loglevel=3 logo.nologo` to `cmdline.txt` and drop most of this. `disable_splash=1` still works.
+- [x] **Decision: boot messages stay visible until the player starts**, then the screen goes black. So no `quiet`, `loglevel=3`, `logo.nologo` or similar in `cmdline.txt`, since those hide messages from the start of boot.
+- [x] `black_shell.service` starts right after `halmp.service` and switches to an empty console (`chvt 7`). Boot output and the login prompt go to `tty1` (`console=tty1`), so they stay hidden behind it, including what cloud-init prints long after the server starts. It switches back to `tty1` when stopped, so shutdown messages are visible. Alt+F1 with a keyboard reaches the login prompt.
+- [x] `blank_console()` is removed: painting the console black had to be repeated whenever later boot output overwrote it.
+- [ ] Verify on hardware: black at startup with no media, no login prompt on `tty7`, black during the stop and HDMI handovers, shutdown messages visible.
+- [ ] Keep the `kbd` package in the image (it provides `chvt`).
 
 ## 10. Filesystem expand / first-boot resize — **small**
 
