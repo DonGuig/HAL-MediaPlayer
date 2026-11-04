@@ -80,11 +80,14 @@ The three big breaking changes:
 - [ ] **Release image**: `/etc/fstab` must have `defaults,noatime` for `/boot/firmware`, without `ro`.
 - [ ] New on Trixie: `/tmp` is a tmpfs by default. No impact, since uploads go to the app's `media/` folder.
 
-## 7. USB import — **medium**
+## 7. USB import — **done**
 
-- [ ] `usbmount` has been unmaintained for years. Since `systemd-udevd` runs in a private mount namespace, mounts made from a udev `RUN` rule are invisible to the rest of the system unless the udevd unit is patched. Replace it with a small udev rule plus `systemd-mount --no-block --collect $devnode /media/usb`, or with udisks2 and a small watcher.
-- [ ] exFAT is supported natively by the kernel: `exfat-fuse` isn't needed, and `exfat-utils` is replaced by `exfatprogs`.
-- [ ] Existing bug: `volumes_list.__len__ == 0` in `getFileFromUSBDrive` is always False.
+- [x] `usbmount` is replaced by `systemd/99-halmp-usb-mount.rules`: a udev rule that runs `systemd-mount` (udevd's private mount namespace rules out mounting from the rule directly). Each USB partition is mounted read-only in `/media/usb-<partition>`, and the server searches all of them.
+- [x] exFAT is supported natively by the kernel: `exfat-fuse` and `exfat-utils` aren't needed.
+- [x] Fixed: `volumes_list.__len__ == 0` was always False, and a failed `rsync` could be reported as a success.
+- [x] Only files with an accepted extension are picked, and extensions are now matched ignoring case (`CLIP.MP4`).
+- **Decision: the old media file is deleted before the copy starts**, so a very large file doesn't need room for both. A failed copy leaves the player without media.
+- [x] Verified on hardware: FAT32 and exFAT drives, accented file names, unplugging the drive, a drive already plugged in at boot.
 
 ## 8. Python runtime, services and install — **medium (mostly image build)**
 

@@ -1,0 +1,21 @@
+# Mounts USB drive partitions read-only under /media/usb-<partition> (sda1, sdb2, ...), one folder
+# each, so a drive with several partitions or a second drive can't hide the one holding the media.
+# Installed to /etc/udev/rules.d/ by install_service.sh.
+#
+# udevd runs in a private mount namespace, so it can't mount directly: systemd-mount asks PID 1 to.
+# The mount is bound to the device, so unplugging the drive cleans it up. Read-only makes it safe
+# to unplug at any time, and keeps a Pi booted from USB from remounting its own partitions.
+
+ACTION!="add", GOTO="halmp_usb_mount_end"
+SUBSYSTEM!="block", GOTO="halmp_usb_mount_end"
+# ID_BUS rather than SUBSYSTEMS!="usb": a negated parent match succeeds on the device itself, so it always jumps
+ENV{ID_BUS}!="usb", GOTO="halmp_usb_mount_end"
+ENV{ID_FS_USAGE}!="filesystem", GOTO="halmp_usb_mount_end"
+
+ENV{HALMP_MOUNT_OPTIONS}="ro,nosuid,nodev,noexec"
+# FAT defaults to ASCII file names on this kernel, which breaks accented names
+ENV{ID_FS_TYPE}=="vfat", ENV{HALMP_MOUNT_OPTIONS}="ro,nosuid,nodev,noexec,utf8"
+
+RUN{program}+="/usr/bin/systemd-mount --no-block --collect --fsck=no --options=$env{HALMP_MOUNT_OPTIONS} $devnode /media/usb-$kernel"
+
+LABEL="halmp_usb_mount_end"

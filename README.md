@@ -70,37 +70,9 @@ then start server with :
 
 <https://gist.github.com/justinmklam/f13bb53be9bb15ec182b4877c9e9958d>
 
-#### enable usb drives automount
+#### USB drives automount
 
-```shell
-cd ~
-git clone https://github.com/rbrito/usbmount.git
-cd usbmount
-
-# Install dependencies
-sudo apt-get update && sudo apt-get install -y debhelper build-essential
-
-# Build
-sudo dpkg-buildpackage -us -uc -b
-
-cd ..
-# Try install, will not necessarily complete if you're missing a dependency
-dpkg -i usbmount_0.0.24_all.deb
-# Will install missing dependencies and finish the install process
-apt-get install -f
-```
-
-To enable exfat drives :
-
-```shell
-sudo apt-get install exfat-fuse
-sudo apt-get install exfat-utils
-```
-
-Then got edit the file usbmount.conf :
-`sudo nano /etc/usbmount/usbmount.conf`
-...and add exfat to the following line :
-`FILESYSTEMS="vfat ext2 ext3 ext4 hfsplus exfat"`
+`install_service.sh` installs the udev rule `99-halmp-usb-mount.rules`, which mounts each USB partition read-only in `/media/usb-<partition>` (for example `/media/usb-sda1`). There is nothing else to install: FAT32 and exFAT are supported by the kernel.
 
 ## TO REMOVE FROM RPi SD BEFORE RELEASE
 

@@ -13,6 +13,11 @@ from .http_api import http_api
 
 accepted_media_extensions = ["mp4", "mov", "mp3", "wav", "flac", "aac", "aiff"]
 
+
+def is_accepted_media_file(filename):
+    return Path(filename).suffix[1:].lower() in accepted_media_extensions
+
+
 static_index_file_path = Path.resolve(
     Path(__file__).parent / "static" / "index.html")
 

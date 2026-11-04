@@ -1,5 +1,6 @@
 from flask import request, Response, redirect, Blueprint, jsonify, send_file
 from werkzeug.utils import secure_filename
+import glob
 import os
 import subprocess
 import shutil
@@ -95,28 +96,31 @@ def progress_cb(percent: int):
 @http_api.post('/api/getFileFromUSBDrive')
 def get_file_from_usb_drive():
     try:
-        # with usbmount package installed
-        # the usb drives always mount in /media/usb
+        # USB drive partitions are mounted in /media/usb-<partition>
+        # (see systemd/99-halmp-usb-mount.rules)
 
         media_file_path = ""
 
-        volumes_list = os.listdir("/media")
-        if volumes_list.__len__ == 0:
+        volumes_list = sorted(glob.glob("/media/usb-*"))
+        if len(volumes_list) == 0:
             raise Exception("No USB drive found")
 
-        temp_raw_files_list = os.listdir("/media/usb")
-        temp_raw_files_list.sort()
-        # we remove hidden files starting with .
-        for file in temp_raw_files_list:
-            if file[0] != '.':
-                file_path = os.path.join("/media/usb", file)
-                # we keep only files, exclude directories
-                if os.path.isfile(file_path):
-                    file_type = magic.from_file(file_path,
-                                                mime=True).split("/")[0]
-                    if file_type == "audio" or file_type == "video":
-                        media_file_path = file_path
-                        break
+        for volume in volumes_list:
+            temp_raw_files_list = os.listdir(volume)
+            temp_raw_files_list.sort()
+            # we remove hidden files starting with .
+            for file in temp_raw_files_list:
+                if file[0] != '.':
+                    file_path = os.path.join(volume, file)
+                    # we keep only files the player accepts, exclude directories
+                    if __main__.is_accepted_media_file(file) and os.path.isfile(file_path):
+                        file_type = magic.from_file(file_path,
+                                                    mime=True).split("/")[0]
+                        if file_type == "audio" or file_type == "video":
+                            media_file_path = file_path
+                            break
+            if media_file_path != "":
+                break
 
         if media_file_path != "":
             __main__.vlc_handler.stop()
@@ -143,10 +147,9 @@ def get_file_from_usb_drive():
                             __main__.socketio.start_background_task(
                                 __main__.socketio.emit, "copy_progress",
                                 percentage)
-                if cmd.poll() != None:
-                    if cmd.poll() != 0:
-                        raise Exception("Error copying : %s" %
-                                        cmd.stderr.read())
+                # wait() and not poll(): rsync may not have exited yet when its output ends
+                if cmd.wait() != 0:
+                    raise Exception("Error copying : %s" % cmd.stderr.read())
 
             __main__.vlc_handler.refresh_media_file()
             __main__.vlc_handler.play()

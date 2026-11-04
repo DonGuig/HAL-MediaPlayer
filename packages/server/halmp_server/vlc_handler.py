@@ -57,21 +57,13 @@ class VLC_Handler():
 
     def get_media_file(self):
         for file in os.listdir(media_folder_path):
-            correct_media_file: bool = False
-            for extension in __main__.accepted_media_extensions:
-                if file.endswith(extension):
-                    correct_media_file = True
-            if correct_media_file:
+            if __main__.is_accepted_media_file(file):
                 return Path.resolve(media_folder_path / file)
         return None
 
     def remove_all_media_files(self):
         for file in os.listdir(media_folder_path):
-            correct_media_file: bool = False
-            for extension in __main__.accepted_media_extensions:
-                if file.endswith(extension):
-                    correct_media_file = True
-            if correct_media_file:
+            if __main__.is_accepted_media_file(file):
                 path =  Path.resolve(media_folder_path / file)
                 os.remove(path)
         return None

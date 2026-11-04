@@ -26,6 +26,10 @@ for unit in "${UNITS[@]}"; do
     sudo install -m 644 "$SYSTEMD_DIR/$unit" /etc/systemd/system/
 done
 
+# USB drive automount
+sudo install -m 644 "$SYSTEMD_DIR/99-halmp-usb-mount.rules" /etc/udev/rules.d/
+sudo udevadm control --reload
+
 sudo systemctl daemon-reload
 sudo systemctl enable "${UNITS[@]}"
 # restart rather than start, so a re-run applies updated units and code
