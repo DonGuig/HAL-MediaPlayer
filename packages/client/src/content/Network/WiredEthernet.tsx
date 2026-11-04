@@ -3,7 +3,11 @@ import { useFormik } from "formik";
 import {
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
   Grid,
+  Link,
   Stack,
   TextField,
   ToggleButton,
@@ -19,7 +23,9 @@ import _ from "lodash";
 
 import ipRegex from "ip-regex";
 import { OverlayContext } from "src/contexts/OverlayContext";
-import HttpApiRequests from "src/utils/HttpRequests";
+import HttpApiRequests, { isConnectionError } from "src/utils/HttpRequests";
+import globalSnackbar from "src/utils/snackbarUtils";
+import { SERVER_URL } from "src/ServerURL";
 
 type DHCPorFixed = "DHCP" | "Fixed IP";
 
@@ -30,8 +36,23 @@ type WiredNetworkConfig = {
   connected?: boolean;
 };
 
+type AppliedWiredConfig = {
+  DHCPorFixed: DHCPorFixed;
+  ipAddress: String;
+};
+
+// Set when a change moves the player away from the address this page talks to.
+type MovedTo = { ipAddress: String } | { dhcp: true };
+
+const pageUrlAt = (ipAddress: String) => {
+  const port = window.location.port;
+  return `http://${ipAddress}${port ? `:${port}` : ""}`;
+};
+
 const WiredEthernet: React.FC = () => {
   const [cableConnected, setCableConnected] = useState<boolean>(false);
+  const [applied, setApplied] = useState<AppliedWiredConfig | null>(null);
+  const [movedTo, setMovedTo] = useState<MovedTo | null>(null);
   const { overlayActive } = useContext(OverlayContext);
 
   const formik = useFormik<WiredNetworkConfig>({
@@ -80,25 +101,56 @@ const WiredEthernet: React.FC = () => {
     },
   });
 
-  const getWiredNetworkConfig = useCallback(() => {
+  const getWiredNetworkConfig = useCallback((silent: boolean = false) => {
     HttpApiRequests
-      .get<WiredNetworkConfig>("/getWiredNetwokConfig")
+      .get<WiredNetworkConfig>("/getWiredNetwokConfig", { silent })
       .then((res) => {
+        setApplied({ DHCPorFixed: res.DHCPorFixed, ipAddress: res.ipAddress });
         formik.setFieldValue("DHCPorFixed", res.DHCPorFixed);
         formik.setFieldValue("ipAddress", res.ipAddress);
         formik.setFieldValue("netmask", res.netmask);
         setCableConnected(res.connected);
       })
-      .catch();
+      .catch(() => {});
   }, [formik]);
 
   async function setWiredNetworkSetting(conf: WiredNetworkConfig) {
-    HttpApiRequests
-      .post<WiredNetworkConfig>("/setWiredNetwokConfig", {data: conf})
-      .then((res) => {
-        setTimeout(getWiredNetworkConfig, 1000);
-      })
-      .catch();
+    // The new address may not answer from here, so the page can't check on it afterwards.
+    // Only known when the page uses the wired IP: through Wifi or a hostname it stays reachable.
+    const pageUsesWiredIp =
+      applied !== null && SERVER_URL.split(":")[0] === applied.ipAddress;
+    const moving =
+      pageUsesWiredIp &&
+      (conf.DHCPorFixed === "DHCP"
+        ? applied.DHCPorFixed !== "DHCP"
+        : conf.ipAddress !== applied.ipAddress);
+
+    try {
+      await HttpApiRequests.post<WiredNetworkConfig>("/setWiredNetwokConfig", {
+        data: conf,
+        silent: moving,
+      });
+    } catch (err) {
+      // Losing the connection is expected when moving: the request went through
+      if (!moving || !isConnectionError(err)) {
+        if (moving) {
+          globalSnackbar.error((err as Error).message);
+        }
+        throw err;
+      }
+    }
+
+    if (moving) {
+      setMovedTo(
+        conf.DHCPorFixed === "DHCP"
+          ? { dhcp: true }
+          : { ipAddress: conf.ipAddress }
+      );
+    } else {
+      // The server doesn't wait for the connection to come up, and DHCP can take a few seconds
+      setTimeout(() => getWiredNetworkConfig(true), 1000);
+      setTimeout(() => getWiredNetworkConfig(true), 5000);
+    }
   }
 
   const handleDHCPorFixedChange = (
@@ -115,6 +167,7 @@ const WiredEthernet: React.FC = () => {
   }, []);
 
   return (
+    <>
     <Stack
       direction="column"
       spacing={2}
@@ -225,6 +278,30 @@ const WiredEthernet: React.FC = () => {
         </form>
       </Grid>
     </Stack>
+    <Dialog fullWidth maxWidth="sm" open={movedTo !== null}>
+      <DialogContent sx={{ p: 2 }}>
+        {movedTo !== null && "ipAddress" in movedTo ? (
+          <>
+            The player has moved to a new wired address. Continue at{" "}
+            <Link href={pageUrlAt(movedTo.ipAddress)}>
+              {pageUrlAt(movedTo.ipAddress)}
+            </Link>
+            . Your computer must be on the same network as this address.
+          </>
+        ) : (
+          <>
+            The player now takes its wired address from the DHCP server, so this
+            page can no longer reach it at its old address. Look for the new
+            address on your DHCP server, or try its hostname followed by .local
+            in your browser.
+          </>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ p: 2 }} disableSpacing={true}>
+        <Button onClick={() => setMovedTo(null)}>Close</Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 };
 

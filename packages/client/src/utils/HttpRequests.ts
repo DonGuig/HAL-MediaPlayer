@@ -8,7 +8,12 @@ const baseApiURL: string = `http://${SERVER_URL}/api`;
 interface RequestParams {
     data? : any
     silent? : boolean;
+    timeoutMs? : number;
 }
+
+// True if the server couldn't be reached, as opposed to the server answering with an error
+export const isConnectionError = (error: unknown): boolean =>
+  error instanceof TypeError || (error as Error)?.name === "TimeoutError";
 
 class HttpApiRequests {
   static async get<T>(url: string, params?: RequestParams): Promise<T> {
@@ -44,7 +49,7 @@ class HttpApiRequests {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(params.data),
-          signal: AbortSignal.timeout(4000), // 4 seconds timeout
+          signal: AbortSignal.timeout(params.timeoutMs ?? 4000), // 4 seconds by default
         };
       } else {
         requestParams = {

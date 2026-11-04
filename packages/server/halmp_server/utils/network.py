@@ -113,8 +113,9 @@ def connect_wifi(ssid, password, hidden):
         raise ValueError("Password must be 8 to 64 characters long")
     if not isinstance(hidden, bool):
         raise ValueError("Hidden must be true or false")
-    _run("sudo", "nmcli", "device", "wifi", "connect", ssid, "password",
-         password, "hidden", "yes" if hidden else "no")
+    # nmcli waits 90 s by default, which is too long to keep the web UI waiting
+    _run("sudo", "nmcli", "--wait", "30", "device", "wifi", "connect", ssid,
+         "password", password, "hidden", "yes" if hidden else "no")
 
 
 def is_wifi_active():

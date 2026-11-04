@@ -89,8 +89,9 @@ The three big breaking changes:
 - [ ] **Release image must hold no Wi-Fi credentials**: remove the `network-config` seed from `/boot/firmware` (it holds a password in clear text), the Wi-Fi profiles in `/etc/NetworkManager/system-connections/`, and leftover `/etc/netplan/90-NM-*.yaml` files.
 
 **Web client**
-- [ ] **Request timeout**: requests time out after 4 seconds (`HttpRequests.ts`), but connecting to Wi-Fi often takes longer, so a successful connection can show as an error. Use a longer timeout for this request.
-- [ ] **IP change**: changing the wired IP cuts off the page, and the client doesn't handle that. Report the failure as expected and point to the new address.
+- [x] **Request timeout**: connecting to Wi-Fi now has a 35 s client timeout and a 30 s `nmcli` limit, instead of 4 s and 90 s. The Apply button shows progress, and losing contact (the player moved to the new network) shows a warning instead of an error.
+- [x] **IP change**: when the page uses the wired IP and the address changes, a dialog links to the new address, or explains how to find it after a switch to DHCP.
+- [ ] Build the client and verify both on hardware. Neither has been compiled yet: the Pi has no Node.
 
 **Later**
 - [ ] **Select the Wi-Fi country from the web UI** (fixed to `FR` until then).

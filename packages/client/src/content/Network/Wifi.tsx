@@ -24,7 +24,10 @@ import _ from "lodash";
 
 import globalSnackbar from "src/utils/snackbarUtils";
 import { OverlayContext } from "src/contexts/OverlayContext";
-import HttpApiRequests from "src/utils/HttpRequests";
+import HttpApiRequests, { isConnectionError } from "src/utils/HttpRequests";
+
+// A little above the time the server gives nmcli to connect (utils/network.py)
+const WIFI_CONNECT_TIMEOUT_MS = 35000;
 
 type TCallback = () => void;
 
@@ -104,12 +107,22 @@ const Wifi: React.FC = () => {
   });
 
   async function setWifiConfig(conf: WifiConfig) {
-    HttpApiRequests
-      .post<WifiConfig>("/setWifiConfig", {data: conf})
-      .then((res) => {
-        getCurrentWifi();
-      })
-      .catch();
+    try {
+      await HttpApiRequests.post<WifiConfig>("/setWifiConfig", {
+        data: conf,
+        silent: true,
+        timeoutMs: WIFI_CONNECT_TIMEOUT_MS,
+      });
+      getCurrentWifi();
+    } catch (err) {
+      if (isConnectionError(err)) {
+        globalSnackbar.warning(
+          "Lost contact with the player while connecting. If you reach it through Wifi, it may have moved to the new network."
+        );
+      } else {
+        globalSnackbar.error((err as Error).message);
+      }
+    }
   }
 
   const getIsActiveWifi = useCallback(() => {
