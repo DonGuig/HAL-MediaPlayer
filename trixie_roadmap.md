@@ -66,12 +66,33 @@ The three big breaking changes:
 
 ## 5. Networking (wired and Wi-Fi) — **small to medium**
 
-- [ ] NetworkManager is the default now: remove the README step that switches to it through raspi-config.
-- [ ] **Profile names differ.** Stock images create "Wired connection 1". Trixie images customized with Raspberry Pi Imager go through cloud-init and netplan, which creates `netplan-*` profiles. The code assumes a profile named `eth0`, so the image build must still delete the default and create `eth0` / `eth0-ll`. Check that cloud-init/netplan doesn't recreate its profile on boot (or disable cloud-init's network config).
-- [ ] **`ifconfig` is no longer installed** (net-tools), which breaks the netmask lookup in `getWiredNetwokConfig`. Use `ip -o -f inet addr show eth0` or `nmcli -g IP4.ADDRESS dev show eth0`.
-- [ ] **`iwgetid` is gone** (wireless-tools), which breaks `getCurrentWifi`. Use `nmcli -t -f active,ssid dev wifi | grep '^yes'` or `iw dev wlan0 link`.
-- [ ] Wi-Fi stays rfkill-blocked until a country is set: `raspi-config nonint do_wifi_country FR` in the image.
-- [ ] Unrelated to the port, but worth fixing while there: `setWifiConfig` and `setHostname` build shell strings without quoting. SSIDs or passwords with spaces or quotes break them, and it's a shell-injection risk. Switch to argument lists with `shell=False`.
+**Decisions**
+- [x] **Cloud-init stops managing the network**: `network: {config: disabled}` in `/etc/cloud/cloud.cfg.d/`, and no `network-config` seed in the image. Wi-Fi settings entered in Raspberry Pi Imager therefore won't apply.
+- [x] **Wi-Fi country is `FR` for now**: `raspi-config nonint do_wifi_country FR` in the image (Wi-Fi stays rfkill-blocked until a country is set). Cloud-init sets it today through `regulatory-domain`, so this has to replace it.
+
+**Server endpoints** (`utils/network.py`)
+- [x] `nmcli`, `ip` and `raspi-config` run from argument lists, without a shell. Fixes the shell injection in `setWifiConfig`, `setHostname` and `setWiredNetwokConfig`. All inputs are validated on the server (invalid input returns a 400).
+- [x] `ifconfig` and `iwgetid` are replaced by `ip -j` and `nmcli`. Both tools were only present on the dev Pi because `net-tools` and `wireless-tools` were installed by hand.
+- [x] SSIDs with spaces or `:` work in `getCurrentWifi`. `forget_known_wifis` deletes by UUID, so a name with a space no longer aborts it or factory reset.
+- [x] The wired address lookup prefers a real address over a link-local one when the interface has both.
+- [ ] Verify on hardware through the real server: Wi-Fi connect, forget, wired changes and factory reset. So far they were tested with the `sudo` commands captured, not run.
+
+**Install and image**
+- [ ] **`eth0` profile**: the code expects a profile named `eth0`, and stock images create "Wired connection 1". The image build must delete the default and create `eth0` (single profile). Until then, the wired endpoints and factory reset return an error on a Pi without it.
+- [ ] **Link-local fallback**: the README uses `ipv4.link-local enabled`, which adds a 169.254.x.x address *alongside* the DHCP or fixed one. Use `fallback` (NetworkManager 1.52 or later).
+- [ ] **No cable**: `nmcli con up eth0` probably fails without a cable, so applying wired settings would report an error even though they were saved, and factory reset would abort. To test and handle.
+- [ ] Check that `netplan` doesn't recreate profiles on boot once cloud-init's network config is disabled.
+- [ ] **Remove the raspi-config step** from the README: NetworkManager is the default now.
+- [ ] **Release image must hold no Wi-Fi credentials**: remove the `network-config` seed from `/boot/firmware` (it holds a password in clear text), the Wi-Fi profiles in `/etc/NetworkManager/system-connections/`, and leftover `/etc/netplan/90-NM-*.yaml` files.
+
+**Web client**
+- [ ] **Request timeout**: requests time out after 4 seconds (`HttpRequests.ts`), but connecting to Wi-Fi often takes longer, so a successful connection can show as an error. Use a longer timeout for this request.
+- [ ] **IP change**: changing the wired IP cuts off the page, and the client doesn't handle that. Report the failure as expected and point to the new address.
+
+**Later**
+- [ ] **Select the Wi-Fi country from the web UI** (fixed to `FR` until then).
+- [ ] **Gateway and DNS for a fixed IP**: today it only sets the address and netmask, so a player on a fixed IP can't reach beyond its local network.
+- [ ] **Open Wi-Fi networks**: the client and `network.connect_wifi` both require a password of at least 8 characters.
 
 ## 6. Read-only filesystem (overlayfs) — **small to medium**
 

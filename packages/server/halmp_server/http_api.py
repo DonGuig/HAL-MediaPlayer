@@ -5,17 +5,28 @@ import os
 import subprocess
 import shutil
 from pathlib import Path
-from ipaddress import IPv4Network
 import magic
 
 import __main__
 
+from .utils import network
 from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active
 
 http_api = Blueprint("http_api", __name__)
 
 resourcesPath = Path(__file__).parent / "resources"
 media_folder_path = Path(__file__).parent / "media"
+
+
+def network_error_response(e):
+    if isinstance(e, KeyError):
+        return Response(f"Missing field: {e}", status=400)
+    if isinstance(e, ValueError):
+        return Response(str(e), status=400)
+    if isinstance(e, subprocess.CalledProcessError):
+        # Not str(e): it quotes the command, which can hold a Wi-Fi password
+        return Response(e.stderr, status=500)
+    return Response(str(e), status=500)
 
 
 @http_api.post('/api/ping')
@@ -313,88 +324,27 @@ def set_device_name():
 @http_api.get('/api/getWiredNetwokConfig')
 def get_wired_network_config():
     try:
-        dhcp_process = subprocess.run('nmcli con show eth0 | grep ipv4.method',
-                                      shell=True,
-                                      text=True,
-                                      capture_output=True)
-        if dhcp_process.stdout.find(
-                "auto") != -1:
-            dhcp_or_fixed = "DHCP"
-        else:
-            dhcp_or_fixed = "Fixed IP"
-        ip_process = subprocess.run(
-            'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        ip_address = ip_process.stdout.strip()
-        netmask_process = subprocess.run(
-            'ifconfig eth0 | grep "netmask\\b" | awk \'{print $4}\'',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        netmask = netmask_process.stdout.strip()
-        connected_process = subprocess.run(
-            'nmcli -f WIRED-PROPERTIES.CARRIER device show eth0',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        if connected_process.stdout.find(
-                "on") != -1:
-            connected = True
-        else:
-            connected = False
-
-        return {
-            "DHCPorFixed": dhcp_or_fixed,
-            "ipAddress": ip_address,
-            "netmask": netmask,
-            "connected": connected
-        }
+        return network.get_wired_config()
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.post('/api/setWiredNetwokConfig')
 def set_wired_network_config():
     try:
         DHCPorFixed = request.json["DHCPorFixed"]
-        ipAddress = request.json["ipAddress"]
-        netmask = request.json["netmask"]
 
         if DHCPorFixed == "DHCP":
-            command = f'sudo nmcli con mod eth0 ipv4.method auto && sudo nmcli con mod eth0 ipv4.addresses ""'
+            network.set_wired_dhcp()
+        elif DHCPorFixed == "Fixed IP":
+            network.set_wired_fixed(request.json["ipAddress"],
+                                    request.json["netmask"])
         else:
-            # the following line will return an Exception if not a valid netmask
-            netmask_bit_count = IPv4Network(f'0.0.0.0/{netmask}').prefixlen
-            command = f'sudo nmcli con mod eth0 ipv4.method manual ipv4.addresses {ipAddress}/{netmask_bit_count}'
-
-        network_process = subprocess.run(command,
-                                         shell=True,
-                                         text=True,
-                                         check=True,
-                                         capture_output=True)
-
-        network_process = subprocess.run(f'sudo nmcli con up eth0',
-                                         shell=True,
-                                         text=True,
-                                         check=True,
-                                         capture_output=True)
+            raise ValueError("DHCPorFixed must be DHCP or Fixed IP")
 
         return Response(status=200)
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.get('/api/getAudioOutput')
@@ -418,36 +368,18 @@ def set_audio_output():
 @http_api.get('/api/getHostname')
 def get_hostname():
     try:
-        out = subprocess.run('tr -d " \t\n\r" < /etc/hostname',
-                             shell=True,
-                             text=True,
-                             check=True,
-                             capture_output=True)
-        return {"hostname": out.stdout.strip()}
+        return {"hostname": network.get_hostname()}
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.post('/api/setHostname')
 def set_hostname():
     try:
-        out = subprocess.run('sudo raspi-config nonint do_hostname ' +
-                             request.json["hostname"],
-                             shell=True,
-                             text=True,
-                             check=True,
-                             capture_output=True)
+        network.set_hostname(request.json["hostname"])
         return Response(status=200)
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.post('/api/reboot')
@@ -542,51 +474,19 @@ def send_config_txt():
 @http_api.post('/api/setWifiConfig')
 def set_wifi_config():
     try:
-        ssid = request.json["SSID"]
-        password = request.json["pass"]
-        hidden = request.json["hidden"]
-
-        if hidden:
-            hidden_cmd = "true"
-        else:
-            hidden_cmd = "false"
-
-        subprocess.run(
-            f'sudo nmcli device wifi connect {ssid} password {password} hidden {hidden_cmd}',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-
+        network.connect_wifi(request.json["SSID"], request.json["pass"],
+                             request.json["hidden"])
         return Response(status=200)
-
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.get('/api/getIsWifiActive')
 def get_is_wifi_active():
     try:
-        active = False
-        wifi_enabled_out = subprocess.run('nmcli radio wifi',
-                                          shell=True,
-                                          text=True,
-                                          check=True,
-                                          capture_output=True)
-        if wifi_enabled_out.stdout.find("enabled") != -1:
-            active = True
-        return {"active": active}
-
+        return {"active": network.is_wifi_active()}
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.post('/api/setIsWifiActive')
@@ -594,93 +494,30 @@ def set_is_wifi_active():
     try:
         active = request.json["active"]
 
-        if active == "true":
-            subprocess.run(f'sudo nmcli radio wifi on',
-                           shell=True,
-                           text=True,
-                           check=True,
-                           capture_output=True)
-        elif active == "false":
-            subprocess.run(f'sudo nmcli radio wifi off',
-                           shell=True,
-                           text=True,
-                           check=True,
-                           capture_output=True)
+        if active not in ("true", "false"):
+            raise ValueError("active must be true or false")
+        network.set_wifi_active(active == "true")
 
         return Response(status=200)
-
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.get('/api/getCurrentWifi')
 def get_current_wifi():
     try:
-        ssid_out = subprocess.run(
-            'iwgetid | awk \'{print $2}\' | cut -c 8- | rev | cut -c 2- | rev',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        ssid = ssid_out.stdout.strip()
-
-        return {"SSID": ssid}
-
+        return {"SSID": network.get_current_ssid()}
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
+        return network_error_response(e)
 
 
 @http_api.post('/api/forgetKnownWifis')
 def http_post_forget_known_wifis():
     try:
-        forget_known_wifis()
+        network.forget_known_wifis()
         return Response(status=200)
-
     except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
-
-
-def forget_known_wifis():
-    # forget all wifi settings and deactivate wifi
-    subprocess.run(f'sudo nmcli radio wifi off',
-                   shell=True,
-                   text=True,
-                   check=True,
-                   capture_output=True)
-
-    print('turned wifi off')
-
-    # Check for existing Wi-Fi connections
-    wifi_connections = subprocess.run(
-        "nmcli -t -f TYPE connection show | grep '^802-11-wireless'",
-        shell=True,
-        text=True,
-        capture_output=True
-    )
-
-    if wifi_connections.stdout.strip():
-        subprocess.run(
-            "sudo nmcli connection delete $(nmcli -t -f NAME,TYPE connection show | awk -F: '$2==\"802-11-wireless\" {print $1}')",
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True
-        )
-        print('deleted known wifi connections')
-    else:
-        print("no wifi connections to delete")
+        return network_error_response(e)
 
 
 @http_api.get('/api/getTransportStatus')
@@ -792,34 +629,17 @@ def factory_reset():
 
         print('removed media file')
 
-        forget_known_wifis()
+        network.forget_known_wifis()
 
         # put eth0 back to DHCP
 
-        command = f'sudo nmcli con mod eth0 ipv4.method auto && sudo nmcli con mod eth0 ipv4.addresses ""'
-
-        subprocess.run(command,
-                       shell=True,
-                       text=True,
-                       check=True,
-                       capture_output=True)
-
-        subprocess.run(f'sudo nmcli con up eth0',
-                       shell=True,
-                       text=True,
-                       check=True,
-                       capture_output=True)
+        network.set_wired_dhcp()
 
         print('put ethernet connection back to DHCP')
 
         # reset hostname
 
-        subprocess.run('sudo raspi-config nonint do_hostname ' +
-                       "raspberrypi",
-                       shell=True,
-                       text=True,
-                       check=True,
-                       capture_output=True)
+        network.set_hostname(network.DEFAULT_HOSTNAME)
 
         print('reset hostname')
 
