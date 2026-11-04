@@ -32,7 +32,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <DialogContent sx={{ p: 2 }}>
         Are you sure you want to factory reset the device ? Hostname will be set
         back to raspberrypi, known wifis will be deleted, media file deleted,
-        ethernet set to DHCP, audio settings resetted. Device will be rebooted.
+        ethernet set to fixed IP 192.168.1.2, audio settings resetted. Device will be rebooted.
       </DialogContent>
       <DialogActions sx={{ p: 2 }} disableSpacing={true}>
         <Button onClick={confirmCallback}>Ok</Button>

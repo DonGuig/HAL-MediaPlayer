@@ -68,6 +68,7 @@ The three big breaking changes:
 
 **Decisions**
 - [x] **Cloud-init stops managing the network**: `network: {config: disabled}` in `/etc/cloud/cloud.cfg.d/`, and no `network-config` seed in the image. Wi-Fi settings entered in Raspberry Pi Imager therefore won't apply.
+- [x] **Factory wired address is the fixed IP `192.168.1.2` / `255.255.255.0`**, on new installs (`setup_network.sh`) and after a factory reset. It has no gateway or DNS, and no link-local fallback, so a laptop needs an address on `192.168.1.x` to reach the player.
 - [x] **Wi-Fi country is `FR` for now**: `raspi-config nonint do_wifi_country FR` in the image (Wi-Fi stays rfkill-blocked until a country is set). Cloud-init sets it today through `regulatory-domain`, so this has to replace it.
 
 **Server endpoints** (`utils/network.py`)
@@ -78,8 +79,8 @@ The three big breaking changes:
 - [ ] Verify on hardware through the real server: Wi-Fi connect, forget and factory reset. So far they were tested with the `sudo` commands captured, not run.
 
 **Install and image** (`systemd/setup_network.sh`, run by `install_service.sh`)
-- [x] **`eth0` profile**: stock images create "Wired connection 1", and the code expects `eth0`. The script creates a single `eth0` profile and deletes the other wired profiles. Re-running it keeps the DHCP or fixed IP choice.
-- [x] **Link-local fallback**: `ipv4.link-local fallback` (NetworkManager 1.52 or later). The former `enabled` added a 169.254.x.x address *alongside* the DHCP or fixed one.
+- [x] **`eth0` profile**: stock images create "Wired connection 1", and the code expects `eth0`. The script creates a single `eth0` profile on the factory fixed IP and deletes the other wired profiles. Re-running it keeps the DHCP or fixed IP choice.
+- [x] **Link-local fallback in DHCP mode**: `ipv4.link-local fallback` (NetworkManager 1.52 or later). The former `enabled` added a 169.254.x.x address *alongside* the DHCP or fixed one.
 - [x] **No cable**: `nmcli con up` refuses DHCP without a cable, but activates a fixed IP. Wired changes without a cable now deactivate the profile, then save the settings, which apply when a cable is plugged (modifying the profile last clears the autoconnect block that deactivating sets). A fixed IP shows the configured address even while unplugged.
 - [x] `nmcli con up` no longer waits for activation, since it can take up to 90 s without a DHCP server. Failures after the request (like no DHCP answer) no longer report an error.
 - [x] Cloud-init network config is disabled and the Wi-Fi country is set by the script. The raspi-config step is gone from the README.

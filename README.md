@@ -44,7 +44,7 @@ On the RPi, execute the script `packages/server/halmp_server/systemd/install_ser
 
 - stops cloud-init from managing the network, so Wi-Fi settings entered in Raspberry Pi Imager won't apply,
 - sets the Wi-Fi country to `FR`,
-- creates the single wired profile `eth0`, using DHCP with a link-local (169.254.x.x) address when no other address is set, and deletes the other wired profiles.
+- creates the single wired profile `eth0` on the fixed IP `192.168.1.2` (netmask `255.255.255.0`), the same as a factory reset, and deletes the other wired profiles. If DHCP is selected in the web UI, the player takes a link-local (169.254.x.x) address when no other address is set.
 
 Reboot afterwards : `sudo reboot`
 

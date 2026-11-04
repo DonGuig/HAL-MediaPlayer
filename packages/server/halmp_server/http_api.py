@@ -631,11 +631,12 @@ def factory_reset():
 
         network.forget_known_wifis()
 
-        # put eth0 back to DHCP
+        # put eth0 on the factory fixed IP
 
-        network.set_wired_dhcp()
+        network.set_wired_fixed(network.FACTORY_WIRED_IP,
+                                network.FACTORY_WIRED_NETMASK)
 
-        print('put ethernet connection back to DHCP')
+        print('put ethernet connection on the factory fixed IP')
 
         # reset hostname
 
