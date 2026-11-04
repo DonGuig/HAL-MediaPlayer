@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run as the pi user (not with sudo): creates the venvs, installs the sudoers rules and the systemd units.
+# Run as the pi user (not with sudo): creates the venvs, installs the sudoers rules and the systemd units, and sets up the network.
 set -euo pipefail
 
 SYSTEMD_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -29,6 +29,9 @@ done
 # USB drive automount
 sudo install -m 644 "$SYSTEMD_DIR/99-halmp-usb-mount.rules" /etc/udev/rules.d/
 sudo udevadm control --reload
+
+# Wired profile, Wi-Fi country, cloud-init network config
+"$SYSTEMD_DIR/setup_network.sh"
 
 sudo systemctl daemon-reload
 sudo systemctl enable "${UNITS[@]}"

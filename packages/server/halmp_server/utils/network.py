@@ -9,7 +9,7 @@ from ipaddress import IPv4Address, IPv4Interface, IPv4Network
 from pathlib import Path
 
 WIRED_INTERFACE = "eth0"
-# The image build creates this profile
+# Created by systemd/setup_network.sh
 WIRED_PROFILE = "eth0"
 WIFI_CONNECTION_TYPE = "802-11-wireless"
 DEFAULT_HOSTNAME = "raspberrypi"
@@ -35,17 +35,26 @@ def _require_string(value, name):
 # Wired
 
 def get_wired_config():
-    method = _run("nmcli", "-g", "ipv4.method", "connection", "show", "id",
-                  WIRED_PROFILE)
-    carrier = _run("nmcli", "-g", "WIRED-PROPERTIES.CARRIER", "device", "show",
-                   WIRED_INTERFACE)
-    ip_address, netmask = _get_current_address(WIRED_INTERFACE)
+    method, _, configured_address = _run(
+        "nmcli", "-g", "ipv4.method,ipv4.addresses", "connection", "show", "id",
+        WIRED_PROFILE).partition("\n")
+    if method == "manual" and configured_address:
+        # What was configured, so it still shows while the cable is unplugged
+        address = IPv4Interface(configured_address.split(",")[0].strip())
+        ip_address, netmask = str(address.ip), str(address.netmask)
+    else:
+        ip_address, netmask = _get_current_address(WIRED_INTERFACE)
     return {
         "DHCPorFixed": "DHCP" if method == "auto" else "Fixed IP",
         "ipAddress": ip_address,
         "netmask": netmask,
-        "connected": carrier == "on",
+        "connected": _wired_has_carrier(),
     }
+
+
+def _wired_has_carrier():
+    return _run("nmcli", "-g", "WIRED-PROPERTIES.CARRIER", "device", "show",
+                WIRED_INTERFACE) == "on"
 
 
 def _get_current_address(interface):
@@ -61,10 +70,25 @@ def _get_current_address(interface):
     return str(address.ip), str(address.netmask)
 
 
-def set_wired_dhcp():
+def _set_wired_ipv4(method, addresses):
+    has_carrier = _wired_has_carrier()
+    if not has_carrier and _run("nmcli", "-g", "GENERAL.STATE", "connection",
+                                "show", "id", WIRED_PROFILE):
+        # Without a cable, DHCP can't be activated and an active fixed address would
+        # stay. Deactivating blocks autoconnect until the profile is next modified, so
+        # it comes first: the new settings then apply when a cable is plugged.
+        _run("sudo", "nmcli", "connection", "down", "id", WIRED_PROFILE)
     _run("sudo", "nmcli", "connection", "modify", "id", WIRED_PROFILE,
-         "ipv4.method", "auto", "ipv4.addresses", "")
-    _run("sudo", "nmcli", "connection", "up", "id", WIRED_PROFILE)
+         "ipv4.method", method, "ipv4.addresses", addresses)
+    if has_carrier:
+        # Doesn't wait: without a DHCP server, activation can last until nmcli
+        # gives up (90 s), and a new address can cut off the client anyway
+        _run("sudo", "nmcli", "--wait", "0", "connection", "up", "id",
+             WIRED_PROFILE)
+
+
+def set_wired_dhcp():
+    _set_wired_ipv4("auto", "")
 
 
 def set_wired_fixed(ip_address, netmask):
@@ -73,9 +97,7 @@ def set_wired_fixed(ip_address, netmask):
         raise ValueError(f"{address} can't be used as an IP address")
     prefix = IPv4Network(
         f"0.0.0.0/{_require_string(netmask, 'Netmask')}").prefixlen
-    _run("sudo", "nmcli", "connection", "modify", "id", WIRED_PROFILE,
-         "ipv4.method", "manual", "ipv4.addresses", f"{address}/{prefix}")
-    _run("sudo", "nmcli", "connection", "up", "id", WIRED_PROFILE)
+    _set_wired_ipv4("manual", f"{address}/{prefix}")
 
 
 # Wi-Fi

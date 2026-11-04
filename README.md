@@ -36,26 +36,17 @@ python3 -m pip install dnspython==2.2.1
 
 ### Autostart with systemd
 
-On the RPi, execute the script `install_service.sh` located in `./RPi Install`.
+On the RPi, execute the script `packages/server/halmp_server/systemd/install_service.sh`.
 
 #### Networking
 
-in raspi-config, switch network config to Network Manager
+`install_service.sh` runs `setup_network.sh`, which:
 
-`sudo raspi-config`
-Then `Advanced options` then `Network Config`, select `Network Manager`
+- stops cloud-init from managing the network, so Wi-Fi settings entered in Raspberry Pi Imager won't apply,
+- sets the Wi-Fi country to `FR`,
+- creates the single wired profile `eth0`, using DHCP with a link-local (169.254.x.x) address when no other address is set, and deletes the other wired profiles.
 
-Delete the default connection in Network Manager :
-`nmcli con show`then note down the name of the connection
-`nmcli con del name`where you substitue name for the name of the connection
-
-Add the ethernet connection profile, using DHCP with a link-local (169.254.x.x) fallback when no DHCP server answers :
-```shell
-sudo nmcli con add type ethernet ifname eth0 con-name eth0 connection.autoconnect-priority 100 ipv4.method auto ipv4.link-local enabled ipv4.dhcp-timeout infinity ipv4.may-fail yes
-sudo nmcli con up eth0
-```
-
-`sudo reboot`
+Reboot afterwards : `sudo reboot`
 
 #### Run with webserver on port 80
 

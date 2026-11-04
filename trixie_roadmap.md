@@ -75,14 +75,16 @@ The three big breaking changes:
 - [x] `ifconfig` and `iwgetid` are replaced by `ip -j` and `nmcli`. Both tools were only present on the dev Pi because `net-tools` and `wireless-tools` were installed by hand.
 - [x] SSIDs with spaces or `:` work in `getCurrentWifi`. `forget_known_wifis` deletes by UUID, so a name with a space no longer aborts it or factory reset.
 - [x] The wired address lookup prefers a real address over a link-local one when the interface has both.
-- [ ] Verify on hardware through the real server: Wi-Fi connect, forget, wired changes and factory reset. So far they were tested with the `sudo` commands captured, not run.
+- [ ] Verify on hardware through the real server: Wi-Fi connect, forget and factory reset. So far they were tested with the `sudo` commands captured, not run.
 
-**Install and image**
-- [ ] **`eth0` profile**: the code expects a profile named `eth0`, and stock images create "Wired connection 1". The image build must delete the default and create `eth0` (single profile). Until then, the wired endpoints and factory reset return an error on a Pi without it.
-- [ ] **Link-local fallback**: the README uses `ipv4.link-local enabled`, which adds a 169.254.x.x address *alongside* the DHCP or fixed one. Use `fallback` (NetworkManager 1.52 or later).
-- [ ] **No cable**: `nmcli con up eth0` probably fails without a cable, so applying wired settings would report an error even though they were saved, and factory reset would abort. To test and handle.
-- [ ] Check that `netplan` doesn't recreate profiles on boot once cloud-init's network config is disabled.
-- [ ] **Remove the raspi-config step** from the README: NetworkManager is the default now.
+**Install and image** (`systemd/setup_network.sh`, run by `install_service.sh`)
+- [x] **`eth0` profile**: stock images create "Wired connection 1", and the code expects `eth0`. The script creates a single `eth0` profile and deletes the other wired profiles. Re-running it keeps the DHCP or fixed IP choice.
+- [x] **Link-local fallback**: `ipv4.link-local fallback` (NetworkManager 1.52 or later). The former `enabled` added a 169.254.x.x address *alongside* the DHCP or fixed one.
+- [x] **No cable**: `nmcli con up` refuses DHCP without a cable, but activates a fixed IP. Wired changes without a cable now deactivate the profile, then save the settings, which apply when a cable is plugged (modifying the profile last clears the autoconnect block that deactivating sets). A fixed IP shows the configured address even while unplugged.
+- [x] `nmcli con up` no longer waits for activation, since it can take up to 90 s without a DHCP server. Failures after the request (like no DHCP answer) no longer report an error.
+- [x] Cloud-init network config is disabled and the Wi-Fi country is set by the script. The raspi-config step is gone from the README.
+- [x] **Verified with a cable**: DHCP; no DHCP server (169.254.x.x appears, and only then); fixed IP; settings changed while unplugged apply on plug-in, for both DHCP and fixed IP.
+- [x] `netplan` doesn't recreate profiles on boot now that cloud-init's network config is disabled.
 - [ ] **Release image must hold no Wi-Fi credentials**: remove the `network-config` seed from `/boot/firmware` (it holds a password in clear text), the Wi-Fi profiles in `/etc/NetworkManager/system-connections/`, and leftover `/etc/netplan/90-NM-*.yaml` files.
 
 **Web client**
