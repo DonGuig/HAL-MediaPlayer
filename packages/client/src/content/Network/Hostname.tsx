@@ -28,7 +28,7 @@ type HostnameConfig = {
 
 const Hostname: React.FC = () => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   const formik = useFormik<HostnameConfig>({
     initialValues: {
@@ -123,7 +123,7 @@ const Hostname: React.FC = () => {
                 // helperText={touched.ipAddress && errors.ipAddress}
                 label="Hostname"
                 name="hostname"
-                disabled={overlayActive || readOnlyBoot}
+                disabled={overlayActive}
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 value={formik.values.hostname}
@@ -140,7 +140,6 @@ const Hostname: React.FC = () => {
                 }
                 disabled={
                   overlayActive ||
-                  readOnlyBoot ||
                   formik.isSubmitting ||
                   !formik.isValid
                 }

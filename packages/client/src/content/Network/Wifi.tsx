@@ -70,7 +70,7 @@ type WifiActive = {
 const Wifi: React.FC = () => {
   const [wifiActivated, setWifiActivated] = useState<"true" | "false">("true");
   const [currentWifi, setCurrentWifi] = useState<String>("None");
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
   const [openForgetDialog, setOpenForgetDialog] = useState<boolean>(false);
 
   const formik = useFormik<WifiConfig>({
@@ -199,7 +199,7 @@ const Wifi: React.FC = () => {
         <ToggleButtonGroup
           value={wifiActivated}
           exclusive
-          disabled={overlayActive || readOnlyBoot}
+          disabled={overlayActive}
           onChange={handleActiveWifiChange}
         >
           <ToggleButton value="true">Active</ToggleButton>
@@ -222,7 +222,7 @@ const Wifi: React.FC = () => {
           Refresh
         </Button>
         <Button
-          disabled={overlayActive || readOnlyBoot}
+          disabled={overlayActive}
           variant="outlined"
           size="small"
           onClick={() => setOpenForgetDialog(true)}
@@ -263,7 +263,7 @@ const Wifi: React.FC = () => {
               onChange={formik.handleChange}
               value={formik.values.SSID}
               disabled={
-                overlayActive || readOnlyBoot || wifiActivated === "false"
+                overlayActive || wifiActivated === "false"
               }
               variant="outlined"
             />
@@ -285,7 +285,7 @@ const Wifi: React.FC = () => {
               onChange={formik.handleChange}
               value={formik.values.pass}
               disabled={
-                overlayActive || readOnlyBoot || wifiActivated === "false"
+                overlayActive || wifiActivated === "false"
               }
               variant="outlined"
             />
@@ -298,7 +298,7 @@ const Wifi: React.FC = () => {
                 control={
                   <Checkbox
                     name="hidden"
-                    disabled={overlayActive || readOnlyBoot}
+                    disabled={overlayActive}
                     checked={formik.values.hidden}
                     onChange={formik.handleChange}
                   />
@@ -317,7 +317,6 @@ const Wifi: React.FC = () => {
               }
               disabled={
                 overlayActive ||
-                readOnlyBoot ||
                 formik.isSubmitting ||
                 !formik.isValid
               }

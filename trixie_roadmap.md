@@ -75,8 +75,9 @@ The three big breaking changes:
 
 ## 6. Read-only filesystem (overlayfs) — **small to medium**
 
-- [ ] `raspi-config nonint do_overlayfs`, `get_overlay_now` and `disable_overlayfs` still exist but now depend on the initramfs (see the `auto_initramfs` point in §2).
-- [ ] The boot read-only functions (`get_bootro_now`, `disable_bootro`) now target `/boot/firmware`, and their behavior has changed across raspi-config versions. The GUI no longer uses boot read-only, so `/api/getOverlayInfo` (`readOnlyBoot` part) and `/api/disableBootRO` are probably dead code to remove.
+- [ ] `raspi-config nonint enable_overlayfs`, `get_overlay_now` and `disable_overlayfs` still exist but now depend on the initramfs (see the `auto_initramfs` point in §2).
+- [x] **Decision: /boot is no longer read-only.** Nothing writes to it during playback, and `do_overlayfs 0` set `ro` in `/etc/fstab` that `disable_overlayfs` never removed, which left the Setup and Network pages locked. The server now calls `enable_overlayfs` and refuses `/boot` writes while the overlay is active.
+- [ ] **Release image**: `/etc/fstab` must have `defaults,noatime` for `/boot/firmware`, without `ro`.
 - [ ] New on Trixie: `/tmp` is a tmpfs by default. No impact, since uploads go to the app's `media/` folder.
 
 ## 7. USB import — **medium**

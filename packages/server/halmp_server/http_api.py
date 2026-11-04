@@ -9,7 +9,7 @@ import magic
 
 import __main__
 
-from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode
+from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active
 
 http_api = Blueprint("http_api", __name__)
 
@@ -692,29 +692,7 @@ def get_transport_status():
 @http_api.get('/api/getOverlayInfo')
 def get_overlay_info():
     try:
-        overlay_process = subprocess.run(
-            'sudo raspi-config nonint get_overlay_now',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        if overlay_process.stdout.strip() == "0":
-            overlay_active = True
-        else:
-            overlay_active = False
-
-        boot_ro_process = subprocess.run(
-            'sudo raspi-config nonint get_bootro_now',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-        if boot_ro_process.stdout.strip() == "0":
-            boot_ro = True
-        else:
-            boot_ro = False
-
-        return {"overlayActive": overlay_active, "readOnlyBoot": boot_ro}
+        return {"overlayActive": is_overlay_active()}
 
     except Exception as e:
         if hasattr(e, "stderr"):
@@ -728,27 +706,7 @@ def get_overlay_info():
 def set_read_only_filesystem():
     try:
         process = subprocess.run(
-            'sudo raspi-config nonint do_overlayfs 0',
-            shell=True,
-            text=True,
-            check=True,
-            capture_output=True)
-
-        return Response(status=200)
-
-    except Exception as e:
-        if hasattr(e, "stderr"):
-            err = e.stderr
-        else:
-            err = str(e)
-        return Response(err, status=500)
-
-
-@http_api.post('/api/disableBootRO')
-def disable_boot_read_only():
-    try:
-        process = subprocess.run(
-            'sudo raspi-config nonint disable_bootro',
+            'sudo raspi-config nonint enable_overlayfs',
             shell=True,
             text=True,
             check=True,

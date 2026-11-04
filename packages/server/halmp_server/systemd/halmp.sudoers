@@ -7,9 +7,7 @@ Cmnd_Alias HALMP_RASPI_CONFIG = \
     /usr/bin/raspi-config nonint do_hostname *, \
     /usr/bin/raspi-config nonint do_expand_rootfs, \
     /usr/bin/raspi-config nonint get_overlay_now, \
-    /usr/bin/raspi-config nonint get_bootro_now, \
-    /usr/bin/raspi-config nonint do_overlayfs 0, \
-    /usr/bin/raspi-config nonint disable_bootro, \
+    /usr/bin/raspi-config nonint enable_overlayfs, \
     /usr/bin/raspi-config nonint disable_overlayfs
 Cmnd_Alias HALMP_FILES = \
     /usr/bin/tee /boot/firmware/config.txt, \

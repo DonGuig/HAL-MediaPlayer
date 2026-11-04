@@ -8,11 +8,11 @@ import { OverlayContext } from "src/contexts/OverlayContext";
 import HDMIOnOff from "./HDMIOnOff";
 
 const Setup: React.FC = () => {
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   return (
     <Container>
-      {overlayActive || readOnlyBoot ? (
+      {overlayActive ? (
         <Stack
           direction="column"
           spacing={2}
@@ -25,7 +25,7 @@ const Setup: React.FC = () => {
             color="warning"
             size="small"
             sx={{ width: "500px" }}
-            label="Changes disabled while Overlay FS active or read-only /boot"
+            label="Changes disabled while Overlay FS active"
           />
         </Stack>
       ) : null}

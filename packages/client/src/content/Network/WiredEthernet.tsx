@@ -32,7 +32,7 @@ type WiredNetworkConfig = {
 
 const WiredEthernet: React.FC = () => {
   const [cableConnected, setCableConnected] = useState<boolean>(false);
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   const formik = useFormik<WiredNetworkConfig>({
     initialValues: {
@@ -158,7 +158,7 @@ const WiredEthernet: React.FC = () => {
             <ToggleButtonGroup
               value={formik.values.DHCPorFixed}
               exclusive
-              disabled={overlayActive || readOnlyBoot}
+              disabled={overlayActive}
               onChange={handleDHCPorFixedChange}
             >
               <ToggleButton value="DHCP">DHCP</ToggleButton>
@@ -178,7 +178,6 @@ const WiredEthernet: React.FC = () => {
               name="ipAddress"
               disabled={
                 overlayActive ||
-                readOnlyBoot ||
                 formik.values.DHCPorFixed === "DHCP"
               }
               onBlur={formik.handleBlur}
@@ -199,7 +198,6 @@ const WiredEthernet: React.FC = () => {
               name="netmask"
               disabled={
                 overlayActive ||
-                readOnlyBoot ||
                 formik.values.DHCPorFixed === "DHCP"
               }
               onBlur={formik.handleBlur}
@@ -214,7 +212,7 @@ const WiredEthernet: React.FC = () => {
           }}>
             <Button
               type="submit"
-              disabled={overlayActive || readOnlyBoot}
+              disabled={overlayActive}
               startIcon={
                 formik.isSubmitting ? <CircularProgress size="1rem" /> : null
               }

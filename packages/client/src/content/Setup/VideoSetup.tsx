@@ -111,7 +111,7 @@ const VideoSetup: React.FC = () => {
   const [openRebootDialog, setOpenRebootDialog] = useState<boolean>(false);
   const [openConfEditorDialog, setOpenConfEditorDialog] =
     useState<boolean>(false);
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   const setVideoOutput = (type: VideoOutputType) => {
     HttpApiRequests.post(`/setVideoOutput`, { data: { videoOutput: type } })
@@ -163,7 +163,7 @@ const VideoSetup: React.FC = () => {
             }}>
             <Button
               variant="outlined"
-              disabled={overlayActive || readOnlyBoot}
+              disabled={overlayActive}
               onClick={() => handleVideoOutputChange("HDMI")}
             >
               HDMI
@@ -171,7 +171,7 @@ const VideoSetup: React.FC = () => {
             <Tooltip title="Useful to force the HDMI output on, for exemple to start the RPi before the connected screen turns on.">
               <Button
                 variant="outlined"
-                disabled={overlayActive || readOnlyBoot}
+                disabled={overlayActive}
                 onClick={() => handleVideoOutputChange("HDMIForce1080p60")}
               >
                 HDMI force 1080p60
@@ -179,14 +179,14 @@ const VideoSetup: React.FC = () => {
             </Tooltip>
             <Button
               variant="outlined"
-              disabled={overlayActive || readOnlyBoot}
+              disabled={overlayActive}
               onClick={() => handleVideoOutputChange("CompositePAL")}
             >
               Composite PAL
             </Button>
             <Button
               variant="outlined"
-              disabled={overlayActive || readOnlyBoot}
+              disabled={overlayActive}
               onClick={() => handleVideoOutputChange("CompositeNTSC")}
             >
               Composite NTSC
@@ -196,7 +196,7 @@ const VideoSetup: React.FC = () => {
             variant="contained"
             color="primary"
             sx={{ width: "200px" }}
-            disabled={overlayActive || readOnlyBoot}
+            disabled={overlayActive}
             onClick={() => setOpenConfEditorDialog(true)}
           >
             Edit /boot/config.txt

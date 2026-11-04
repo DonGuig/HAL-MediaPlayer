@@ -45,7 +45,20 @@ def is_pi5() -> bool:
         return b"brcm,bcm2712" in f.read()
 
 
+def is_overlay_active() -> bool:
+    # raspi-config prints 0 when the root filesystem is currently an overlay
+    result = subprocess.run(['sudo', 'raspi-config', 'nonint', 'get_overlay_now'],
+                            text=True,
+                            capture_output=True,
+                            check=True)
+    return result.stdout.strip() == "0"
+
+
 def _sudo_tee(path: str, txt: str):
+    # /boot stays writable under the overlay, but its changes would persist while
+    # everything else is discarded at reboot, so settings are frozen as a whole
+    if is_overlay_active():
+        raise RuntimeError("Changes disabled while Overlay FS active")
     # sudo tee on this exact path is what /etc/sudoers.d/halmp allows
     subprocess.run(['sudo', 'tee', path],
                    input=txt,

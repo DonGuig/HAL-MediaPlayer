@@ -20,7 +20,7 @@ type AudioOutputType = "jack" | "HDMI" | "USB" | "Hifiberry";
 const AudioSetup: React.FC = () => {
   const [audioOutputDisplay, setAudioOutputDisplay] =
     useState<AudioOutputType>("jack");
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   const getCurrentAudioOutput = useCallback(() => {
     HttpApiRequests.get<audioOutputResponse>(`/getAudioOutput`)
@@ -75,7 +75,7 @@ const AudioSetup: React.FC = () => {
         <ToggleButtonGroup
           value={audioOutputDisplay}
           exclusive
-          disabled={overlayActive || readOnlyBoot}
+          disabled={overlayActive}
           onChange={handleAudioOutputChange}
         >
           <ToggleButton value="jack">Headphone Jack</ToggleButton>

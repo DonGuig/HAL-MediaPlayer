@@ -7,11 +7,11 @@ import { OverlayContext } from "src/contexts/OverlayContext";
 import { useContext } from "react";
 
 const Network: React.FC = () => {
-  const { overlayActive, readOnlyBoot } = useContext(OverlayContext);
+  const { overlayActive } = useContext(OverlayContext);
 
   return (
     <Container>
-      {overlayActive || readOnlyBoot ? (
+      {overlayActive ? (
         <Stack
           direction="column"
           spacing={2}
@@ -25,7 +25,7 @@ const Network: React.FC = () => {
             color="warning"
             size="small"
             sx={{width:"500px"}}
-            label="Changes disabled while Overlay FS active or read-only /boot"
+            label="Changes disabled while Overlay FS active"
           />
           
         </Stack>
