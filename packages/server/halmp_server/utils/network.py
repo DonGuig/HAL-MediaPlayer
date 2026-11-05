@@ -113,9 +113,38 @@ def connect_wifi(ssid, password, hidden):
         raise ValueError("Password must be 8 to 64 characters long")
     if not isinstance(hidden, bool):
         raise ValueError("Hidden must be true or false")
-    # nmcli waits 90 s by default, which is too long to keep the web UI waiting
-    _run("sudo", "nmcli", "--wait", "30", "device", "wifi", "connect", ssid,
-         "password", password, "hidden", "yes" if hidden else "no")
+    # With a profile already saved for this SSID, nmcli tries to update it and fails with
+    # "802-11-wireless-security.key-mgmt: property is missing"
+    _delete_wifi_profiles(ssid)
+    try:
+        # nmcli waits 90 s by default, which is too long to keep the web UI waiting
+        _run("sudo", "nmcli", "--wait", "30", "device", "wifi", "connect", ssid,
+             "password", password, "hidden", "yes" if hidden else "no")
+    except subprocess.CalledProcessError:
+        # Don't keep a profile holding a password that doesn't work
+        _delete_wifi_profiles(ssid)
+        raise
+
+
+def _wifi_profile_uuids():
+    lines = _run("nmcli", "-t", "-f", "TYPE,UUID", "connection",
+                 "show").splitlines()
+    return [
+        uuid for connection_type, uuid in (line.split(":") for line in lines)
+        if connection_type == WIFI_CONNECTION_TYPE
+    ]
+
+
+def _delete_wifi_profiles(ssid):
+    for uuid in _wifi_profile_uuids():
+        if _get_profile_ssid(uuid) == ssid:
+            _run("sudo", "nmcli", "connection", "delete", "uuid", uuid)
+
+
+def _get_profile_ssid(uuid):
+    # No escaping: there is a single field, and an SSID can hold a ":"
+    return _run("nmcli", "--escape", "no", "-g", "802-11-wireless.ssid",
+                "connection", "show", "uuid", uuid)
 
 
 def is_wifi_active():
@@ -132,9 +161,7 @@ def get_current_ssid():
                      "show", "--active").splitlines():
         connection_type, state, uuid = line.split(":")
         if connection_type == WIFI_CONNECTION_TYPE and state == "activated":
-            # No escaping: there is a single field, and an SSID can hold a ":"
-            return _run("nmcli", "--escape", "no", "-g", "802-11-wireless.ssid",
-                        "connection", "show", "uuid", uuid)
+            return _get_profile_ssid(uuid)
     return ""
 
 
@@ -142,11 +169,8 @@ def forget_known_wifis():
     """Forget all Wi-Fi profiles and turn Wi-Fi off."""
     set_wifi_active(False)
     # By UUID: profile names are usually SSIDs, which can hold spaces
-    for line in _run("nmcli", "-t", "-f", "TYPE,UUID", "connection",
-                     "show").splitlines():
-        connection_type, uuid = line.split(":")
-        if connection_type == WIFI_CONNECTION_TYPE:
-            _run("sudo", "nmcli", "connection", "delete", "uuid", uuid)
+    for uuid in _wifi_profile_uuids():
+        _run("sudo", "nmcli", "connection", "delete", "uuid", uuid)
 
 
 # Hostname

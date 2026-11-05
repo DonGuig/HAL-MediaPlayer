@@ -75,6 +75,7 @@ The three big breaking changes:
 - [x] `nmcli`, `ip` and `raspi-config` run from argument lists, without a shell. Fixes the shell injection in `setWifiConfig`, `setHostname` and `setWiredNetwokConfig`. All inputs are validated on the server (invalid input returns a 400).
 - [x] `ifconfig` and `iwgetid` are replaced by `ip -j` and `nmcli`. Both tools were only present on the dev Pi because `net-tools` and `wireless-tools` were installed by hand.
 - [x] SSIDs with spaces or `:` work in `getCurrentWifi`. `forget_known_wifis` deletes by UUID, so a name with a space no longer aborts it or factory reset.
+- [x] Reconnecting to a saved Wi-Fi network failed with `key-mgmt: property is missing`, because `nmcli device wifi connect` tries to update the existing profile. `connect_wifi` now deletes any profile for that SSID first, and removes the new one if the connection fails.
 - [x] The wired address lookup prefers a real address over a link-local one when the interface has both.
 - [ ] Verify on hardware through the real server: Wi-Fi connect, forget and factory reset. So far they were tested with the `sudo` commands captured, not run.
 
