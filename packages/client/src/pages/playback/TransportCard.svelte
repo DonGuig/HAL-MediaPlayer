@@ -52,8 +52,10 @@
     <Card.Action>
       {#if player.stopped}
         <Badge variant="outline">Stopped</Badge>
+      {:else if player.paused}
+        <Badge variant="secondary">Paused</Badge>
       {:else}
-        <Badge><span class="size-1.5 animate-pulse rounded-full bg-current"></span>Running</Badge>
+        <Badge><span class="size-1.5 animate-pulse rounded-full bg-current"></span>Playing</Badge>
       {/if}
     </Card.Action>
   </Card.Header>

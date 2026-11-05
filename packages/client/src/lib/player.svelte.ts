@@ -8,6 +8,8 @@ const PING_INTERVAL_MS = 3000;
 // A busy player can miss a ping (during an upload for instance), so one miss isn't "offline"
 const PINGS_MISSED_WHEN_OFFLINE = 2;
 const NO_MEDIA_FILE = "black_1920.jpg";
+// VLC applies a pause or a play shortly after the command returns
+const COMMAND_SETTLE_MS = 500;
 
 export type TransportCommand = "play" | "pause" | "restart" | "stop";
 export type OfflineNotice = { title: string; detail?: string; waiting: boolean };
@@ -19,6 +21,7 @@ class Player {
   offlineNotice = $state<OfflineNotice | null>(null);
   overlayActive = $state(false);
   stopped = $state(true);
+  paused = $state(false);
   fileName = $state<string | null>(null);
   fileSize = $state(0);
   freeSpace = $state(0);
@@ -34,8 +37,9 @@ class Player {
   }
 
   async refreshStatus() {
-    const res = await api.get<{ stopped: boolean }>("/getTransportStatus", { silent: true });
+    const res = await api.get<{ stopped: boolean; paused: boolean }>("/getTransportStatus", { silent: true });
     this.stopped = res.stopped;
+    this.paused = res.paused;
   }
 
   async refreshFile() {
@@ -81,6 +85,7 @@ class Player {
     try {
       await api.post(`/${cmd}`);
       await this.refreshStatus();
+      setTimeout(() => this.refreshStatus().catch(() => {}), COMMAND_SETTLE_MS);
     } catch {
       // api already shows the error
     }

@@ -109,6 +109,9 @@ class VLC_Handler():
         if not self.is_stopped:
             self.media_list_player.pause()
 
+    def is_paused(self):
+        return self.media_player.get_state() == vlc.State.Paused
+
     def restart(self):
         if self.hdmi_is_off:
             self.hdmi_off_time = None
