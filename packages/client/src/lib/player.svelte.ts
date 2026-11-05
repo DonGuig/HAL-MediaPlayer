@@ -28,6 +28,8 @@ class Player {
   hostname = $state("");
   piModel = $state<string | null>(null);
   rebootPrompt = $state<string | null>(null);
+  // Uploading or copying a media file: a real connection loss makes the transfer itself fail
+  transferring = $state(false);
 
   #missedPings = 0;
   #wentDown = false;
@@ -92,6 +94,8 @@ class Player {
   }
 
   async #ping() {
+    // The player can be too busy to answer in time, and doesn't need the extra requests
+    if (this.transferring) return;
     try {
       await api.post("/ping", { silent: true, timeoutMs: PING_INTERVAL_MS });
       const cameBack = this.#wentDown;
@@ -106,6 +110,8 @@ class Player {
         this.refreshStatus().catch(() => {});
       }
     } catch {
+      // A ping sent just before a transfer started can still time out
+      if (this.transferring) return;
       this.#wentDown = true;
       this.#missedPings++;
       if (this.#missedPings >= PINGS_MISSED_WHEN_OFFLINE) this.connected = false;

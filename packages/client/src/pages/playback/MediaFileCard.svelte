@@ -23,16 +23,22 @@
   let confirmingRemove = $state(false);
   let fileInput: HTMLInputElement;
 
+  function startTask(newTask: Task) {
+    task = newTask;
+    progress = 0;
+    player.transferring = true;
+  }
+
   function finishTask() {
     task = null;
+    player.transferring = false;
     player.refreshAll();
   }
 
   async function upload(file: File) {
-    task = { title: "Uploading", name: file.name, size: file.size };
-    progress = 0;
+    startTask({ title: "Uploading", name: file.name, size: file.size });
     if (!(await send("/stop"))) {
-      task = null;
+      finishTask();
       return;
     }
     let uploaded = true;
@@ -49,8 +55,7 @@
   }
 
   async function copyFromUsb() {
-    task = { title: "Copying from USB drive", name: "Looking for a file…", size: 0 };
-    progress = 0;
+    startTask({ title: "Copying from USB drive", name: "Looking for a file…", size: 0 });
     socket.on("copy_progress", (percent: number) => (progress = percent));
     socket.on("file_info", (info: { fileName: string; fileSize: number }) => {
       if (task) task = { ...task, name: info.fileName, size: info.fileSize };

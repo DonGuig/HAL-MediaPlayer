@@ -17,9 +17,9 @@
   let length = $state(0);
   let dragging = false; // not rendered, so a plain variable
 
-  // Poll the position while playing; re-runs when `player.stopped` changes
+  // Poll the position while playing; re-runs when these player fields change
   $effect(() => {
-    if (player.stopped) {
+    if (player.stopped || player.transferring) {
       time = length = 0;
       return;
     }
