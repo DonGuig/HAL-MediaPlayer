@@ -1,17 +1,13 @@
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import { fileURLToPath, URL } from "node:url";
+import path from "node:path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   base: "/",
-  plugins: [react()],
-  resolve: {
-    alias: {
-      src: fileURLToPath(new URL("./src", import.meta.url)),
-    },
-  },
-  build: {
-    sourcemap: true,
-  },
+  plugins: [tailwindcss(), svelte()],
+  // The .env file lives at the project root
+  envDir: "../..",
+  resolve: { alias: { $lib: path.resolve("./src/lib") } },
+  build: { sourcemap: true },
 });

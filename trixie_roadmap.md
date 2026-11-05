@@ -94,7 +94,7 @@ The three big breaking changes:
 **Web client**
 - [x] **Request timeout**: connecting to Wi-Fi now has a 35 s client timeout and a 25 s `nmcli` limit, instead of 4 s and 90 s. The Apply button shows progress, and losing contact (the player moved to the new network) shows a warning instead of an error.
 - [x] **IP change**: when the page uses the wired IP and the address changes, a dialog links to the new address, or explains how to find it after a switch to DHCP.
-- [ ] Build the client and verify both on hardware. Neither has been compiled yet: the Pi has no Node.
+- [ ] Verify both on hardware, with the new client (§12).
 
 **Later**
 - [ ] **Select the Wi-Fi country from the web UI** (fixed to `FR` until then).
@@ -150,31 +150,29 @@ The three big breaking changes:
 - [x] `raspi-config nonint do_hostname` still works. Check that cloud-init doesn't reapply the Imager hostname on reboot (`preserve_hostname: true`). Verified: a hostname set from the UI survives a reboot.
 - Flask, Socket.IO and python-osc are unaffected apart from the venv change.
 
-## 12. Web client — **small, postponed**
+## 12. Web client — **rewritten in Svelte, to verify on hardware**
 
-Server side is done for video (`utils/boot_config.py`), so the client work is left for later. To do, all in `packages/client/src/content/`:
+`packages/client` was rewritten from scratch (Svelte 5, Vite, Tailwind, shadcn-svelte). Tested in a browser against a mock of the API, and read-only against a real player. The actions that change something have not been run on hardware yet.
 
-**`Setup/VideoSetup.tsx`**
-- [ ] Rename the "Edit /boot/config.txt" button (line ~202) to `/boot/firmware/config.txt`.
-- [ ] Replace the `legacy_config_txt` doc link (line ~87) with the KMS docs: https://www.raspberrypi.com/documentation/computers/config_txt.html
-- [ ] Update the text above the buttons: they no longer remove all manual customization. They only rewrite the HALMP managed block of `config.txt` and the `video=` / `vc4.tv_norm=` values in `cmdline.txt`. HiFiBerry and other manual edits outside the block are kept.
-- [ ] Hide the Composite PAL / NTSC buttons on Pi 5 (the server already refuses them).
-- [ ] The raw editor only covers `config.txt`. Keep `cmdline.txt` out of it (a bad edit makes the Pi unbootable), but tell the user it exists, or show it read-only.
+**Setup, video**
+- [x] "Edit /boot/firmware/config.txt" button, and the doc link now points to the KMS docs.
+- [x] The text above the buttons says they only rewrite the managed block of `config.txt` and the video values of `cmdline.txt`.
+- [x] Composite PAL / NTSC hidden on Pi 5.
+- [x] The raw editor only covers `config.txt`, and says that `cmdline.txt` exists and why it isn't editable.
 - [ ] Show the current video mode, if wanted (nothing reports it today; it can be read from the managed block and `cmdline.txt`).
 
-**`Setup/AudioSetup.tsx`**
-- [ ] Fix the HiFiBerry tooltip (line ~84): "Remember to edit /boot/firmware/config.txt below".
-- [ ] Hide the "Headphone Jack" option on Pi 5, and make sure the default audio output isn't `"jack"` there (see §4).
+**Setup, audio**
+- [x] HiFiBerry note points to `/boot/firmware/config.txt`.
+- [x] "Headphone jack" hidden on Pi 5.
+- [ ] Make sure the default audio output isn't `"jack"` on Pi 5, including after a factory reset, which sets it (see §4). Server side.
 
-**`Setup/index.tsx` and `Network/index.tsx`**
-- [ ] Update the "read-only /boot" label (line ~28 in both) to say `/boot/firmware`, if the wording refers to the path.
-
-**New server endpoint (needed by the above)**
-- [ ] Report the Pi model to the client (for example `GET /api/getPiModel`, returning `pi3` / `pi4` / `pi5`), using `is_pi5()` in `utils/boot_config.py` or reading `/proc/device-tree/compatible`.
+**New server endpoint**
+- [x] `GET /api/getPiModel`, returning `pi3` / `pi4` / `pi5` / `unknown`. Needs a server update on the player for the Pi 5 options to hide: until then, the client shows everything.
 
 **Other**
-- [ ] `System/FileSystem.tsx` and `About/index.tsx`: the "Expand File System" button and text stay, as the manual fallback (§10).
-- [ ] Rebuild the client and check that the built files land in `halmp_server/static/` (the server serves them from there).
+- [x] "Expand file system" button and text kept, as the manual fallback (§10).
+- [x] Built files land in `halmp_server/static/`.
+- [ ] Run on a player: upload, USB copy, seek, Wi-Fi and wired changes, read-only mode, reboot, factory reset.
 
 ## 13. README / image build
 

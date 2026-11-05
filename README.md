@@ -8,7 +8,9 @@ This the fastest way to start working on development, as the player relies on a 
 
 ## Development environment
 
-The client is in Typescript/React. The server in Python/Flask.
+The client is in Typescript/Svelte (Vite, Tailwind CSS, shadcn-svelte). The server in Python/Flask.
+
+Build the client with `npm run build` in `packages/client`: the built files land in `packages/server/halmp_server/static`, where the server serves them from.
 
 Node version used : `22.14.0` (use nvm)
 

@@ -1,32 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#1975ff" />
-    <link rel="manifest" href="/manifest.json" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400&display=swap"
-      rel="stylesheet"
-    />
+    <meta name="description" content="Raspberry Pi Media Player" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>HAL Media Player</title>
-    <meta
-      name="description"
-      content="Raspberry Pi Media Player"
-    />
-    <meta
-      name="keywords"
-      content=""
-    />
+    <script>
+      try {
+        if (localStorage.getItem("theme") === "light") document.documentElement.classList.remove("dark");
+      } catch {}
+    </script>
   </head>
-
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
-    <!-- <noscript>You need to enable JavaScript to run this app.</noscript> -->
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
