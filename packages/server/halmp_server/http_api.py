@@ -10,7 +10,7 @@ import magic
 import __main__
 
 from .utils import network
-from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active
+from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active, get_pi_model
 
 http_api = Blueprint("http_api", __name__)
 
@@ -525,6 +525,14 @@ def get_transport_status():
     try:
         return {"stopped": __main__.vlc_handler.is_stopped}
 
+    except Exception as e:
+        return Response(str(e), status=500)
+
+
+@http_api.get('/api/getPiModel')
+def get_pi_model_route():
+    try:
+        return {"model": get_pi_model()}
     except Exception as e:
         return Response(str(e), status=500)
 

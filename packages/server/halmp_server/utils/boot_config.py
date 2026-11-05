@@ -39,10 +39,21 @@ VIDEO_MODES = {
 COMPOSITE_MODES = ("CompositePAL", "CompositeNTSC")
 
 
-def is_pi5() -> bool:
-    # BCM2712 covers Pi 5, Pi 500 and CM5
+# SoC of each supported model. BCM2712 covers Pi 5, Pi 500 and CM5
+PI_MODELS = {b"brcm,bcm2712": "pi5", b"brcm,bcm2711": "pi4", b"brcm,bcm2837": "pi3"}
+
+
+def get_pi_model() -> str:
     with open("/proc/device-tree/compatible", "rb") as f:
-        return b"brcm,bcm2712" in f.read()
+        compatible = f.read()
+    for soc, model in PI_MODELS.items():
+        if soc in compatible:
+            return model
+    return "unknown"
+
+
+def is_pi5() -> bool:
+    return get_pi_model() == "pi5"
 
 
 def is_overlay_active() -> bool:
