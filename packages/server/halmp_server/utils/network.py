@@ -12,6 +12,8 @@ WIRED_INTERFACE = "eth0"
 # Created by systemd/setup_network.sh
 WIRED_PROFILE = "eth0"
 WIFI_CONNECTION_TYPE = "802-11-wireless"
+NMCLI_TIMEOUT = 3
+NMCLI_NOT_FOUND = 10
 DEFAULT_HOSTNAME = "raspberrypi"
 FACTORY_WIRED_IP = "192.168.1.2"
 FACTORY_WIRED_NETMASK = "255.255.255.0"
@@ -120,10 +122,26 @@ def connect_wifi(ssid, password, hidden):
         # nmcli waits 90 s by default, which is too long to keep the web UI waiting
         _run("sudo", "nmcli", "--wait", "30", "device", "wifi", "connect", ssid,
              "password", password, "hidden", "yes" if hidden else "no")
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         # Don't keep a profile holding a password that doesn't work
         _delete_wifi_profiles(ssid)
+        message = _wifi_connect_failure_message(e, ssid)
+        if message:
+            raise ValueError(message) from e
         raise
+
+
+def _wifi_connect_failure_message(error, ssid):
+    """A clear message for the usual failures, or None to keep nmcli's own."""
+    if error.returncode == NMCLI_TIMEOUT:
+        return f"Timed out while connecting to {ssid}."
+    if error.returncode == NMCLI_NOT_FOUND:
+        return f"Wi-Fi network {ssid} not found. Check its name and that it is in range."
+    # No exit code for this one. NetworkManager asks for a new password when the network
+    # refuses the one given, and nmcli can't ask, as it isn't run interactively.
+    if "Secrets were required" in (error.stderr or ""):
+        return f"Could not connect to {ssid}: the network refused the password."
+    return None
 
 
 def _wifi_profile_uuids():
