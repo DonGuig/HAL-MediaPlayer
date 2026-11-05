@@ -12,6 +12,9 @@ WIRED_INTERFACE = "eth0"
 # Created by systemd/setup_network.sh
 WIRED_PROFILE = "eth0"
 WIFI_CONNECTION_TYPE = "802-11-wireless"
+# nmcli waits 90 s by default, too long for the web UI. With a rescan (up to 8 s), this has
+# to stay below the client's timeout (WIFI_CONNECT_TIMEOUT_MS in Wifi.tsx).
+WIFI_CONNECT_WAIT_S = "25"
 NMCLI_TIMEOUT = 3
 NMCLI_NOT_FOUND = 10
 DEFAULT_HOSTNAME = "raspberrypi"
@@ -118,10 +121,18 @@ def connect_wifi(ssid, password, hidden):
     # With a profile already saved for this SSID, nmcli tries to update it and fails with
     # "802-11-wireless-security.key-mgmt: property is missing"
     _delete_wifi_profiles(ssid)
+    command = ("sudo", "nmcli", "--wait", WIFI_CONNECT_WAIT_S, "device", "wifi",
+               "connect", ssid, "password", password, "hidden",
+               "yes" if hidden else "no")
     try:
-        # nmcli waits 90 s by default, which is too long to keep the web UI waiting
-        _run("sudo", "nmcli", "--wait", "30", "device", "wifi", "connect", ssid,
-             "password", password, "hidden", "yes" if hidden else "no")
+        try:
+            _run(*command)
+        except subprocess.CalledProcessError as e:
+            if e.returncode != NMCLI_NOT_FOUND:
+                raise
+            # nmcli only looks at the latest scan, which can miss a network in range
+            _rescan_wifi()
+            _run(*command)
     except subprocess.CalledProcessError as e:
         # Don't keep a profile holding a password that doesn't work
         _delete_wifi_profiles(ssid)
@@ -129,6 +140,16 @@ def connect_wifi(ssid, password, hidden):
         if message:
             raise ValueError(message) from e
         raise
+
+
+def _rescan_wifi():
+    try:
+        # Waits for the scan to finish, unlike "device wifi rescan"
+        _run("sudo", "nmcli", "-f", "SSID", "device", "wifi", "list", "--rescan",
+             "yes")
+    except subprocess.CalledProcessError as e:
+        # Connecting again will report what's wrong
+        print(f"Wi-Fi rescan failed: {e.stderr}")
 
 
 def _wifi_connect_failure_message(error, ssid):

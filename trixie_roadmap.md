@@ -76,6 +76,7 @@ The three big breaking changes:
 - [x] `ifconfig` and `iwgetid` are replaced by `ip -j` and `nmcli`. Both tools were only present on the dev Pi because `net-tools` and `wireless-tools` were installed by hand.
 - [x] SSIDs with spaces or `:` work in `getCurrentWifi`. `forget_known_wifis` deletes by UUID, so a name with a space no longer aborts it or factory reset.
 - [x] Reconnecting to a saved Wi-Fi network failed with `key-mgmt: property is missing`, because `nmcli device wifi connect` tries to update the existing profile. `connect_wifi` now deletes any profile for that SSID first, and removes the new one if the connection fails.
+- [x] A network in range could be reported as not found, because `nmcli` only looks at the latest scan and a scan can miss networks. `connect_wifi` now rescans and tries once more in that case.
 - [x] The wired address lookup prefers a real address over a link-local one when the interface has both.
 - [ ] Verify on hardware through the real server: Wi-Fi connect, forget and factory reset. So far they were tested with the `sudo` commands captured, not run.
 
@@ -90,7 +91,7 @@ The three big breaking changes:
 - [ ] **Release image must hold no Wi-Fi credentials**: remove the `network-config` seed from `/boot/firmware` (it holds a password in clear text), the Wi-Fi profiles in `/etc/NetworkManager/system-connections/`, and leftover `/etc/netplan/90-NM-*.yaml` files.
 
 **Web client**
-- [x] **Request timeout**: connecting to Wi-Fi now has a 35 s client timeout and a 30 s `nmcli` limit, instead of 4 s and 90 s. The Apply button shows progress, and losing contact (the player moved to the new network) shows a warning instead of an error.
+- [x] **Request timeout**: connecting to Wi-Fi now has a 35 s client timeout and a 25 s `nmcli` limit, instead of 4 s and 90 s. The Apply button shows progress, and losing contact (the player moved to the new network) shows a warning instead of an error.
 - [x] **IP change**: when the page uses the wired IP and the address changes, a dialog links to the new address, or explains how to find it after a switch to DHCP.
 - [ ] Build the client and verify both on hardware. Neither has been compiled yet: the Pi has no Node.
 
