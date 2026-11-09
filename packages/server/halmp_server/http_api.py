@@ -10,7 +10,7 @@ import magic
 import __main__
 
 from .utils import network
-from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active, get_pi_model, default_audio_output
+from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active, get_pi_model, get_pi_name, default_audio_output
 
 http_api = Blueprint("http_api", __name__)
 
@@ -514,7 +514,7 @@ def get_transport_status():
 @http_api.get('/api/getPiModel')
 def get_pi_model_route():
     try:
-        return {"model": get_pi_model()}
+        return {"model": get_pi_model(), "name": get_pi_name()}
     except Exception as e:
         return Response(str(e), status=500)
 

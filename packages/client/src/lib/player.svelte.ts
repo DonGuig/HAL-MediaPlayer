@@ -27,18 +27,14 @@ class Player {
   freeSpace = $state(0);
   hostname = $state("");
   piModel = $state<string | null>(null);
+  // Full board name with its RAM. Null when not running on a Pi
+  piName = $state<string | null>(null);
   rebootPrompt = $state<string | null>(null);
 
   #wentDown = false;
 
   get isPi5() {
     return this.piModel === "pi5";
-  }
-
-  // Null when the model isn't known, as on a development machine
-  get piModelName() {
-    const number = this.piModel?.match(/^pi(\d+)$/)?.[1];
-    return number ? `Raspberry Pi ${number}` : null;
   }
 
   async refreshFile() {
@@ -62,8 +58,9 @@ class Player {
   }
 
   async refreshPiModel() {
-    const res = await api.get<{ model: string }>("/getPiModel", { silent: true });
+    const res = await api.get<{ model: string; name: string | null }>("/getPiModel", { silent: true });
     this.piModel = res.model;
+    this.piName = res.name;
   }
 
   refreshAll() {

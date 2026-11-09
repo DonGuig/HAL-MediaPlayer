@@ -2,6 +2,7 @@
 # The server only owns a marked block at the end of config.txt and a few values in
 # cmdline.txt; the rest (stock defaults, HiFiBerry overlays, PARTUUID, manual edits)
 # is left untouched.
+import re
 import subprocess
 from pathlib import Path
 
@@ -58,6 +59,45 @@ def get_pi_model() -> str:
 
 def is_pi5() -> bool:
     return get_pi_model() == "pi5"
+
+
+def format_pi_name(model: str) -> str:
+    # "Raspberry Pi 3 Model B Plus Rev 1.3" -> "Raspberry Pi 3B+"
+    name = re.sub(r"\s+Rev\s+\S+$", "", model.strip())
+    name = re.sub(r"\s+Model\s+([A-Z])", r"\1", name)
+    name = name.replace("Compute Module ", "CM")
+    return re.sub(r"\s+Plus\b", "+", name)
+
+
+def ram_from_cpuinfo(cpuinfo: str) -> str | None:
+    # Revision code: bit 23 marks the new format, bits 20-22 hold the RAM size.
+    # More exact than MemTotal, which leaves out what the kernel and GPU reserve.
+    match = re.search(r"^Revision\s*:\s*([0-9a-fA-F]+)\s*$", cpuinfo, re.MULTILINE)
+    if match is None:
+        return None
+    revision = int(match.group(1), 16)
+    if not revision & (1 << 23):
+        return None
+    megabytes = 256 << ((revision >> 20) & 0b111)
+    return f"{megabytes // 1024} GB" if megabytes >= 1024 else f"{megabytes} MB"
+
+
+def get_pi_name() -> str | None:
+    """ Full board name with its RAM, or None when not running on a Pi """
+    try:
+        with open("/proc/device-tree/model", "rb") as f:
+            model = f.read().rstrip(b"\x00").decode("utf-8", "ignore")
+    except OSError:
+        return None
+    if not model.startswith("Raspberry Pi"):
+        return None
+    name = format_pi_name(model)
+    try:
+        with open("/proc/cpuinfo") as f:
+            ram = ram_from_cpuinfo(f.read())
+    except OSError:
+        ram = None
+    return f"{name} · {ram}" if ram else name
 
 
 def default_audio_output() -> str:

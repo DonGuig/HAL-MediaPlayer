@@ -45,8 +45,8 @@
           <span class={["size-1.5 rounded-full", player.connected ? "bg-emerald-500" : "bg-current"]}></span>
           {player.connected ? "Connected" : "Offline"}
         </Badge>
-        {#if player.piModelName}
-          <p class="text-xs leading-none text-muted-foreground">{player.piModelName}</p>
+        {#if player.piName}
+          <p class="text-xs leading-none text-muted-foreground">{player.piName}</p>
         {/if}
       </div>
       <Button variant="ghost" size="icon" onclick={() => theme.toggle()} aria-label="Toggle light and dark theme">
