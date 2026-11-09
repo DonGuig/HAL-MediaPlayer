@@ -302,24 +302,6 @@ def set_audio_delay():
         return Response(str(e), status=500)
 
 
-@http_api.get('/api/getDeviceName')
-def get_device_name():
-    try:
-        return {"deviceName": __main__.cfg_handler.cfg.device_name}
-    except Exception as e:
-        return Response(str(e), status=500)
-
-
-@http_api.post('/api/setDeviceName')
-def set_device_name():
-    try:
-        __main__.cfg_handler.change_config("device_name",
-                                           request.json["deviceName"])
-        return Response(status=200)
-    except Exception as e:
-        return Response(str(e), status=500)
-
-
 @http_api.get('/api/getWiredNetwokConfig')
 def get_wired_network_config():
     try:
