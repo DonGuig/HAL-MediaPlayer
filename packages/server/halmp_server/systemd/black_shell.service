@@ -9,7 +9,11 @@ RemainAfterExit=yes
 # Runs as root: needs access to the console. Boot messages and the login prompt go to tty1,
 # so they stay hidden behind this empty console. tty7 is above logind's auto-started gettys.
 ExecStart=/bin/sh -c "TERM=linux setterm -cursor off -clear all >/dev/tty7; chvt 7"
-# Back to tty1 so shutdown messages are visible
+# The kernel prints on whichever console is showing, so tty7 alone doesn't hide its messages
+# (undervoltage warnings for instance). Level 1 keeps only emergencies, like a kernel panic.
+ExecStart=/usr/bin/dmesg -n 1
+# Back to tty1 and the default kernel log level, so shutdown messages are visible
+ExecStop=/usr/bin/dmesg -n 3
 ExecStop=/usr/bin/chvt 1
 
 [Install]
