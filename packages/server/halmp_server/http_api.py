@@ -177,7 +177,6 @@ def remove_media_file():
     try:
         __main__.vlc_handler.stop()
         __main__.vlc_handler.remove_all_media_files()
-        # __main__.vlc_handler.refresh_media_file()
         return Response(status=200)
     except Exception as e:
         return Response(str(e), status=500)

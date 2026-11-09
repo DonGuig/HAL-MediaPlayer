@@ -53,7 +53,7 @@ The three big breaking changes:
 ## 3. HDMI on/off — **done, Pi 4 and Pi 5 to verify**
 
 - [x] `vcgencmd display_power` has no effect under KMS (it exits 0 anyway). Replaced: `hdmi_off` stops VLC so it closes its video output, then writes `4` to `/sys/class/graphics/fb0/blank`; `hdmi_on` writes `0` (`utils/hdmi_power.py`, `vlc_handler.py`). Blanking by hand with the server stopped cut the signal on Pi 3.
-- [x] Playback is paused while HDMI is off. VLC really stops (it must, to release the display), so the position is saved. `hdmi_on` brings the media back paused at that position, or the black image if it was stopped; play is then needed to continue. Play, restart and upload (from the UI or OSC) turn HDMI back on by themselves. Stop leaves HDMI off and forgets the position. The state isn't kept across a reboot (HDMI is on after boot).
+- [x] Playback is paused while HDMI is off. VLC really stops (it must, to release the display), so the position is saved. `hdmi_on` brings the media back paused at that position, or nothing if it was stopped; play is then needed to continue. Play, restart and upload (from the UI or OSC) turn HDMI back on by themselves. Stop leaves HDMI off and forgets the position. The state isn't kept across a reboot (HDMI is on after boot).
 - [x] Verified: the full on/off cycle works.
 - [ ] Check it again on Pi 4 and Pi 5 (Pi 5: check that `fb0` is still the display's framebuffer).
 - Other options looked at: forcing the connector off through `/sys/class/drm/*/status` (probably doesn't cut the signal while VLC holds the display), DPMS on VLC's own DRM handle, CEC standby (signal stays on; could be an optional extra).

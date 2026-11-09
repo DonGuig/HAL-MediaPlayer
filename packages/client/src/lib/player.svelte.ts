@@ -4,8 +4,6 @@ import { api, errorMessage, isConnectionError, SERVER_URL } from "./api";
 
 export const socket = io(SERVER_URL);
 
-const NO_MEDIA_FILE = "black_1920.jpg";
-
 type PlayerStatus = { stopped: boolean; paused: boolean; time: number; length: number };
 export type TransportCommand = "play" | "pause" | "restart" | "stop";
 export type OfflineNotice = { title: string; detail?: string; waiting: boolean };
@@ -39,12 +37,11 @@ class Player {
 
   async refreshFile() {
     const [file, space] = await Promise.all([
-      api.get<{ fileName: string; fileSize: number }>("/getFileNameAndSize", { silent: true }),
+      api.get<{ fileName: string | null; fileSize: number }>("/getFileNameAndSize", { silent: true }),
       api.get<{ space: number }>("/getAvailableSpace", { silent: true }),
     ]);
-    const none = file.fileName === NO_MEDIA_FILE;
-    this.fileName = none ? null : file.fileName;
-    this.fileSize = none ? 0 : file.fileSize;
+    this.fileName = file.fileName;
+    this.fileSize = file.fileSize;
     this.freeSpace = space.space;
   }
 

@@ -5,8 +5,6 @@ import sys
 import time
 from pathlib import Path
 import vlc
-from urllib.request import url2pathname
-from urllib.parse import urlparse
 
 import __main__
 from .utils import hdmi_power
@@ -18,10 +16,6 @@ media_folder_path = Path(__file__).parent / "media"
 if not os.path.exists(media_folder_path):
     # Create the folder
     os.makedirs(media_folder_path)
-    
-black_video_path = Path(__file__).parent / "static_media/black_1920.jpg"
-
-
 
 
 class VLC_Handler():
@@ -37,13 +31,12 @@ class VLC_Handler():
         elif sys.platform.startswith("darwin"):
             args = '-V dummy --input-repeat 999'
 
-        self.is_stopped = False
         self.hdmi_is_off = False
         self.hdmi_off_time = None
         self.vlc_instance = vlc.Instance(args)
         self.media_list_player = self.vlc_instance.media_list_player_new()
         self.media_player = self.media_list_player.get_media_player()
-        self.black_image_media_list = self.vlc_instance.media_list_new([black_video_path])
+        self.media_file = None
         self.media_list = None
         try:
             self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
@@ -53,7 +46,12 @@ class VLC_Handler():
         self.media_player.audio_set_volume(__main__.cfg_handler.cfg.volume)
         self.media_player.audio_set_delay(__main__.cfg_handler.cfg.audio_delay)
         self.media_list_player.set_playback_mode(vlc.PlaybackMode.loop)
-        self.play()
+        if self.media_list != None:
+            self.media_list_player.play()
+
+    def is_stopped(self):
+        return self.media_player.get_state() in (
+            vlc.State.NothingSpecial, vlc.State.Stopped, vlc.State.Ended, vlc.State.Error)
 
     def get_media_file(self):
         for file in os.listdir(media_folder_path):
@@ -66,18 +64,17 @@ class VLC_Handler():
             if __main__.is_accepted_media_file(file):
                 path =  Path.resolve(media_folder_path / file)
                 os.remove(path)
+        self.refresh_media_file()
         return None
 
 
     def refresh_media_file(self):
-        media_file = self.get_media_file()
-        if media_file:
-            if self.media_list: self.media_list.release()
-            self.media_list = self.vlc_instance.media_list_new([media_file])
+        if self.media_list: self.media_list.release()
+        self.media_list = None
+        self.media_file = self.get_media_file()
+        if self.media_file:
+            self.media_list = self.vlc_instance.media_list_new([self.media_file])
             self.media_list_player.set_media_list(self.media_list)
-        else:
-            self.media_list_player.set_media_list(self.black_image_media_list)
-            self.is_stopped = True
 
     # play media
     def play(self):
@@ -86,67 +83,44 @@ class VLC_Handler():
             if self.hdmi_off_time is not None:
                 self._resume_at(self.hdmi_off_time, paused=False)
                 return
-        if self.is_stopped :
-            self.media_list_player.stop()
-            if self.media_list != None :
-                self.media_list_player.set_media_list(self.media_list)
-                self.media_list_player.play()
-                time.sleep(2.0)
-                try: 
-                    self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), force_pause=True)
-                except Exception as e:
-                    pass
-                self.is_stopped=False
-        else:
-            self.media_list_player.play()
-            self.is_stopped=False
-
-
+        if self.media_list == None:
+            return
+        was_stopped = self.is_stopped()
+        self.media_list_player.play()
+        if was_stopped:
+            # The audio output has to be set again once the media has started
+            time.sleep(2.0)
+            try:
+                self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"), pause_to_apply=False)
+            except Exception as e:
+                pass
 
     def pause(self):
-        if self.hdmi_is_off:
-            return
-        if not self.is_stopped:
+        if not self.is_stopped():
             self.media_list_player.pause()
 
     def is_paused(self):
         return self.media_player.get_state() == vlc.State.Paused
 
     def restart(self):
-        if self.hdmi_is_off:
-            self.hdmi_off_time = None
-            self.is_stopped = True
+        self.hdmi_off_time = None
+        if self.is_stopped():
             self.play()
-            return
-        if self.media_list != None:
+        else:
             self.media_player.set_time(0)
             self.media_list_player.play()
 
     def stop(self):
-        if self.hdmi_is_off:
-            # Stays off, but the saved position no longer applies
-            self.hdmi_off_time = None
-            self.is_stopped = True
-            return
-        if not self.is_stopped :
-            self.media_list_player.stop()
-            # self.media_list.release()
-            # self.media_list.set_media(self.black_image_media_list)
-            # self.media_list_player.play()
-            self.media_list_player.set_media_list(self.black_image_media_list)
-            self.play()
-            try :
-                self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
-            except Exception as e:
-                pass
-            self.is_stopped = True
+        # With HDMI off, it stays off and the saved position no longer applies
+        self.hdmi_off_time = None
+        self.media_list_player.stop()
 
     def hdmi_off(self):
         if self.hdmi_is_off:
             return
         # VLC can't stay paused here: it must stop to close its video output and
         # release the display. The position is restored when HDMI comes back on.
-        self.hdmi_off_time = None if self.is_stopped else max(self.media_player.get_time(), 0)
+        self.hdmi_off_time = None if self.is_stopped() else max(self.media_player.get_time(), 0)
         self.hdmi_is_off = True
         self.media_list_player.stop()
         hdmi_power.power_down()
@@ -155,10 +129,7 @@ class VLC_Handler():
         if not self.hdmi_is_off:
             return
         self._wake_hdmi()
-        if self.hdmi_off_time is None:
-            self.media_list_player.set_media_list(self.black_image_media_list)
-            self.media_list_player.play()
-        else:
+        if self.hdmi_off_time is not None:
             self._resume_at(self.hdmi_off_time, paused=True)
 
     def _wake_hdmi(self):
@@ -168,7 +139,6 @@ class VLC_Handler():
     def _resume_at(self, time_ms, paused):
         # Muted so nothing is heard between starting the media and seeking back
         self.media_player.audio_set_mute(True)
-        self.media_list_player.set_media_list(self.media_list)
         self.media_list_player.play()
         deadline = time.monotonic() + 5.0
         while not self.media_player.is_playing() and time.monotonic() < deadline:
@@ -183,12 +153,10 @@ class VLC_Handler():
             time.sleep(0.5)
             self.media_player.set_pause(1)
         self.media_player.audio_set_mute(False)
-        self.is_stopped = False
 
     def get_player_status(self):
         return {
-            # VLC is really stopped while HDMI is off, even though is_stopped keeps what to resume
-            "stopped": self.is_stopped or self.hdmi_is_off,
+            "stopped": self.is_stopped(),
             "paused": self.is_paused(),
             "time": self.media_player.get_time() / 1000,
             "length": self.media_player.get_length() / 1000,
@@ -220,14 +188,14 @@ class VLC_Handler():
         # print(res)
         return res
 
-    def set_current_audio_output(self, type, force_pause=False):
+    def set_current_audio_output(self, type, pause_to_apply=True):
         """ type should be "jack" | "HDMI" | "USB" | "Hifiberry """
         if type != "jack" and type != "HDMI" and type != "USB" and type!="Hifiberry":
             return
         devices = self.get_audio_outputs_list(self.vlc_instance)
         if devices[type] != b'':
             self.media_player.audio_output_device_set(None, devices[type])
-            if self.media_player.is_playing() or force_pause:
+            if pause_to_apply and self.media_player.is_playing():
                 print("pausing after changing audio output")
                 self.pause()
                 self.media_list_player.play()
@@ -251,27 +219,12 @@ class VLC_Handler():
         return res
 
     def get_current_media_filename(self):
-        if self.media_list != None:
-            mrl: str = self.media_player.get_media().get_mrl()
-            filename = mrl.split("/")[-1]
-            return filename
-        else:
-            return "None"
-    
-    def get_current_media_path(self):
-        if self.media_list != None:
-            mrl = self.media_player.get_media().get_mrl()
-            return url2pathname(urlparse(mrl).path)
-        else :
-            return ""
+        return self.media_file.name if self.media_file else None
 
     def get_current_media_file_size(self):
-        if self.media_list != None: 
-            path = self.get_current_media_path()
-            return os.path.getsize(path)
-        else :
-            return 0
-        
+        return os.path.getsize(self.media_file) if self.media_file else 0
+
+
 if __name__ == '__main__':
     #vlc = VLC_Handler()
     vlc_instance = vlc.Instance()
