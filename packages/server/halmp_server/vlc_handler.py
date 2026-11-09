@@ -69,9 +69,25 @@ class VLC_Handler():
         self.status_changed.set()
 
     def seek(self, time_ms):
+        was_paused = self.is_paused()
+        is_backward = time_ms < self.media_player.get_time()
         self.media_player.set_time(time_ms)
+        threading.Timer(SEEK_SETTLE_S, self._after_seek, [was_paused, is_backward]).start()
+
+    def _after_seek(self, was_paused, is_backward):
+        # A seek while paused sometimes leaves the old image on screen: step one frame to show the new one
+        if was_paused:
+            self._step_frame()
+            # One step isn't always enough after a backward seek
+            if is_backward:
+                threading.Timer(SEEK_SETTLE_S, self._step_frame).start()
         # VLC doesn't send TimeChanged for a seek while paused
-        threading.Timer(SEEK_SETTLE_S, self.status_changed.set).start()
+        self.status_changed.set()
+
+    def _step_frame(self):
+        if self.is_paused():
+            self.media_player.next_frame()
+            self.status_changed.set()
 
     def is_stopped(self):
         return self.media_player.get_state() in (
