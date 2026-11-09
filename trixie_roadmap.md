@@ -64,7 +64,7 @@ The three big breaking changes:
 - [x] vc4-hdmi only accepts IEC958, so a direct `hw:` device usually **fails**. Use `hdmi:CARD=vc4hdmi0` (or `default:`).
 - [ ] The headphone jack (`bcm2835 Headphones`) still exists on Pi 3 and 4. **Pi 5 has no analog jack**: the `"jack"` default in `config.json` and factory reset needs a fallback.
 - [x] `get_audio_outputs_list` matches on the ALSA device name instead of description strings: card id `Headphones` for the jack, an id containing `hifiberry` for HiFiBerry. USB cards are found through `/proc/asound/<id>/usbid`, since their id comes from the product name. The first USB card wins.
-- [ ] Verify on hardware: check the names with `aplay -L` and `ls /proc/asound/`, then select jack, HDMI, USB and HiFiBerry from the UI.
+- [x] Verify on hardware: check the names with `aplay -L` and `ls /proc/asound/`, then select jack, HDMI, USB and HiFiBerry from the UI.
 
 ## 5. Networking (wired and Wi-Fi) — **small to medium**
 
@@ -96,11 +96,6 @@ The three big breaking changes:
 - [x] **Request timeout**: connecting to Wi-Fi now has a 35 s client timeout and a 25 s `nmcli` limit, instead of 4 s and 90 s. The Apply button shows progress, and losing contact (the player moved to the new network) shows a warning instead of an error.
 - [x] **IP change**: when the page uses the wired IP and the address changes, a dialog links to the new address, or explains how to find it after a switch to DHCP.
 - [ ] Verify both on hardware, with the new client (§12).
-
-**Later**
-- [ ] **Select the Wi-Fi country from the web UI** (fixed to `FR` until then).
-- [ ] **Gateway and DNS for a fixed IP**: today it only sets the address and netmask, so a player on a fixed IP can't reach beyond its local network.
-- [ ] **Open Wi-Fi networks**: the client and `network.connect_wifi` both require a password of at least 8 characters.
 
 ## 6. Read-only filesystem (overlayfs) — **small to medium**
 
