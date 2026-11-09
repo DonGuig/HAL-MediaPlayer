@@ -699,7 +699,7 @@ def factory_reset():
 def set_time():
     try:
         time = request.json["time"]
-        __main__.vlc_handler.media_player.set_time(int(time*1000))
+        __main__.vlc_handler.seek(int(time*1000))
 
         return Response(status=200)
 

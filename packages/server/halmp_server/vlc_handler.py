@@ -2,6 +2,7 @@ from typing import List
 import vlc
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 import vlc
@@ -16,6 +17,9 @@ media_folder_path = Path(__file__).parent / "media"
 if not os.path.exists(media_folder_path):
     # Create the folder
     os.makedirs(media_folder_path)
+
+# Leaves VLC the time to apply a seek before the new position is read
+SEEK_SETTLE_S = 0.3
 
 
 class VLC_Handler():
@@ -38,6 +42,17 @@ class VLC_Handler():
         self.media_player = self.media_list_player.get_media_player()
         self.media_file = None
         self.media_list = None
+        # Set whenever get_player_status() may return something new
+        self.status_changed = threading.Event()
+        events = self.media_player.event_manager()
+        for event_type in (vlc.EventType.MediaPlayerTimeChanged,
+                           vlc.EventType.MediaPlayerLengthChanged,
+                           vlc.EventType.MediaPlayerPlaying,
+                           vlc.EventType.MediaPlayerPaused,
+                           vlc.EventType.MediaPlayerStopped,
+                           vlc.EventType.MediaPlayerEndReached,
+                           vlc.EventType.MediaPlayerEncounteredError):
+            events.event_attach(event_type, self._on_vlc_event)
         try:
             self.set_current_audio_output(__main__.cfg_handler.get_config("audio_output"))
         except Exception as e :
@@ -48,6 +63,15 @@ class VLC_Handler():
         self.media_list_player.set_playback_mode(vlc.PlaybackMode.loop)
         if self.media_list != None:
             self.media_list_player.play()
+
+    def _on_vlc_event(self, event):
+        # Runs on VLC's event thread: no libvlc calls allowed here, and nothing slow
+        self.status_changed.set()
+
+    def seek(self, time_ms):
+        self.media_player.set_time(time_ms)
+        # VLC doesn't send TimeChanged for a seek while paused
+        threading.Timer(SEEK_SETTLE_S, self.status_changed.set).start()
 
     def is_stopped(self):
         return self.media_player.get_state() in (

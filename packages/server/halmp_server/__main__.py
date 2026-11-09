@@ -33,7 +33,8 @@ app.register_blueprint(http_api)
 socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*",
                     ping_interval=2, ping_timeout=4)
 
-PLAYER_STATUS_INTERVAL_S = 0.25
+# Merges the bursts of VLC events
+PLAYER_STATUS_MIN_INTERVAL_S = 0.1
 
 
 # Serve React App
@@ -72,14 +73,16 @@ def connected():
 
 @socketio.on("/setTime")
 def set_time(input_time):
-    vlc_handler.media_player.set_time(int(input_time * 1000))
+    vlc_handler.seek(int(input_time * 1000))
 
 
 def broadcast_player_status():
     """Pushes the status when it changes, whatever changed it (web client, OSC, end of media...)"""
     last_status = None
     while True:
-        socketio.sleep(PLAYER_STATUS_INTERVAL_S)
+        vlc_handler.status_changed.wait()
+        # Cleared before reading, so a change during the read wakes this loop again
+        vlc_handler.status_changed.clear()
         try:
             status = vlc_handler.get_player_status()
             if status != last_status:
@@ -87,6 +90,7 @@ def broadcast_player_status():
                 last_status = status
         except Exception as e:
             print(e)
+        socketio.sleep(PLAYER_STATUS_MIN_INTERVAL_S)
 
 
 if __name__ == "__main__":
