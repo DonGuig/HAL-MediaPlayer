@@ -523,10 +523,8 @@ def http_post_forget_known_wifis():
 @http_api.get('/api/getTransportStatus')
 def get_transport_status():
     try:
-        vlc_handler = __main__.vlc_handler
-        # VLC is really stopped while HDMI is off, even though is_stopped keeps what to resume
-        return {"stopped": vlc_handler.is_stopped or vlc_handler.hdmi_is_off,
-                "paused": vlc_handler.is_paused()}
+        status = __main__.vlc_handler.get_player_status()
+        return {"stopped": status["stopped"], "paused": status["paused"]}
 
     except Exception as e:
         return Response(str(e), status=500)

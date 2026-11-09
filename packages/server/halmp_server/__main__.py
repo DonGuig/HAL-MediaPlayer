@@ -29,7 +29,11 @@ CORS(app, origins='*')
 app.register_blueprint(http_api)
 # app.config['SECRET_KEY'] = 'secret!'
 
-socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")
+# The short heartbeat is how clients notice within a few seconds that the player is gone
+socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*",
+                    ping_interval=2, ping_timeout=4)
+
+PLAYER_STATUS_INTERVAL_S = 0.25
 
 
 # Serve React App
@@ -63,6 +67,7 @@ def not_found(e):
 def connected():
     """event listener when client connects to the server"""
     print("client has connected %s" % request.sid)
+    socketio.emit("player_status", vlc_handler.get_player_status(), to=request.sid)
 
 
 @socketio.on("/setTime")
@@ -70,11 +75,26 @@ def set_time(input_time):
     vlc_handler.media_player.set_time(int(input_time * 1000))
 
 
+def broadcast_player_status():
+    """Pushes the status when it changes, whatever changed it (web client, OSC, end of media...)"""
+    last_status = None
+    while True:
+        socketio.sleep(PLAYER_STATUS_INTERVAL_S)
+        try:
+            status = vlc_handler.get_player_status()
+            if status != last_status:
+                socketio.emit("player_status", status)
+                last_status = status
+        except Exception as e:
+            print(e)
+
+
 if __name__ == "__main__":
     cfg_handler: ConfigHandler = ConfigHandler()
     vlc_handler = VLC_Handler()
     port = int(os.getenv("VITE_SERVER_PORT", 80))
     print("Starting server on port %s" % port)
+    socketio.start_background_task(broadcast_player_status)
     socketio.run(
         app, debug=False, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True
     )

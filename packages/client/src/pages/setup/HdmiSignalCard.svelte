@@ -2,15 +2,10 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { toast } from "svelte-sonner";
-  import { player } from "$lib/player.svelte";
   import { send } from "$lib/api";
 
   async function setSignal(on: boolean) {
-    if (await send(on ? "/hdmi_on" : "/hdmi_off")) {
-      toast.success(`HDMI signal turned ${on ? "on" : "off"}`);
-      // It stops and resumes playback
-      player.refreshStatus().catch(() => {});
-    }
+    if (await send(on ? "/hdmi_on" : "/hdmi_off")) toast.success(`HDMI signal turned ${on ? "on" : "off"}`);
   }
 </script>
 

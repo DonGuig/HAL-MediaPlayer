@@ -8,33 +8,19 @@
   import RotateCcwIcon from "@lucide/svelte/icons/rotate-ccw";
   import SquareIcon from "@lucide/svelte/icons/square";
   import { player, socket } from "$lib/player.svelte";
-  import { api } from "$lib/api";
   import { formatTime } from "$lib/format";
-
-  const POSITION_INTERVAL_MS = 900;
 
   let time = $state(0);
   let length = $state(0);
   let dragging = false; // not rendered, so a plain variable
 
-  // Poll the position while playing; re-runs when these player fields change
+  // Follow the pushed position, except while the user is dragging the slider
   $effect(() => {
-    if (player.stopped || player.transferring) {
-      time = length = 0;
-      return;
-    }
-    const poll = async () => {
-      if (dragging) return;
-      try {
-        const res = await api.get<{ time: number; length: number }>("/getTime", { silent: true });
-        if (!dragging) ({ time, length } = res);
-      } catch {
-        // the connection overlay covers this
-      }
-    };
-    poll();
-    const id = setInterval(poll, POSITION_INTERVAL_MS);
-    return () => clearInterval(id);
+    const idle = player.stopped || player.transferring;
+    const pushedTime = player.time;
+    length = idle ? 0 : player.length;
+    if (idle) time = 0;
+    else if (!dragging) time = pushedTime;
   });
 
   const buttons = [

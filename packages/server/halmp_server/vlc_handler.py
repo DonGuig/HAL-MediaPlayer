@@ -185,6 +185,14 @@ class VLC_Handler():
         self.media_player.audio_set_mute(False)
         self.is_stopped = False
 
+    def get_player_status(self):
+        return {
+            # VLC is really stopped while HDMI is off, even though is_stopped keeps what to resume
+            "stopped": self.is_stopped or self.hdmi_is_off,
+            "paused": self.is_paused(),
+            "time": self.media_player.get_time() / 1000,
+            "length": self.media_player.get_length() / 1000,
+        }
 
     def get_audio_outputs_list(self, vlc_inst):
         res = {"jack": b'', "HDMI": b'', "USB": b'', "Hifiberry":b''}

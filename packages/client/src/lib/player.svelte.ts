@@ -4,44 +4,37 @@ import { api, errorMessage, isConnectionError, SERVER_URL } from "./api";
 
 export const socket = io(SERVER_URL);
 
-const PING_INTERVAL_MS = 3000;
-// A busy player can miss a ping (during an upload for instance), so one miss isn't "offline"
-const PINGS_MISSED_WHEN_OFFLINE = 2;
 const NO_MEDIA_FILE = "black_1920.jpg";
-// VLC applies a pause or a play shortly after the command returns
-const COMMAND_SETTLE_MS = 500;
 
+type PlayerStatus = { stopped: boolean; paused: boolean; time: number; length: number };
 export type TransportCommand = "play" | "pause" | "restart" | "stop";
 export type OfflineNotice = { title: string; detail?: string; waiting: boolean };
 
 // Shared player state: any component can import `player`, read its fields and call its methods.
 class Player {
-  connected = $state(true);
+  #socketUp = $state(true);
+  // Uploading or copying a media file: a real connection loss makes the transfer itself fail
+  transferring = $state(false);
+  // A busy player can drop the socket during a transfer without being offline
+  connected = $derived(this.#socketUp || this.transferring);
   // Replaces the reconnecting message when the player is going away on purpose
   offlineNotice = $state<OfflineNotice | null>(null);
   overlayActive = $state(false);
   stopped = $state(true);
   paused = $state(false);
+  time = $state(0);
+  length = $state(0);
   fileName = $state<string | null>(null);
   fileSize = $state(0);
   freeSpace = $state(0);
   hostname = $state("");
   piModel = $state<string | null>(null);
   rebootPrompt = $state<string | null>(null);
-  // Uploading or copying a media file: a real connection loss makes the transfer itself fail
-  transferring = $state(false);
 
-  #missedPings = 0;
   #wentDown = false;
 
   get isPi5() {
     return this.piModel === "pi5";
-  }
-
-  async refreshStatus() {
-    const res = await api.get<{ stopped: boolean; paused: boolean }>("/getTransportStatus", { silent: true });
-    this.stopped = res.stopped;
-    this.paused = res.paused;
   }
 
   async refreshFile() {
@@ -73,7 +66,6 @@ class Player {
   refreshAll() {
     // Each one on its own: a request that fails shouldn't keep the others from showing
     for (const refresh of [
-      this.refreshStatus,
       this.refreshFile,
       this.refreshHostname,
       this.refreshOverlay,
@@ -84,46 +76,43 @@ class Player {
   }
 
   async command(cmd: TransportCommand) {
-    try {
-      await api.post(`/${cmd}`);
-      await this.refreshStatus();
-      setTimeout(() => this.refreshStatus().catch(() => {}), COMMAND_SETTLE_MS);
-    } catch {
-      // api already shows the error
-    }
+    // The new state comes back through player_status; api shows any error
+    await api.post(`/${cmd}`).catch(() => {});
   }
 
-  async #ping() {
-    // The player can be too busy to answer in time, and doesn't need the extra requests
-    if (this.transferring) return;
-    try {
-      await api.post("/ping", { silent: true, timeoutMs: PING_INTERVAL_MS });
-      const cameBack = this.#wentDown;
-      this.#missedPings = 0;
-      this.#wentDown = false;
-      this.connected = true;
-      if (cameBack) {
-        this.offlineNotice = null;
-        this.refreshAll();
-      } else {
-        // Keeps the state right when something else drives the player, like OSC
-        this.refreshStatus().catch(() => {});
-      }
-    } catch {
-      // A ping sent just before a transfer started can still time out
-      if (this.transferring) return;
-      this.#wentDown = true;
-      this.#missedPings++;
-      if (this.#missedPings >= PINGS_MISSED_WHEN_OFFLINE) this.connected = false;
-    }
-  }
+  #onStatus = (status: PlayerStatus) => {
+    this.stopped = status.stopped;
+    this.paused = status.paused;
+    this.time = status.time;
+    this.length = status.length;
+  };
+
+  #onUp = () => {
+    this.#socketUp = true;
+    if (!this.#wentDown) return;
+    this.#wentDown = false;
+    this.offlineNotice = null;
+    this.refreshAll();
+  };
+
+  #onDown = () => {
+    this.#socketUp = false;
+    this.#wentDown = true;
+  };
 
   // Returns the function that stops watching
   watchConnection() {
     this.refreshAll();
-    this.#ping();
-    const id = setInterval(() => this.#ping(), PING_INTERVAL_MS);
-    return () => clearInterval(id);
+    socket.on("player_status", this.#onStatus);
+    socket.on("connect", this.#onUp);
+    socket.on("disconnect", this.#onDown);
+    socket.on("connect_error", this.#onDown);
+    return () => {
+      socket.off("player_status", this.#onStatus);
+      socket.off("connect", this.#onUp);
+      socket.off("disconnect", this.#onDown);
+      socket.off("connect_error", this.#onDown);
+    };
   }
 
   // For actions that take the player down: losing the connection midway is expected
