@@ -35,6 +35,12 @@ class Player {
     return this.piModel === "pi5";
   }
 
+  // Null when the model isn't known, as on a development machine
+  get piModelName() {
+    const number = this.piModel?.match(/^pi(\d+)$/)?.[1];
+    return number ? `Raspberry Pi ${number}` : null;
+  }
+
   async refreshFile() {
     const [file, space] = await Promise.all([
       api.get<{ fileName: string | null; fileSize: number }>("/getFileNameAndSize", { silent: true }),
