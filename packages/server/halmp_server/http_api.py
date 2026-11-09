@@ -10,7 +10,7 @@ import magic
 import __main__
 
 from .utils import network
-from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active, get_pi_model
+from .utils.boot_config import CONFIG_TXT_PATH, write_config_txt, apply_video_mode, is_overlay_active, get_pi_model, default_audio_output
 
 http_api = Blueprint("http_api", __name__)
 
@@ -648,12 +648,11 @@ def factory_reset():
 
         print('put audio delay at 0')
 
-        # put audio device to headphone jack
+        # back to the default audio device, applied when the player starts after the reboot
 
-        __main__.vlc_handler.set_current_audio_output(
-            "jack")
+        __main__.cfg_handler.change_config("audio_output", default_audio_output())
 
-        print('put audio out to jack')
+        print('put audio out back to its default')
 
         # back to HDMI video output (config.txt managed block and cmdline.txt)
 

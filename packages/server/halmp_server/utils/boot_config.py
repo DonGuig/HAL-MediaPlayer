@@ -44,8 +44,12 @@ PI_MODELS = {b"brcm,bcm2712": "pi5", b"brcm,bcm2711": "pi4", b"brcm,bcm2837": "p
 
 
 def get_pi_model() -> str:
-    with open("/proc/device-tree/compatible", "rb") as f:
-        compatible = f.read()
+    try:
+        with open("/proc/device-tree/compatible", "rb") as f:
+            compatible = f.read()
+    except OSError:
+        # Not running on a Pi (development machine)
+        return "unknown"
     for soc, model in PI_MODELS.items():
         if soc in compatible:
             return model
@@ -54,6 +58,11 @@ def get_pi_model() -> str:
 
 def is_pi5() -> bool:
     return get_pi_model() == "pi5"
+
+
+def default_audio_output() -> str:
+    # The Pi 5 has no analog jack
+    return "HDMI" if is_pi5() else "jack"
 
 
 def is_overlay_active() -> bool:

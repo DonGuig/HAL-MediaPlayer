@@ -3,6 +3,8 @@ from pathlib import Path
 import config
 import json
 
+from .utils.boot_config import is_pi5
+
 config_folder_path = Path(__file__).parent / "resources"
 config_file_path = config_folder_path / "config.json"
 
@@ -29,6 +31,7 @@ class ConfigHandler():
                     self.cfg = config.config_from_json(file.read())
                 print("successfully loaded config file :")
                 print(self.cfg)
+                self.fix_audio_output_for_model()
                 return
             except Exception as e:
                 print(str(e))
@@ -37,6 +40,13 @@ class ConfigHandler():
         print("Using default config :")
         print(self.cfg)
         self.write_config_to_file()
+        self.fix_audio_output_for_model()
+
+    def fix_audio_output_for_model(self):
+        # Also needed for an existing config: the image is shared by all models,
+        # and an SD card can move from a Pi 4 to a Pi 5
+        if self.cfg.get("audio_output") == "jack" and is_pi5():
+            self.change_config("audio_output", "HDMI")
 
     def change_config(self, key : str, val: any):
         try:
