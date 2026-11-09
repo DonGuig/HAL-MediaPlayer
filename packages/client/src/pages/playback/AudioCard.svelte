@@ -19,6 +19,12 @@
     send("/setVolume", { body: { volume } });
   }
 
+  function resetVolumeOnThumbDoubleClick(event: MouseEvent) {
+    if (!(event.target as Element).closest('[data-slot="slider-thumb"]')) return;
+    volume = 100;
+    sendVolume();
+  }
+
   function sendDelay() {
     delayMs ??= 0;
     // The server counts in microseconds
@@ -48,6 +54,7 @@
           step={1}
           onValueChange={(value) => (volume = value)}
           onValueCommit={sendVolume}
+          ondblclick={resetVolumeOnThumbDoubleClick}
         />
         <div class="relative w-24 shrink-0">
           <!-- `onchange` fires on blur, Enter and the spinner arrows: exactly when to send -->
