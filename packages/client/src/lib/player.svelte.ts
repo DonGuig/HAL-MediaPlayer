@@ -84,6 +84,14 @@ class Player {
     this.length = status.length;
   };
 
+  // The fixed id makes repeated events reuse one toast instead of piling up
+  #onUndervoltage = () => {
+    toast.warning("Undervoltage detected", {
+      id: "undervoltage",
+      description: "The power supply is too weak for the Raspberry Pi. Playback may be affected.",
+    });
+  };
+
   #onUp = () => {
     this.#socketUp = true;
     if (!this.#wentDown) return;
@@ -101,11 +109,13 @@ class Player {
   watchConnection() {
     this.refreshAll();
     socket.on("player_status", this.#onStatus);
+    socket.on("undervoltage", this.#onUndervoltage);
     socket.on("connect", this.#onUp);
     socket.on("disconnect", this.#onDown);
     socket.on("connect_error", this.#onDown);
     return () => {
       socket.off("player_status", this.#onStatus);
+      socket.off("undervoltage", this.#onUndervoltage);
       socket.off("connect", this.#onUp);
       socket.off("disconnect", this.#onDown);
       socket.off("connect_error", this.#onDown);

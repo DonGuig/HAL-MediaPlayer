@@ -9,6 +9,7 @@ import subprocess
 from .vlc_handler import VLC_Handler
 from .config_handler import ConfigHandler
 from .http_api import http_api
+from .utils import undervoltage
 
 
 accepted_media_extensions = ["mp4", "mov", "mp3", "wav", "flac", "aac", "aiff"]
@@ -69,6 +70,8 @@ def connected():
     """event listener when client connects to the server"""
     print("client has connected %s" % request.sid)
     socketio.emit("player_status", vlc_handler.get_player_status(), to=request.sid)
+    if undervoltage.is_active():
+        socketio.emit("undervoltage", to=request.sid)
 
 
 @socketio.on("/setTime")
@@ -99,6 +102,7 @@ if __name__ == "__main__":
     port = int(os.getenv("VITE_SERVER_PORT", 80))
     print("Starting server on port %s" % port)
     socketio.start_background_task(broadcast_player_status)
+    socketio.start_background_task(undervoltage.watch, lambda: socketio.emit("undervoltage"))
     socketio.run(
         app, debug=False, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True
     )

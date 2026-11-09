@@ -137,7 +137,7 @@ The three big breaking changes:
 - [x] `black_shell.service` starts right after `halmp.service` and switches to an empty console (`chvt 7`). Boot output and the login prompt go to `tty1` (`console=tty1`), so they stay hidden behind it, including what cloud-init prints long after the server starts. It switches back to `tty1` when stopped, so shutdown messages are visible. Alt+F1 with a keyboard reaches the login prompt.
 - [x] `blank_console()` is removed: painting the console black had to be repeated whenever later boot output overwrote it.
 - [x] Verified on hardware: black at startup with no media, no login prompt on `tty7`, black during the stop and HDMI handovers, shutdown messages visible.
-- **Decision: undervoltage messages stay visible.** New kernel console messages about undervoltage still appear on screen when playback stops. This is wanted, so users notice an unsuitable power supply: don't hide them.
+- **Decision: undervoltage warnings move to the WebUI.** `black_shell.service` keeps kernel messages off the screen (`dmesg -n 1`). So users still notice an unsuitable power supply, the server watches the kernel's undervoltage alarm and the WebUI shows a toast each time it is raised.
 - [ ] Keep the `kbd` package in the image (it provides `chvt`).
 
 ## 10. Filesystem expand / first-boot resize — **small**
