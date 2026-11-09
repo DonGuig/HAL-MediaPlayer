@@ -63,7 +63,8 @@ The three big breaking changes:
 - [x] Under KMS, HDMI audio comes from `vc4-hdmi`, not `bcm2835 HDMI`, so the description matching in `vlc_handler.py` (`get_audio_outputs_list`) will never match. Card names become `vc4hdmi0` / `vc4hdmi1`.
 - [x] vc4-hdmi only accepts IEC958, so a direct `hw:` device usually **fails**. Use `hdmi:CARD=vc4hdmi0` (or `default:`).
 - [ ] The headphone jack (`bcm2835 Headphones`) still exists on Pi 3 and 4. **Pi 5 has no analog jack**: the `"jack"` default in `config.json` and factory reset needs a fallback.
-- [ ] Rewrite `get_audio_outputs_list` to match on the ALSA card id (`Headphones`, `vc4hdmi0`, `sndrpihifiberry`, `USB`) instead of description strings.
+- [x] `get_audio_outputs_list` matches on the ALSA device name instead of description strings: card id `Headphones` for the jack, an id containing `hifiberry` for HiFiBerry. USB cards are found through `/proc/asound/<id>/usbid`, since their id comes from the product name. The first USB card wins.
+- [ ] Verify on hardware: check the names with `aplay -L` and `ls /proc/asound/`, then select jack, HDMI, USB and HiFiBerry from the UI.
 
 ## 5. Networking (wired and Wi-Fi) — **small to medium**
 

@@ -1,6 +1,7 @@
 from typing import List
 import vlc
 import os
+import re
 import sys
 import threading
 import time
@@ -20,6 +21,15 @@ if not os.path.exists(media_folder_path):
 
 # Leaves VLC the time to apply a seek before the new position is read
 SEEK_SETTLE_S = 0.3
+
+# ALSA lists each card several times (hw:, plughw:, sysdefault:...): this picks the direct one
+HW_CARD_RE = re.compile(rb"^hw:CARD=([^,]+)")
+
+
+def is_usb_sound_card(card_id: str) -> bool:
+    # /proc/asound/<id> links to the card, and only USB cards have a usbid file.
+    # The id can't be used for this: it comes from the product name ("Device", "DAC"...).
+    return os.path.exists(f"/proc/asound/{card_id}/usbid")
 
 
 class VLC_Handler():
@@ -209,19 +219,23 @@ class VLC_Handler():
             mod = devices
             while mod:
                 mod = mod.contents
-                desc :str = mod.description.decode('utf-8', 'ignore')
+                device: bytes = mod.device
                 # KMS: HDMI audio is the vc4-hdmi card (vc4hdmi on Pi 3, vc4hdmi0/1 on Pi 4/5).
                 # Only the hdmi: device works (the hw: ones reject non-IEC958 formats).
-                # Devices are listed in card order, so the first HDMI port wins.
-                if mod.device.startswith(b"hdmi:CARD=vc4hdmi"):
+                # Devices are listed in card order, so the first HDMI port and USB card win.
+                if device.startswith(b"hdmi:CARD=vc4hdmi"):
                     if res["HDMI"] == b'':
-                        res["HDMI"]=mod.device
-                elif desc.find("bcm2835 Headphones Direct hardware device without any conversions") != -1:
-                    res["jack"]=mod.device
-                elif desc.find("USB Audio Direct hardware device without any conversions") != -1:
-                    res["USB"]=mod.device
-                elif desc.find("hifiberry") != -1 and desc.find("Direct hardware device without any conversions") != -1:
-                    res["Hifiberry"]=mod.device
+                        res["HDMI"] = device
+                else:
+                    hw_card = HW_CARD_RE.match(device)
+                    if hw_card:
+                        card_id = hw_card.group(1).decode('utf-8', 'ignore')
+                        if card_id == "Headphones":
+                            res["jack"] = device
+                        elif "hifiberry" in card_id.lower():
+                            res["Hifiberry"] = device
+                        elif res["USB"] == b'' and is_usb_sound_card(card_id):
+                            res["USB"] = device
                 mod = mod.next
         # free devices
         vlc.libvlc_audio_output_device_list_release(devices)
