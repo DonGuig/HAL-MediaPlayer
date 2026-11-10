@@ -8,6 +8,7 @@
   import { Checkbox } from "$lib/components/ui/checkbox";
   import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
   import Field from "$lib/components/Field.svelte";
+  import Segmented from "$lib/components/Segmented.svelte";
   import StatusDot from "$lib/components/StatusDot.svelte";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
   import LoaderIcon from "@lucide/svelte/icons/loader-circle";
@@ -16,16 +17,26 @@
   import { toast } from "svelte-sonner";
   import { player } from "$lib/player.svelte";
   import { api, isConnectionError, send } from "$lib/api";
+  import { isIpv4 } from "$lib/format";
 
   // A little above the time the server gives nmcli to connect (utils/network.py)
   const WIFI_CONNECT_TIMEOUT_MS = 35000;
   const WIFI_SETTLE_MS = 3000;
+
+  type Mode = "DHCP" | "Fixed IP";
+  type CurrentWifi = { SSID: string; DHCPorFixed: Mode; ipAddress: string; netmask: string; gateway: string };
 
   let active = $state(true);
   let currentSsid = $state<string | null>(null);
   let ssid = $state("");
   let password = $state("");
   let hidden = $state(false);
+  let mode = $state<Mode>("DHCP");
+  let ipAddress = $state("");
+  let netmask = $state("");
+  let gateway = $state("");
+  // The mode comes from the player only once: after that, it is what the user picked
+  let modeLoaded = false;
   let showPassword = $state(false);
   let connecting = $state(false);
   let confirmingForget = $state(false);
@@ -36,13 +47,35 @@
   const ssidError = $derived(touched.ssid && ssidInvalid ? "Between 1 and 32 characters" : "");
   const passwordError = $derived(touched.password && passwordInvalid ? "Between 8 and 64 characters" : "");
   const formDisabled = $derived(player.overlayActive || !active);
+  const fixed = $derived(mode === "Fixed IP");
+  const ipError = $derived(fixed && !isIpv4(ipAddress) ? "Incorrect address format" : "");
+  const netmaskError = $derived(fixed && !isIpv4(netmask) ? "Incorrect address format" : "");
+  // Optional: left empty, the player has no gateway on Wi-Fi
+  const gatewayError = $derived(fixed && gateway.trim() !== "" && !isIpv4(gateway.trim()) ? "Incorrect address format" : "");
+  const ipDisabled = $derived(formDisabled || !fixed);
 
   function loadActive() {
     api.get<{ active: boolean }>("/getIsWifiActive").then((res) => (active = res.active), () => {});
   }
 
   function loadCurrent() {
-    api.get<{ SSID: string | null }>("/getCurrentWifi").then((res) => (currentSsid = res.SSID || null), () => {});
+    api.get<CurrentWifi>("/getCurrentWifi").then(
+      (res) => {
+        currentSsid = res.SSID || null;
+        if (!modeLoaded && res.SSID) {
+          mode = res.DHCPorFixed;
+          modeLoaded = true;
+        }
+        // In DHCP mode the fields can't be edited and show the current address. Fixed IP
+        // fields are left alone, as the user may be typing in them.
+        if (mode === "DHCP") {
+          ipAddress = res.ipAddress;
+          netmask = res.netmask;
+          gateway = res.gateway;
+        }
+      },
+      () => {},
+    );
   }
 
   async function setActive(value: boolean) {
@@ -58,7 +91,7 @@
     connecting = true;
     try {
       await api.post("/setWifiConfig", {
-        body: { SSID: ssid, pass: password, hidden },
+        body: { SSID: ssid, pass: password, hidden, DHCPorFixed: mode, ipAddress, netmask, gateway: gateway.trim() },
         silent: true,
         timeoutMs: WIFI_CONNECT_TIMEOUT_MS,
       });
@@ -66,6 +99,8 @@
       password = "";
       touched.password = false;
       loadCurrent();
+      // DHCP may hand out the address a moment after connecting
+      if (!fixed) setTimeout(loadCurrent, WIFI_SETTLE_MS);
     } catch (err) {
       if (isConnectionError(err)) {
         toast.warning("Lost contact with the player while connecting. If you reach it through Wi-Fi, it may have moved to the new network.");
@@ -137,12 +172,33 @@
           </div>
         </Field>
       </div>
+      <Segmented
+        label="Address mode"
+        options={[
+          { value: "DHCP", label: "DHCP" },
+          { value: "Fixed IP", label: "Fixed IP" },
+        ]}
+        value={mode}
+        disabled={formDisabled}
+        onchange={(value) => (mode = value)}
+      />
+      <div class="grid grid-cols-2 gap-3">
+        <Field id="wifi-ip" label="IP address" error={ipError}>
+          <Input id="wifi-ip" bind:value={ipAddress} disabled={ipDisabled} aria-invalid={!!ipError} inputmode="decimal" class="tabular-nums" />
+        </Field>
+        <Field id="wifi-netmask" label="Netmask" error={netmaskError}>
+          <Input id="wifi-netmask" bind:value={netmask} disabled={ipDisabled} aria-invalid={!!netmaskError} inputmode="decimal" class="tabular-nums" />
+        </Field>
+        <Field id="wifi-gateway" label="Gateway (optional)" error={gatewayError}>
+          <Input id="wifi-gateway" bind:value={gateway} disabled={ipDisabled} aria-invalid={!!gatewayError} inputmode="decimal" class="tabular-nums" />
+        </Field>
+      </div>
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
           <Checkbox id="wifi-hidden" bind:checked={hidden} disabled={formDisabled} />
           <Label for="wifi-hidden">Hidden network</Label>
         </div>
-        <Button type="submit" disabled={formDisabled || connecting || ssidInvalid || passwordInvalid}>
+        <Button type="submit" disabled={formDisabled || connecting || ssidInvalid || passwordInvalid || !!ipError || !!netmaskError || !!gatewayError}>
           {#if connecting}<LoaderIcon class="animate-spin" />{/if}Connect
         </Button>
       </div>

@@ -5,12 +5,14 @@
 import json
 import re
 import subprocess
+import uuid as uuidlib
 from ipaddress import IPv4Address, IPv4Interface
 from pathlib import Path
 
 WIRED_INTERFACE = "eth0"
 # Created by systemd/setup_network.sh
 WIRED_PROFILE = "eth0"
+WIFI_INTERFACE = "wlan0"
 WIFI_CONNECTION_TYPE = "802-11-wireless"
 # nmcli waits 90 s by default, too long for the web UI. With a rescan (up to 8 s), this has
 # to stay below the client's timeout (WIFI_CONNECT_TIMEOUT_MS in Wifi.tsx).
@@ -42,23 +44,8 @@ def _require_string(value, name):
 # Wired
 
 def get_wired_config():
-    # One line per field, an empty one when the field is unset
-    method, configured_address, configured_gateway = (_run(
-        "nmcli", "-g", "ipv4.method,ipv4.addresses,ipv4.gateway", "connection",
-        "show", "id", WIRED_PROFILE).split("\n") + ["", ""])[:3]
-    if method == "manual" and configured_address:
-        # What was configured, so it still shows while the cable is unplugged
-        address = IPv4Interface(configured_address.split(",")[0].strip())
-        ip_address, netmask = str(address.ip), str(address.netmask)
-        gateway = configured_gateway
-    else:
-        ip_address, netmask = _get_current_address(WIRED_INTERFACE)
-        gateway = _get_current_gateway(WIRED_INTERFACE)
     return {
-        "DHCPorFixed": "DHCP" if method == "auto" else "Fixed IP",
-        "ipAddress": ip_address,
-        "netmask": netmask,
-        "gateway": gateway,
+        **_get_ipv4_config(("id", WIRED_PROFILE), WIRED_INTERFACE),
         "connected": _wired_has_carrier(),
     }
 
@@ -66,6 +53,31 @@ def get_wired_config():
 def _wired_has_carrier():
     return _run("nmcli", "-g", "WIRED-PROPERTIES.CARRIER", "device", "show",
                 WIRED_INTERFACE) == "on"
+
+
+# IPv4 settings, shared by wired and Wi-Fi
+
+def _get_ipv4_config(profile, interface):
+    """The address mode of a profile, given as ("id", name) or ("uuid", uuid), with
+    the addresses it was configured with, or else those the interface has now."""
+    # One line per field, an empty one when the field is unset
+    method, configured_address, configured_gateway = (_run(
+        "nmcli", "-g", "ipv4.method,ipv4.addresses,ipv4.gateway", "connection",
+        "show", *profile).split("\n") + ["", ""])[:3]
+    if method == "manual" and configured_address:
+        # What was configured, so it still shows while the profile is down
+        address = IPv4Interface(configured_address.split(",")[0].strip())
+        ip_address, netmask = str(address.ip), str(address.netmask)
+        gateway = configured_gateway
+    else:
+        ip_address, netmask = _get_current_address(interface)
+        gateway = _get_current_gateway(interface)
+    return {
+        "DHCPorFixed": "DHCP" if method == "auto" else "Fixed IP",
+        "ipAddress": ip_address,
+        "netmask": netmask,
+        "gateway": gateway,
+    }
 
 
 def _get_current_address(interface):
@@ -113,6 +125,12 @@ def set_wired_dhcp():
 
 def set_wired_fixed(ip_address, netmask, gateway=""):
     """gateway is optional: an empty string means none."""
+    _set_wired_ipv4("manual", *_parse_fixed_ipv4(ip_address, netmask, gateway))
+
+
+def _parse_fixed_ipv4(ip_address, netmask, gateway):
+    """Checks fixed IP settings, and returns the address with its prefix length and
+    the gateway, empty for none, as nmcli takes them."""
     address = IPv4Address(_require_string(ip_address, "IP address"))
     if address.is_unspecified or address.is_multicast or address.is_loopback:
         raise ValueError(f"{address} can't be used as an IP address")
@@ -143,12 +161,14 @@ def set_wired_fixed(ip_address, netmask, gateway=""):
                     f"Gateway {gateway_address} is the broadcast address of "
                     f"{network}, not a device")
         gateway = str(gateway_address)
-    _set_wired_ipv4("manual", interface.with_prefixlen, gateway)
+    return interface.with_prefixlen, gateway
 
 
 # Wi-Fi
 
-def connect_wifi(ssid, password, hidden):
+def connect_wifi(ssid, password, hidden, fixed_ipv4=None):
+    """fixed_ipv4 is None for DHCP, or (ip_address, netmask, gateway), gateway
+    being optional: an empty string means none."""
     _require_string(ssid, "SSID")
     _require_string(password, "Password")
     if not 1 <= len(ssid.encode()) <= 32:
@@ -157,21 +177,16 @@ def connect_wifi(ssid, password, hidden):
         raise ValueError("Password must be 8 to 64 characters long")
     if not isinstance(hidden, bool):
         raise ValueError("Hidden must be true or false")
+    if fixed_ipv4 is not None:
+        fixed_ipv4 = _parse_fixed_ipv4(*fixed_ipv4)
     # With a profile already saved for this SSID, nmcli tries to update it and fails with
     # "802-11-wireless-security.key-mgmt: property is missing"
     _delete_wifi_profiles(ssid)
-    command = ("sudo", "nmcli", "--wait", WIFI_CONNECT_WAIT_S, "device", "wifi",
-               "connect", ssid, "password", password, "hidden",
-               "yes" if hidden else "no")
     try:
-        try:
-            _run(*command)
-        except subprocess.CalledProcessError as e:
-            if e.returncode != NMCLI_NOT_FOUND:
-                raise
-            # nmcli only looks at the latest scan, which can miss a network in range
-            _rescan_wifi()
-            _run(*command)
+        if fixed_ipv4 is None:
+            _connect_wifi_dhcp(ssid, password, hidden)
+        else:
+            _connect_wifi_fixed(ssid, password, hidden, *fixed_ipv4)
     except subprocess.CalledProcessError as e:
         # Don't keep a profile holding a password that doesn't work
         _delete_wifi_profiles(ssid)
@@ -179,6 +194,61 @@ def connect_wifi(ssid, password, hidden):
         if message:
             raise ValueError(message) from e
         raise
+
+
+def _connect_wifi_dhcp(ssid, password, hidden):
+    command = ("sudo", "nmcli", "--wait", WIFI_CONNECT_WAIT_S, "device", "wifi",
+               "connect", ssid, "password", password, "hidden",
+               "yes" if hidden else "no")
+    try:
+        _run(*command)
+    except subprocess.CalledProcessError as e:
+        if e.returncode != NMCLI_NOT_FOUND:
+            raise
+        # nmcli only looks at the latest scan, which can miss a network in range
+        _rescan_wifi()
+        _run(*command)
+
+
+def _connect_wifi_fixed(ssid, password, hidden, addresses, gateway):
+    # "device wifi connect" always sets up DHCP, and fails on a network without a
+    # DHCP server before the address could be changed: the profile is made here.
+    if hidden:
+        # Not in the scan list, so there's nothing to tell WPA3 from WPA2
+        key_mgmt = "wpa-psk"
+    else:
+        security = _get_wifi_security(ssid)
+        if security is None:
+            _rescan_wifi()
+            security = _get_wifi_security(ssid)
+        if security is None:
+            raise ValueError(_wifi_not_found_message(ssid))
+        # Like "device wifi connect": WPA2 when the network takes it, even alongside
+        # WPA3, as some Wi-Fi chips don't do WPA3
+        key_mgmt = "sae" if "WPA3" in security and not re.search(
+            r"WPA[12]", security) else "wpa-psk"
+    uuid = str(uuidlib.uuid4())
+    _run("sudo", "nmcli", "connection", "add", "type", "wifi", "con-name", ssid,
+         "connection.uuid", uuid, "ifname", WIFI_INTERFACE, "ssid", ssid,
+         "802-11-wireless.hidden", "yes" if hidden else "no",
+         "802-11-wireless-security.key-mgmt", key_mgmt,
+         "802-11-wireless-security.psk", password, "ipv4.method", "manual",
+         "ipv4.addresses", addresses, "ipv4.gateway", gateway)
+    _run("sudo", "nmcli", "--wait", WIFI_CONNECT_WAIT_S, "connection", "up",
+         "uuid", uuid)
+
+
+def _get_wifi_security(ssid):
+    """The security of a network in the latest scan, like "WPA2 WPA3", or None if it
+    isn't there."""
+    # No escaping: SECURITY is the last field, so an SSID holding a ":" still splits
+    # right from the end
+    for line in _run("nmcli", "--escape", "no", "-t", "-f", "SSID,SECURITY",
+                     "device", "wifi", "list").splitlines():
+        scanned_ssid, _, security = line.rpartition(":")
+        if scanned_ssid == ssid:
+            return security
+    return None
 
 
 def _rescan_wifi():
@@ -196,12 +266,20 @@ def _wifi_connect_failure_message(error, ssid):
     if error.returncode == NMCLI_TIMEOUT:
         return f"Timed out while connecting to {ssid}."
     if error.returncode == NMCLI_NOT_FOUND:
-        return f"Wi-Fi network {ssid} not found. Check its name and that it is in range."
+        return _wifi_not_found_message(ssid)
     # No exit code for this one. NetworkManager asks for a new password when the network
     # refuses the one given, and nmcli can't ask, as it isn't run interactively.
-    if "Secrets were required" in (error.stderr or ""):
+    stderr = error.stderr or ""
+    if "Secrets were required" in stderr:
         return f"Could not connect to {ssid}: the network refused the password."
+    # From "connection up", for a hidden network with a fixed IP
+    if "network could not be found" in stderr:
+        return _wifi_not_found_message(ssid)
     return None
+
+
+def _wifi_not_found_message(ssid):
+    return f"Wi-Fi network {ssid} not found. Check its name and that it is in range."
 
 
 def _wifi_profile_uuids():
@@ -233,14 +311,25 @@ def set_wifi_active(active):
     _run("sudo", "nmcli", "radio", "wifi", "on" if active else "off")
 
 
-def get_current_ssid():
+def get_current_wifi():
+    """The SSID of the network the player is connected to, empty when none, and its
+    IPv4 settings, those of a DHCP connection without address when there is none."""
     # Asks the active profile rather than the scan list, which may not name a hidden network
     for line in _run("nmcli", "-t", "-f", "TYPE,STATE,UUID", "connection",
                      "show", "--active").splitlines():
         connection_type, state, uuid = line.split(":")
         if connection_type == WIFI_CONNECTION_TYPE and state == "activated":
-            return _get_profile_ssid(uuid)
-    return ""
+            return {
+                "SSID": _get_profile_ssid(uuid),
+                **_get_ipv4_config(("uuid", uuid), WIFI_INTERFACE),
+            }
+    return {
+        "SSID": "",
+        "DHCPorFixed": "DHCP",
+        "ipAddress": "",
+        "netmask": "",
+        "gateway": "",
+    }
 
 
 def forget_known_wifis():

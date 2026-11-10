@@ -456,8 +456,17 @@ def send_config_txt():
 @http_api.post('/api/setWifiConfig')
 def set_wifi_config():
     try:
+        DHCPorFixed = request.json.get("DHCPorFixed", "DHCP")
+
+        if DHCPorFixed == "DHCP":
+            fixed_ipv4 = None
+        elif DHCPorFixed == "Fixed IP":
+            fixed_ipv4 = (request.json["ipAddress"], request.json["netmask"],
+                          request.json.get("gateway", ""))
+        else:
+            raise ValueError("DHCPorFixed must be DHCP or Fixed IP")
         network.connect_wifi(request.json["SSID"], request.json["pass"],
-                             request.json["hidden"])
+                             request.json["hidden"], fixed_ipv4)
         return Response(status=200)
     except Exception as e:
         return network_error_response(e)
@@ -488,7 +497,7 @@ def set_is_wifi_active():
 @http_api.get('/api/getCurrentWifi')
 def get_current_wifi():
     try:
-        return {"SSID": network.get_current_ssid()}
+        return network.get_current_wifi()
     except Exception as e:
         return network_error_response(e)
 
