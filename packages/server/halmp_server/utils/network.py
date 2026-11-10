@@ -120,14 +120,28 @@ def set_wired_fixed(ip_address, netmask, gateway=""):
         f"{address}/{_require_string(netmask, 'Netmask')}")
     gateway = _require_string(gateway, "Gateway").strip()
     if gateway:
-        gateway_address = IPv4Address(gateway)
+        try:
+            gateway_address = IPv4Address(gateway)
+        except ValueError:
+            raise ValueError("Incorrect gateway format") from None
         network = interface.network
-        if (gateway_address not in network or gateway_address == address
-                or (network.prefixlen < 31 and gateway_address
-                    in (network.network_address, network.broadcast_address))):
+        if gateway_address not in network:
             raise ValueError(
-                f"Gateway {gateway_address} must be another address of the "
-                f"{network} network")
+                f"Gateway {gateway_address} is outside the {network} network "
+                f"set by the IP address and netmask")
+        if gateway_address == address:
+            raise ValueError(
+                f"Gateway {gateway_address} can't be the player's own address")
+        # /31 and /32 networks have no network or broadcast address
+        if network.prefixlen < 31:
+            if gateway_address == network.network_address:
+                raise ValueError(
+                    f"Gateway {gateway_address} is the network address of "
+                    f"{network}, not a device")
+            if gateway_address == network.broadcast_address:
+                raise ValueError(
+                    f"Gateway {gateway_address} is the broadcast address of "
+                    f"{network}, not a device")
         gateway = str(gateway_address)
     _set_wired_ipv4("manual", interface.with_prefixlen, gateway)
 
