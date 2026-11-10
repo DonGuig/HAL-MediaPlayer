@@ -15,13 +15,14 @@
   import { isIpv4 } from "$lib/format";
 
   type Mode = "DHCP" | "Fixed IP";
-  type WiredConfig = { DHCPorFixed: Mode; ipAddress: string; netmask: string; connected: boolean };
+  type WiredConfig = { DHCPorFixed: Mode; ipAddress: string; netmask: string; gateway: string; connected: boolean };
   // Set when a change moves the player away from the address this page talks to
   type MovedTo = { ipAddress: string } | { dhcp: true };
 
   let mode = $state<Mode>("DHCP");
   let ipAddress = $state("");
   let netmask = $state("");
+  let gateway = $state("");
   let cableConnected = $state(false);
   let applied = $state<{ mode: Mode; ipAddress: string } | null>(null);
   let movedTo = $state<MovedTo | null>(null);
@@ -30,6 +31,8 @@
   const fixed = $derived(mode === "Fixed IP");
   const ipError = $derived(fixed && !isIpv4(ipAddress) ? "Incorrect address format" : "");
   const netmaskError = $derived(fixed && !isIpv4(netmask) ? "Incorrect address format" : "");
+  // Optional: left empty, the player has no gateway
+  const gatewayError = $derived(fixed && gateway.trim() !== "" && !isIpv4(gateway.trim()) ? "Incorrect address format" : "");
   const disabled = $derived(player.overlayActive || !fixed);
 
   const pageUrlAt = (address: string) => {
@@ -44,6 +47,7 @@
       mode = res.DHCPorFixed;
       ipAddress = res.ipAddress;
       netmask = res.netmask;
+      gateway = res.gateway;
       cableConnected = res.connected;
     } catch {
       // api already shows the error, unless silent
@@ -59,7 +63,7 @@
     const moving = pageUsesWiredIp && (fixed ? ipAddress !== applied?.ipAddress : applied?.mode !== "DHCP");
     try {
       await api.post("/setWiredNetwokConfig", {
-        body: { DHCPorFixed: mode, ipAddress, netmask },
+        body: { DHCPorFixed: mode, ipAddress, netmask, gateway: gateway.trim() },
         silent: moving,
       });
     } catch (err) {
@@ -114,8 +118,11 @@
         <Field id="wired-netmask" label="Netmask" error={netmaskError}>
           <Input id="wired-netmask" bind:value={netmask} {disabled} aria-invalid={!!netmaskError} inputmode="decimal" class="tabular-nums" />
         </Field>
+        <Field id="wired-gateway" label="Gateway (optional)" error={gatewayError}>
+          <Input id="wired-gateway" bind:value={gateway} {disabled} aria-invalid={!!gatewayError} inputmode="decimal" class="tabular-nums" />
+        </Field>
       </div>
-      <Button type="submit" disabled={player.overlayActive || applying || !!ipError || !!netmaskError}>
+      <Button type="submit" disabled={player.overlayActive || applying || !!ipError || !!netmaskError || !!gatewayError}>
         {#if applying}<LoaderIcon class="animate-spin" />{/if}Apply
       </Button>
     </form>

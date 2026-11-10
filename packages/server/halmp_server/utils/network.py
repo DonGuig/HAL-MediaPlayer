@@ -5,7 +5,7 @@
 import json
 import re
 import subprocess
-from ipaddress import IPv4Address, IPv4Interface, IPv4Network
+from ipaddress import IPv4Address, IPv4Interface
 from pathlib import Path
 
 WIRED_INTERFACE = "eth0"
@@ -42,19 +42,23 @@ def _require_string(value, name):
 # Wired
 
 def get_wired_config():
-    method, _, configured_address = _run(
-        "nmcli", "-g", "ipv4.method,ipv4.addresses", "connection", "show", "id",
-        WIRED_PROFILE).partition("\n")
+    # One line per field, an empty one when the field is unset
+    method, configured_address, configured_gateway = (_run(
+        "nmcli", "-g", "ipv4.method,ipv4.addresses,ipv4.gateway", "connection",
+        "show", "id", WIRED_PROFILE).split("\n") + ["", ""])[:3]
     if method == "manual" and configured_address:
         # What was configured, so it still shows while the cable is unplugged
         address = IPv4Interface(configured_address.split(",")[0].strip())
         ip_address, netmask = str(address.ip), str(address.netmask)
+        gateway = configured_gateway
     else:
         ip_address, netmask = _get_current_address(WIRED_INTERFACE)
+        gateway = _get_current_gateway(WIRED_INTERFACE)
     return {
         "DHCPorFixed": "DHCP" if method == "auto" else "Fixed IP",
         "ipAddress": ip_address,
         "netmask": netmask,
+        "gateway": gateway,
         "connected": _wired_has_carrier(),
     }
 
@@ -77,7 +81,14 @@ def _get_current_address(interface):
     return str(address.ip), str(address.netmask)
 
 
-def _set_wired_ipv4(method, addresses):
+def _get_current_gateway(interface):
+    routes = json.loads(
+        _run("ip", "-j", "-4", "route", "show", "default", "dev", interface))
+    return next((route["gateway"] for route in routes if "gateway" in route),
+                "")
+
+
+def _set_wired_ipv4(method, addresses, gateway):
     has_carrier = _wired_has_carrier()
     if not has_carrier and _run("nmcli", "-g", "GENERAL.STATE", "connection",
                                 "show", "id", WIRED_PROFILE):
@@ -86,7 +97,8 @@ def _set_wired_ipv4(method, addresses):
         # it comes first: the new settings then apply when a cable is plugged.
         _run("sudo", "nmcli", "connection", "down", "id", WIRED_PROFILE)
     _run("sudo", "nmcli", "connection", "modify", "id", WIRED_PROFILE,
-         "ipv4.method", method, "ipv4.addresses", addresses)
+         "ipv4.method", method, "ipv4.addresses", addresses, "ipv4.gateway",
+         gateway)
     if has_carrier:
         # Doesn't wait: without a DHCP server, activation can last until nmcli
         # gives up (90 s), and a new address can cut off the client anyway
@@ -95,16 +107,29 @@ def _set_wired_ipv4(method, addresses):
 
 
 def set_wired_dhcp():
-    _set_wired_ipv4("auto", "")
+    # A gateway set here would replace the one given by the DHCP server
+    _set_wired_ipv4("auto", "", "")
 
 
-def set_wired_fixed(ip_address, netmask):
+def set_wired_fixed(ip_address, netmask, gateway=""):
+    """gateway is optional: an empty string means none."""
     address = IPv4Address(_require_string(ip_address, "IP address"))
     if address.is_unspecified or address.is_multicast or address.is_loopback:
         raise ValueError(f"{address} can't be used as an IP address")
-    prefix = IPv4Network(
-        f"0.0.0.0/{_require_string(netmask, 'Netmask')}").prefixlen
-    _set_wired_ipv4("manual", f"{address}/{prefix}")
+    interface = IPv4Interface(
+        f"{address}/{_require_string(netmask, 'Netmask')}")
+    gateway = _require_string(gateway, "Gateway").strip()
+    if gateway:
+        gateway_address = IPv4Address(gateway)
+        network = interface.network
+        if (gateway_address not in network or gateway_address == address
+                or (network.prefixlen < 31 and gateway_address
+                    in (network.network_address, network.broadcast_address))):
+            raise ValueError(
+                f"Gateway {gateway_address} must be another address of the "
+                f"{network} network")
+        gateway = str(gateway_address)
+    _set_wired_ipv4("manual", interface.with_prefixlen, gateway)
 
 
 # Wi-Fi

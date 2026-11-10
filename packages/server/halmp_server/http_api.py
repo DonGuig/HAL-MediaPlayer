@@ -319,7 +319,8 @@ def set_wired_network_config():
             network.set_wired_dhcp()
         elif DHCPorFixed == "Fixed IP":
             network.set_wired_fixed(request.json["ipAddress"],
-                                    request.json["netmask"])
+                                    request.json["netmask"],
+                                    request.json.get("gateway", ""))
         else:
             raise ValueError("DHCPorFixed must be DHCP or Fixed IP")
 
