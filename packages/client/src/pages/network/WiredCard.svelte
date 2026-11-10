@@ -47,7 +47,8 @@
       mode = res.DHCPorFixed;
       ipAddress = res.ipAddress;
       netmask = res.netmask;
-      gateway = res.gateway;
+      // A server without gateway support leaves it out
+      gateway = res.gateway ?? "";
       cableConnected = res.connected;
     } catch {
       // api already shows the error, unless silent
